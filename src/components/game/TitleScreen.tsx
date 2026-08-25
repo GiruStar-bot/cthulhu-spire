@@ -56,13 +56,27 @@ export function TitleScreen() {
 
 function SettingsPanel({ onClose }: { onClose: () => void }) {
   const [vol, setVol] = useState(() => getSfxVolume());
+  const [full, setFull] = useState(() => isFullscreen());
+  const canFull = fullscreenAvailable();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key !== "Escape") return;
+      if (isFullscreen()) {
+        void setFullscreen(false);
+        return;
+      }
+      onClose();
     };
+    const sync = () => setFull(isFullscreen());
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("fullscreenchange", sync);
+    document.addEventListener("webkitfullscreenchange", sync);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("fullscreenchange", sync);
+      document.removeEventListener("webkitfullscreenchange", sync);
+    };
   }, [onClose]);
 
   return (
@@ -71,13 +85,15 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
       <div
         role="dialog"
         aria-labelledby="settings-title"
-        className="relative w-full max-w-md rounded-[var(--radius-xl)] bg-surface px-5 py-6 shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)] sm:px-6"
+        className="settings-sheet relative w-full max-w-md rounded-[var(--radius-xl)] bg-surface px-5 py-6 shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)] sm:px-6"
       >
         <p className="font-mono text-xs tracking-widest text-accent">設定</p>
         <h2 id="settings-title" className="font-display mt-1 text-2xl text-parchment">
-          音量
+          音と画面
         </h2>
-        <label className="mt-6 block">
+
+        <p className="mt-6 font-mono text-xs tracking-widest text-muted">音量</p>
+        <label className="mt-3 block">
           <div className="flex items-baseline justify-between gap-3">
             <span className="font-display text-parchment">効果音</span>
             <span className="font-mono text-xs tabular-nums text-muted">{Math.round(vol * 100)}</span>
@@ -100,6 +116,28 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
             className="mt-3 min-h-11"
           />
         </label>
+
+        <p className="mt-8 font-mono text-xs tracking-widest text-muted">グラフィック</p>
+        <label className="mt-3 flex min-h-11 cursor-pointer items-center justify-between gap-4">
+          <span className="font-display text-parchment">フルスクリーンを許可</span>
+          <input
+            type="checkbox"
+            className="size-5 shrink-0"
+            checked={full}
+            disabled={!canFull}
+            onChange={(e) => {
+              const on = e.target.checked;
+              setFull(on);
+              void setFullscreen(on).then(() => setFull(isFullscreen()));
+            }}
+          />
+        </label>
+        {!canFull ? (
+          <p className="mt-2 text-xs text-muted">この環境ではフルスクリーンにできない。</p>
+        ) : (
+          <p className="mt-2 text-xs text-muted">ESCで解除。</p>
+        )}
+
         <button
           type="button"
           onClick={onClose}
@@ -110,4 +148,43 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+}
+
+type FullDoc = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitFullscreenEnabled?: boolean;
+  webkitExitFullscreen?: () => Promise<void> | void;
+};
+
+type FullEl = HTMLElement & {
+  webkitRequestFullscreen?: () => Promise<void> | void;
+};
+
+function isFullscreen() {
+  if (typeof document === "undefined") return false;
+  const doc = document as FullDoc;
+  return !!(document.fullscreenElement || doc.webkitFullscreenElement);
+}
+
+function fullscreenAvailable() {
+  if (typeof document === "undefined") return false;
+  const doc = document as FullDoc;
+  return !!(document.fullscreenEnabled || doc.webkitFullscreenEnabled);
+}
+
+async function setFullscreen(on: boolean) {
+  const el = document.documentElement as FullEl;
+  const doc = document as FullDoc;
+  try {
+    if (on) {
+      if (isFullscreen()) return;
+      if (el.requestFullscreen) await el.requestFullscreen();
+      else await el.webkitRequestFullscreen?.();
+    } else if (isFullscreen()) {
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else await doc.webkitExitFullscreen?.();
+    }
+  } catch {
+    /* denied by browser */
+  }
 }

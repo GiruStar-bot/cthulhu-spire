@@ -46,6 +46,15 @@
     height: 1.5rem;
     width: 100%;
   }
+
+  input[type="checkbox"] {
+    accent-color: var(--color-parchment);
+  }
+}
+
+.settings-sheet {
+  max-height: min(36rem, 90dvh);
+  overflow-y: auto;
 }
 
 .rot-paper::before,
