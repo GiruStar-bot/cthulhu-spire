@@ -57,7 +57,27 @@ export function CombatView() {
         <div className="fx-blood" style={{ "--blood": blood } as CSSProperties} />
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
 
-        <div className="combat-foe">
+        <div
+          className={cn("combat-foe", targeting ? "is-aiming" : "")}
+          onClick={(e) => {
+            if (!targeting) return;
+            const stages = [...e.currentTarget.querySelectorAll<HTMLElement>(".enemy-stage")];
+            for (const el of stages.reverse()) {
+              if (el.dataset.dead === "1") continue;
+              const canvas = el.querySelector("canvas");
+              const img = el.querySelector("img");
+              const hit = canvas
+                ? opaqueAt(canvas, e.clientX, e.clientY)
+                : img
+                  ? boxAt(img, e.clientX, e.clientY)
+                  : boxAt(el, e.clientX, e.clientY);
+              if (!hit) continue;
+              const uid = el.dataset.uid;
+              if (uid) play(targeting, uid);
+              return;
+            }
+          }}
+        >
           {combat.enemies.map((e) => (
             <EnemyStage
               key={e.uid}
@@ -65,14 +85,11 @@ export function CombatView() {
               floaters={combat.floaters.filter((f) => f.who === e.uid)}
               targeting={!!targeting}
               striking={fx.playerHit && e.hp > 0}
-              onTarget={() => {
-                if (targeting) play(targeting, e.uid);
-              }}
             />
           ))}
         </div>
 
-        <div className="relative z-10 flex h-dvh flex-col">
+        <div className="pointer-events-none relative z-10 flex h-dvh flex-col">
           <div className="pointer-events-auto shrink-0 px-3 pt-3 sm:px-6">
             <Vitals />
             {toast ? (
@@ -197,13 +214,11 @@ function EnemyStage({
   floaters,
   targeting,
   striking,
-  onTarget,
 }: {
   enemy: CombatEnemy;
   floaters: Floater[];
   targeting: boolean;
   striking: boolean;
-  onTarget: () => void;
 }) {
   const dead = enemy.hp <= 0;
   const def = getEnemy(enemy.defId);
@@ -212,19 +227,18 @@ function EnemyStage({
   const boss = enemy.maxHp >= 150;
 
   return (
-    <button
-      type="button"
-      disabled={dead}
-      onClick={onTarget}
+    <div
+      data-uid={enemy.uid}
+      data-dead={dead ? "1" : "0"}
       className={cn(
-        "enemy-stage relative text-left outline-none",
+        "enemy-stage relative text-left",
         boss ? "is-boss" : "",
         pose === "enter" && "enemy-enter",
         pose === "idle" && !cutout && "enemy-idle",
         pose === "hit" && "enemy-hit",
         pose === "strike" && "enemy-strike",
         pose === "die" && "enemy-die",
-        targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-lg)]" : "",
+        targeting && !dead ? "is-aim" : "",
       )}
     >
       <div className={cn("enemy-figure", cutout && "is-cutout")}>
@@ -245,8 +259,34 @@ function EnemyStage({
           </span>
         ))}
       </div>
-    </button>
+    </div>
   );
+}
+
+function opaqueAt(canvas: HTMLCanvasElement, clientX: number, clientY: number): boolean {
+  const r = canvas.getBoundingClientRect();
+  const iw = canvas.width;
+  const ih = canvas.height;
+  if (!iw || !ih) return boxAt(canvas, clientX, clientY);
+  const scale = Math.min(r.width / iw, r.height / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
+  const left = r.left + (r.width - dw) / 2;
+  const top = r.top + (r.height - dh);
+  const x = (clientX - left) / scale;
+  const y = (clientY - top) / scale;
+  if (x < 0 || y < 0 || x >= iw || y >= ih) return false;
+  try {
+    const a = canvas.getContext("2d")?.getImageData(Math.floor(x), Math.floor(y), 1, 1).data[3] ?? 0;
+    return a > 24;
+  } catch {
+    return boxAt(canvas, clientX, clientY);
+  }
+}
+
+function boxAt(el: Element, clientX: number, clientY: number): boolean {
+  const r = el.getBoundingClientRect();
+  return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
 }
 
 function EnemyPlate({

@@ -342,7 +342,7 @@
 }
 
 .combat-foe {
-  pointer-events: none;
+  pointer-events: auto;
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -355,7 +355,17 @@
 }
 
 .combat-foe .enemy-stage {
-  pointer-events: auto;
+  pointer-events: none;
+}
+
+.combat-foe.is-aiming {
+  cursor: crosshair;
+}
+
+.enemy-stage.is-aim .enemy-figure.is-cutout canvas,
+.enemy-stage.is-aim .enemy-figure.is-cutout img {
+  filter: contrast(1.12) saturate(1.02) brightness(1.2)
+    drop-shadow(0 0 14px color-mix(in oklab, var(--color-accent) 55%, transparent));
 }
 
 .enemy-stage {
