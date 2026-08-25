@@ -6,8 +6,6 @@ Slay the Spire × クトゥルフ神話のデッキビルディング・ロー�
 
 **本線方針（正）:** [docs/GAME_VISION.md](docs/GAME_VISION.md)
 
-**詳細システム v0.3:** [docs/SYSTEMS_V03.md](docs/SYSTEMS_V03.md)
-
 **プレイ（現行デモ）:** [girustar-bot.github.io/cthulhu-spire](https://girustar-bot.github.io/cthulhu-spire/)
 
 ---
@@ -23,30 +21,27 @@ Slay the Spire × クトゥルフ神話のデッキビルディング・ロー�
 | 通常階層 | 戦闘が主。カード・回復・正気イベント等がランダム混在 |
 | 10の倍数 | **中ボス**（必ず接敵） |
 | 50の倍数 | **大ボス**（必ず接敵） |
-| 遺物 | 永久収集。登攀持込は最大6。ボスほど高ティア＋数値ロール |
-| プレイヤー | 名前・肉体／知識／意志。条件で術が開く |
+| 引き継ぎ | 死亡するまで体力・正気・デッキ・遺物を保持 |
 | テーマ | 知識は両刃。正気は通貨。恐怖を優先 |
+
+詳細・未確定項目は [docs/GAME_VISION.md](docs/GAME_VISION.md)。
 
 ---
 
-## 現行デモについて
+## v0.3 要素
 
-公開中の Web デモは段階的に本線へ寄せています。マップ骨格はまだ旧三面ですが、準備画面・プロフィール・遺物コレクション・音響は v0.3 仕様です。
+- **プロファイル**: 名前 / 体・心・意志 スタット配分 / localStorage持続
+- **遺物**: 永久コレクション + 6スロットロードアウト + 階層依存ハッスル
+- **オーディオ**: BGM (title/map/combat) + SFX
+- **Prepare画面**: クラス選択の代替
 
-## ローカル起動
+---
+
+## 開発
 
 ```bash
-git clone https://github.com/GiruStar-bot/cthulhu-spire.git
-cd cthulhu-spire
-npm install
+npm i
 npm run dev
 ```
 
-## 操作
-
-1. 器を調える → **名前・ステ振り・遺物持込（最大6）**
-2. マップで道を選ぶ
-3. カードをタップ（対象が必要なら敵をタップ）
-4. ターン終了
-
-遺物は永久に残り、次回から付け替えられる。音はブラウザの合成音（BGM／SFX）。
+GitHub Pages: `main` への push で自動デプロイ。
