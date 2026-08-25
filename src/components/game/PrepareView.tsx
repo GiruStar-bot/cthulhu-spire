@@ -24,7 +24,7 @@ export function PrepareView() {
   const canStart = playerName.trim().length > 0 && sum === STAT_BUDGET;
 
   return (
-    <section className="relative min-h-dvh overflow-hidden bg-ink px-4 py-8 sm:px-10">
+    <section className="relative flex h-dvh flex-col overflow-hidden bg-ink px-3 py-3 sm:px-6">
       <img
         src={asset("art/corridor.jpg")}
         alt=""
@@ -32,16 +32,15 @@ export function PrepareView() {
         crossOrigin="anonymous"
       />
       <div className="absolute inset-0 bg-ink/70" />
-      <div className="rot-paper relative z-10 mx-auto max-w-5xl px-5 py-8 sm:px-10 sm:py-10">
-        <header className="journal-head">
+      <div className="rot-paper relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col px-5 py-5 sm:px-8">
+        <header className="shrink-0">
           <p className="font-mono text-xs tracking-widest text-accent">ルルイエ調査団 · 単独</p>
-          <h2 className="font-display mt-2 text-3xl text-balance text-parchment sm:text-4xl">潜航前点検</h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-pretty text-muted">
-            下へ沈むほど層は増える。名を刻み、兵の肉体・学者の知識・科学者の意志を振り、遺物を最大
-            {MAX_LOADOUT}つまで持ち込む。沈降を始めれば、ただちに{layerLabel(1)}へ沈む。
+          <h2 className="font-display mt-1 text-2xl text-balance text-parchment sm:text-3xl">潜航前点検</h2>
+          <p className="mt-1 max-w-xl text-sm text-pretty text-muted">
+            名と配分を決め、遺物は{MAX_LOADOUT}つまで。始めればただちに{layerLabel(1)}へ沈む。
           </p>
           {runFloors.length > 0 ? (
-            <p className="mt-3 font-mono text-xs tracking-wider text-accent">
+            <p className="mt-2 font-mono text-xs tracking-wider text-accent">
               第1–{DEMO_MAX_FLOOR}層 · 守護 {tally.combat + tally.elite} · 予兆 {tally.event} · 休息 {tally.rest} ·
               中ボス {tally.mid} · 大ボス {tally.boss}
               <span className="ml-2 tabular-nums text-muted">調査番号 {seed.toString(16)}</span>
@@ -49,8 +48,8 @@ export function PrepareView() {
           ) : null}
         </header>
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-2">
-          <div className="space-y-6">
+        <div className="mt-4 flex min-h-0 flex-1 flex-col gap-5 overflow-hidden lg:grid lg:grid-cols-2">
+          <div className="shrink-0 space-y-3 lg:min-h-0 lg:overflow-y-auto">
             <label className="block">
               <span className="font-mono text-xs tracking-wider text-muted">調査員名</span>
               <input
@@ -58,67 +57,61 @@ export function PrepareView() {
                 onChange={(e) => setPlayerName(e.target.value)}
                 maxLength={16}
                 placeholder="名を記す"
-                className="journal-rule mt-2 w-full border-0 bg-transparent px-0 py-3 font-display text-lg text-parchment outline-none focus:border-accent"
+                className="journal-rule mt-1 w-full border-0 bg-transparent px-0 py-2 font-display text-lg text-parchment outline-none focus:border-accent"
               />
             </label>
 
             <div>
               <div className="flex items-baseline justify-between">
-                <h3 className="font-display text-xl text-parchment">器の配分</h3>
+                <h3 className="font-display text-lg text-parchment">器の配分</h3>
                 <span className={cn("font-mono text-xs tabular-nums", remain === 0 ? "text-accent" : "text-blood")}>
                   残り {remain} / 合計 {STAT_BUDGET}
                 </span>
               </div>
-              <div className="mt-2">
+              <div className="mt-1">
                 <StatRow
                   label="肉体"
-                  hint="兵の肉体。最大体力+2/点"
+                  hint="最大体力+2/点"
                   value={profile.stats.body}
                   onChange={(v) => setStat("body", v)}
                   remain={remain}
                 />
                 <StatRow
                   label="知識"
-                  hint="学者の知識。最大正気+2/点"
+                  hint="最大正気+2/点"
                   value={profile.stats.mind}
                   onChange={(v) => setStat("mind", v)}
                   remain={remain}
                 />
                 <StatRow
                   label="意志"
-                  hint="科学者の意志。開始筋力の芽"
+                  hint="開始筋力の芽"
                   value={profile.stats.will}
                   onChange={(v) => setStat("will", v)}
                   remain={remain}
                 />
               </div>
               {features.length > 0 ? (
-                <ul className="mt-4 space-y-1">
-                  {features.map((f) => (
-                    <li key={f} className="font-mono text-xs text-accent">
-                      解禁: {f}
-                    </li>
-                  ))}
-                </ul>
+                <p className="mt-2 truncate font-mono text-xs text-accent">解禁: {features.join(" · ")}</p>
               ) : (
-                <p className="mt-4 font-mono text-xs text-muted">配分を偏らせると、術や選択肢が開く。</p>
+                <p className="mt-2 font-mono text-xs text-muted">配分を偏らせると、術や選択肢が開く。</p>
               )}
             </div>
           </div>
 
-          <div>
-            <div className="flex items-baseline justify-between">
-              <h3 className="font-display text-xl text-parchment">遺物の持込</h3>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex shrink-0 items-baseline justify-between">
+              <h3 className="font-display text-lg text-parchment">遺物の持込</h3>
               <span className="font-mono text-xs tabular-nums text-muted">
                 {profile.loadoutIds.length}/{MAX_LOADOUT}
               </span>
             </div>
             {profile.collection.length === 0 ? (
-              <p className="journal-rule mt-4 pb-4 text-sm text-muted">
+              <p className="journal-rule mt-2 pb-3 text-sm text-muted">
                 まだ遺物を持っていない。層の奥で拾い、次回から持ち込める。
               </p>
             ) : (
-              <ul className="mt-2">
+              <ul className="mt-1 min-h-0 flex-1 overflow-y-auto">
                 {profile.collection.map((inst) => {
                   const on = profile.loadoutIds.includes(inst.uid);
                   const def = RELICS[inst.defId];
@@ -127,30 +120,32 @@ export function PrepareView() {
                       <button
                         type="button"
                         onClick={() => toggleLoadout(inst.uid)}
-                        className="w-full py-3 text-left"
+                        className="flex min-h-11 w-full items-center justify-between gap-3 py-2 text-left"
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-display text-sm text-parchment">{relicLabel(inst)}</span>
-                          <span className="font-mono text-xs text-muted">{on ? "持込中" : "保管"}</span>
-                        </div>
-                        <p className="mt-1 text-xs text-muted">{relicDesc(inst)}</p>
-                        <p className="mt-1 font-mono text-xs tabular-nums text-muted">
-                          {def?.name} · 入手 {layerLabel(inst.obtainedFloor)}
-                        </p>
+                        <span className="min-w-0">
+                          <span className="block truncate font-display text-sm text-parchment">
+                            {relicLabel(inst)}
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs text-muted">{relicDesc(inst)}</span>
+                        </span>
+                        <span className="shrink-0 font-mono text-xs text-muted">
+                          {on ? "持込中" : "保管"}
+                          {def ? ` · ${layerLabel(inst.obtainedFloor)}` : ""}
+                        </span>
                       </button>
                     </li>
                   );
                 })}
               </ul>
             )}
-            <p className="mt-3 font-mono text-xs tabular-nums text-muted">
+            <p className="mt-2 shrink-0 font-mono text-xs tabular-nums text-muted">
               記録: 潜航 {profile.runs} · 最深{" "}
               {profile.bestFloor ? layerLabel(profile.bestFloor) : "未潜航"} · 所持遺物 {profile.collection.length}
             </p>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center gap-4">
+        <div className="mt-4 flex shrink-0 flex-wrap items-center gap-3">
           <button
             type="button"
             disabled={!canStart}
@@ -186,8 +181,8 @@ function StatRow({
   remain: number;
 }) {
   return (
-    <div className="journal-rule flex items-center justify-between gap-3 py-3">
-      <div>
+    <div className="journal-rule flex items-center justify-between gap-3 py-2">
+      <div className="min-w-0">
         <p className="font-display text-parchment">{label}</p>
         <p className="font-mono text-xs text-muted">{hint}</p>
       </div>
