@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0b0d10;
+  --color-ink-2: #15181e;
+  --color-surface: #1b1f27;
+  --color-parchment: #e6dcc8;
+  --color-muted: #9a9386;
+  --color-accent: #5eead4;
+  --color-blood: #b4544a;
+  --color-border: color-mix(in oklab, #e6dcc8 14%, transparent);
+
+  --font-display: "Noto Serif JP", "Yu Mincho", serif;
+  --font-sans: "Noto Sans JP", "Hiragino Sans", sans-serif;
+  --font-mono: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --motion-fast: 250ms;
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100dvh;
+    background: var(--color-ink);
+    color: var(--color-parchment);
+    font-family: var(--font-sans);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-floater {
+    animation: none;
+  }
+}
+
+@keyframes floater {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+}
+
+.animate-floater {
+  animation: floater 0.7s var(--ease-smooth-out) forwards;
+}
