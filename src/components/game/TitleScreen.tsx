@@ -1,12 +1,20 @@
 import { getSfxVolume, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
   const profile = useGame((s) => s.profile);
   const [settings, setSettings] = useState(false);
+  const bgRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const v = bgRef.current;
+    if (!v) return;
+    const play = v.play();
+    if (play) void play.catch(() => {});
+  }, []);
 
   return (
     <section className="relative flex min-h-dvh items-center justify-center overflow-hidden">
@@ -16,6 +24,19 @@ export function TitleScreen() {
         className="absolute inset-0 size-full object-cover"
         crossOrigin="anonymous"
       />
+      <video
+        ref={bgRef}
+        className="title-bg-video absolute inset-0 size-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        poster={asset("art/title.jpg")}
+        aria-hidden
+      >
+        <source src={asset("art/title.mp4")} type="video/mp4" />
+      </video>
       <div className="title-veil absolute inset-0" />
       <div className="relative z-10 flex max-w-xl flex-col items-center gap-8 px-6 text-center sm:px-12">
         <h1 className="title-mark title-float">

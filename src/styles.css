@@ -511,6 +511,10 @@
     animation: none;
   }
 
+  .title-bg-video {
+    display: none;
+  }
+
   .enemy-die {
     opacity: 0.3;
     filter: grayscale(1);
