@@ -5,7 +5,8 @@ export function EndView({ kind }: { kind: "victory" | "defeat" }) {
   const giveUp = useGame((s) => s.giveUp);
   const floor = useGame((s) => s.floor);
   const act = useGame((s) => s.act);
-  const meta = useGame((s) => s.meta);
+  const profile = useGame((s) => s.profile);
+  const playerName = useGame((s) => s.playerName);
   const win = kind === "victory";
 
   return (
@@ -26,11 +27,11 @@ export function EndView({ kind }: { kind: "victory" | "defeat" }) {
         </h2>
         <p className="max-w-md text-sm text-muted">
           {win
-            ? "口は静かだ。知識は残る。もう一度登っても、かつての自分には戻れない。"
-            : `尖塔が、記録を保管する。到達したのは ${act}面 ${floor}階。`}
+            ? `${playerName || "登攀者"}の記録は残る。遺物は次の人生へ。`
+            : `${playerName || "登攀者"}は ${act}面 ${floor}階で止まった。名と遺物だけが塔の外に残る。`}
         </p>
         <p className="font-mono text-[11px] text-muted">
-          勝利 {meta.wins} · 最高階 {meta.bestFloor}
+          最高階 {profile.bestFloor} · 所持遺物 {profile.collection.length}
         </p>
         <button
           type="button"
