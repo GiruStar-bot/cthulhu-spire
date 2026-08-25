@@ -19,9 +19,7 @@ export function EndView({ kind }: { kind: "victory" | "defeat" }) {
       />
       <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/80 to-ink/40" />
       <div className="relative z-10 mt-auto flex flex-col gap-4 px-6 pb-16 sm:px-12">
-        <p className="font-mono text-[11px] tracking-widest text-accent">
-          {win ? "頂" : "肉体が折れた"}
-        </p>
+        <p className="font-mono text-[11px] tracking-widest text-accent">{win ? "頂" : "肉体が折れた"}</p>
         <h2 className="font-display text-4xl text-parchment sm:text-6xl">
           {win ? "見てしまった。" : "見終えられなかった。"}
         </h2>

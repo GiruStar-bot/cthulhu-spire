@@ -22,18 +22,13 @@ export function RewardView() {
       </p>
       <h2 className="font-display mt-2 text-3xl text-parchment">カードを1枚取る</h2>
       {bossGate && act < MAX_ACT ? (
-        <p className="mt-2 max-w-lg text-sm text-muted">
-          取ったあとも、肉体とデッキはそのまま次の面へ続く。
-        </p>
+        <p className="mt-2 max-w-lg text-sm text-muted">取ったあとも、肉体とデッキはそのまま次の面へ続く。</p>
       ) : null}
       {reward.relic ? (
         <p className="mt-3 max-w-lg text-sm text-muted">
           遺物を記録する：
-          <span className="text-parchment"> {relicLabel(reward.relic)}</span> —{" "}
-          {relicDesc(reward.relic)}
-          <span className="mt-1 block font-mono text-[10px] text-accent">
-            永久コレクションに追加。持込は最大6。
-          </span>
+          <span className="text-parchment"> {relicLabel(reward.relic)}</span> — {relicDesc(reward.relic)}
+          <span className="mt-1 block font-mono text-[10px] text-accent">永久コレクションに追加。持込は最大6。</span>
         </p>
       ) : null}
       <div className="mt-8 flex flex-wrap justify-center gap-4">

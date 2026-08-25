@@ -96,7 +96,10 @@ export function startCombat(
   floor: number,
   rand: () => number,
 ): CombatState {
-  const draw = shuffle(deck.map((c) => ({ ...c, uid: uid("c") })), rand);
+  const draw = shuffle(
+    deck.map((c) => ({ ...c, uid: uid("c") })),
+    rand,
+  );
   const enemies = enemyIds.map((id) => makeEnemy(id, floor, rand));
   const energyBonus = powerOf(player.relics, "energy") > 0 ? 1 : 0;
   const strBonus = powerOf(player.relics, "strength");
@@ -122,8 +125,7 @@ export function startCombat(
     floaters: [],
   };
   c.strength += player.extraStrength;
-  const firstDraw = 5 + drawBonus;
-  drawCards(c, firstDraw, rand);
+  drawCards(c, 5 + drawBonus, rand);
   if (player.sanity <= 0) {
     addToDiscard(c, makeCard("dread"));
     c.log.push("恐怖がデッキに沈む。");
@@ -229,8 +231,7 @@ export function changeSanity(player: PlayerHook, c: CombatState, delta: number) 
       c.floaters.push(floater(`+${idolBlock}`, "block", "player"));
     }
     if (c.powers.includes("bloodOath")) {
-      const amt = 2;
-      c.strength += amt;
+      c.strength += 2;
     }
     if (before > 0 && player.sanity === 0) {
       addToDiscard(c, makeCard("dread"));
@@ -277,8 +278,6 @@ export function playCard(
   c.cardsPlayed += 1;
   runEffects(cardEffects(card), c, player, targetId, rand, card);
   if (d.type === "attack" && c.powers.includes("resolve")) {
-    const n = card.upgraded && d.id === "resolve" ? 4 : 3;
-    // Resolve power uses 3, upgraded resolve card is the power itself. Keep 3/4 based on whether upgraded resolve is in powers - we don't store upgraded powers. Use 3 always, 4 if echo... Keep 3.
     c.block += 3;
   }
   finishPlay(c, card, !!d.exhaust);
@@ -360,7 +359,6 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number) 
   checkOver(c, player);
   if (c.result !== "ongoing") return;
 
-  // player turn start
   c.phase = "player";
   c.block = 0;
   c.energy = c.maxEnergy;

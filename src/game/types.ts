@@ -10,17 +10,12 @@ export type Scene =
   | "victory"
   | "defeat";
 
-/** 旧デモ互換。ステ振り後も初期デッキの偏りに使う。 */
 export type CharacterId = "investigator" | "cultist";
-
-export interface PlayerStats {
-  body: number;
-  mind: number;
-  will: number;
-}
-
-export type RelicTier = 1 | 2 | 3 | 4;
-
+export type CardType = "attack" | "skill" | "power" | "status";
+export type Rarity = "starter" | "common" | "uncommon" | "rare" | "status";
+export type CardTarget = "none" | "enemy" | "all";
+export type NodeType = "start" | "combat" | "elite" | "rest" | "event" | "boss";
+export type IntentKind = "attack" | "defend" | "buff" | "debuff" | "unknown";
 export type RelicKind =
   | "draw"
   | "maxHp"
@@ -28,34 +23,7 @@ export type RelicKind =
   | "energy"
   | "postHeal"
   | "strength"
-  | "damage"
   | "maxSanity";
-
-/** コレクションに積まれる個体（ロール済み） */
-export interface RelicInstance {
-  uid: string;
-  defId: string;
-  tier: RelicTier;
-  /** ハクスラで振られた効力 */
-  power: number;
-  source: "drop" | "event" | "starter";
-  obtainedFloor: number;
-}
-
-export interface PlayerProfile {
-  playerName: string;
-  stats: PlayerStats;
-  collection: RelicInstance[];
-  loadoutIds: string[];
-  bestFloor: number;
-  runs: number;
-  wins: number;
-}
-export type CardType = "attack" | "skill" | "power" | "status";
-export type Rarity = "starter" | "common" | "uncommon" | "rare" | "status";
-export type CardTarget = "none" | "enemy" | "all";
-export type NodeType = "start" | "combat" | "elite" | "rest" | "event" | "boss";
-export type IntentKind = "attack" | "defend" | "buff" | "debuff" | "unknown";
 
 export type Effect =
   | { t: "damage"; n: number }
@@ -150,8 +118,31 @@ export interface RelicDef {
   name: string;
   text: string;
   kind: RelicKind;
-  /** 階層1帯での基準値。ロールとティアで変動 */
-  basePower: number;
+}
+
+export interface RelicInstance {
+  uid: string;
+  defId: string;
+  tier: number;
+  power: number;
+  obtainedFloor: number;
+  source: "drop" | "event" | "gift";
+}
+
+export interface PlayerStats {
+  body: number;
+  mind: number;
+  will: number;
+}
+
+export interface PlayerProfile {
+  playerName: string;
+  stats: PlayerStats;
+  collection: RelicInstance[];
+  loadoutIds: string[];
+  bestFloor: number;
+  wins: number;
+  runs: number;
 }
 
 export interface MapNode {
@@ -192,7 +183,6 @@ export interface Floater {
 
 export interface RewardOffer {
   cards: CardInst[];
-  /** ドロップした個体。受け取るとコレクション＆今ラン装備候補へ */
   relic?: RelicInstance;
 }
 

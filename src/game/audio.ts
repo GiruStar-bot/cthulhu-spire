@@ -1,8 +1,3 @@
-/**
- * Web Audio 合成の仮音響。
- * 実サンプルに差し替えるときは sfx / bgm の中身だけ替えればよい。
- */
-
 let ctx: AudioContext | null = null;
 let bgmNodes: { stop: () => void } | null = null;
 let currentBgm: BgmId | null = null;
@@ -32,13 +27,7 @@ function envGain(c: AudioContext, peak: number, dur: number) {
   return g;
 }
 
-function blip(
-  freq: number,
-  dur: number,
-  type: OscillatorType,
-  gain = 0.04,
-  slide?: number,
-) {
+function blip(freq: number, dur: number, type: OscillatorType, gain = 0.04, slide?: number) {
   try {
     const c = ac();
     const o = c.createOscillator();
@@ -46,10 +35,7 @@ function blip(
     o.type = type;
     o.frequency.setValueAtTime(freq, c.currentTime);
     if (slide) {
-      o.frequency.exponentialRampToValueAtTime(
-        Math.max(20, freq * slide),
-        c.currentTime + dur,
-      );
+      o.frequency.exponentialRampToValueAtTime(Math.max(20, freq * slide), c.currentTime + dur);
     }
     o.connect(g);
     g.connect(c.destination);
@@ -83,19 +69,15 @@ function noiseBurst(dur: number, gain = 0.03) {
 }
 
 export const sfx = {
-  /** カード選択・クリック */
   select: () => blip(520, 0.06, "sine", 0.03),
-  /** カードプレイ */
   play: () => {
     blip(240, 0.08, "triangle", 0.035);
     blip(360, 0.06, "sine", 0.02);
   },
-  /** 攻撃ヒット */
   hit: () => {
     blip(110, 0.12, "sawtooth", 0.05, 0.5);
     noiseBurst(0.08, 0.04);
   },
-  /** 被弾 */
   hurt: () => {
     blip(70, 0.2, "sawtooth", 0.055, 0.4);
     noiseBurst(0.12, 0.035);
@@ -128,7 +110,6 @@ export function stopBgm() {
   stopBgmInternal();
 }
 
-/** 低ドローンBGM。idが同じなら張り替えない。 */
 export function playBgm(id: BgmId) {
   if (id === "none") {
     stopBgmInternal();
@@ -164,7 +145,6 @@ export function playBgm(id: BgmId) {
       oscs.push(mk(41, "sawtooth"), mk(61.5, "sine", 12), mk(82, "triangle", -8));
     }
 
-    // ゆっくりしたトレモロ
     const lfo = c.createOscillator();
     const lfoG = c.createGain();
     lfo.frequency.value = id === "combat" ? 0.15 : 0.08;

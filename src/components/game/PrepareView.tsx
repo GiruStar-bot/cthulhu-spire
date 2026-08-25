@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { MAX_LOADOUT, STAT_BUDGET, STAT_MIN, unlockedFeatures } from "@/game/profile";
 import { RELICS, relicDesc, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
-import type { PlayerStats } from "@/game/types";
 import { cn } from "@/lib/utils";
 
 export function PrepareView() {
@@ -28,7 +27,6 @@ export function PrepareView() {
       </p>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
-        {/* 名前・ステ */}
         <div className="space-y-6">
           <label className="block">
             <span className="font-mono text-[11px] tracking-wider text-muted">プレイヤー名</span>
@@ -44,12 +42,7 @@ export function PrepareView() {
           <div>
             <div className="flex items-baseline justify-between">
               <h3 className="font-display text-xl text-parchment">思想の配分</h3>
-              <span
-                className={cn(
-                  "font-mono text-[11px]",
-                  remain === 0 ? "text-accent" : "text-blood",
-                )}
-              >
+              <span className={cn("font-mono text-[11px]", remain === 0 ? "text-accent" : "text-blood")}>
                 残り {remain} / 合計 {STAT_BUDGET}
               </span>
             </div>
@@ -85,14 +78,11 @@ export function PrepareView() {
                 ))}
               </ul>
             ) : (
-              <p className="mt-4 font-mono text-[11px] text-muted">
-                ステータスを伸ばすと、術や選択肢が開く。
-              </p>
+              <p className="mt-4 font-mono text-[11px] text-muted">ステータスを伸ばすと、術や選択肢が開く。</p>
             )}
           </div>
         </div>
 
-        {/* 遺物ロードアウト */}
         <div>
           <div className="flex items-baseline justify-between">
             <h3 className="font-display text-xl text-parchment">遺物の持込</h3>
@@ -101,9 +91,7 @@ export function PrepareView() {
             </span>
           </div>
           {profile.collection.length === 0 ? (
-            <p className="mt-4 text-sm text-muted">
-              まだ遺物を持っていない。塔の奥で拾い、次回から持ち込める。
-            </p>
+            <p className="mt-4 text-sm text-muted">まだ遺物を持っていない。塔の奥で拾い、次回から持ち込める。</p>
           ) : (
             <ul className="mt-4 max-h-80 space-y-2 overflow-y-auto pr-1">
               {profile.collection.map((inst) => {
@@ -116,18 +104,12 @@ export function PrepareView() {
                       onClick={() => toggleLoadout(inst.uid)}
                       className={cn(
                         "w-full rounded-[var(--radius-md)] border px-3 py-3 text-left transition-colors",
-                        on
-                          ? "border-accent bg-surface"
-                          : "border-border bg-ink-2 hover:border-muted",
+                        on ? "border-accent bg-surface" : "border-border bg-ink-2 hover:border-muted",
                       )}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-display text-sm text-parchment">
-                          {relicLabel(inst)}
-                        </span>
-                        <span className="font-mono text-[10px] text-muted">
-                          {on ? "持込中" : "保管"}
-                        </span>
+                        <span className="font-display text-sm text-parchment">{relicLabel(inst)}</span>
+                        <span className="font-mono text-[10px] text-muted">{on ? "持込中" : "保管"}</span>
                       </div>
                       <p className="mt-1 text-xs text-muted">{relicDesc(inst)}</p>
                       <p className="mt-1 font-mono text-[10px] text-muted">
@@ -140,8 +122,7 @@ export function PrepareView() {
             </ul>
           )}
           <p className="mt-3 font-mono text-[10px] text-muted">
-            記録: 登攀 {profile.runs} · 最高階 {profile.bestFloor} · 所持遺物{" "}
-            {profile.collection.length}
+            記録: 登攀 {profile.runs} · 最高階 {profile.bestFloor} · 所持遺物 {profile.collection.length}
           </p>
         </div>
       </div>
@@ -162,9 +143,7 @@ export function PrepareView() {
         </button>
         {toast ? <p className="text-sm text-blood">{toast}</p> : null}
         {!canStart ? (
-          <p className="text-sm text-muted">
-            名前を入れ、ステータスをちょうど{STAT_BUDGET}に振り切ってください。
-          </p>
+          <p className="text-sm text-muted">名前を入れ、ステータスをちょうど{STAT_BUDGET}に振り切ってください。</p>
         ) : null}
       </div>
     </section>
@@ -200,9 +179,7 @@ function StatRow({
           >
             −
           </button>
-          <span className="w-8 text-center font-mono text-lg tabular-nums text-accent">
-            {value}
-          </span>
+          <span className="w-8 text-center font-mono text-lg tabular-nums text-accent">{value}</span>
           <button
             type="button"
             className="size-9 rounded border border-border text-parchment hover:border-accent"
