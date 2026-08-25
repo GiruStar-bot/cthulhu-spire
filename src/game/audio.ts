@@ -1,14 +1,32 @@
+import { asset } from "@/lib/asset";
+
 let ctx: AudioContext | null = null;
 let bgmHandle: BgmHandle | null = null;
 let currentBgm: BgmId | null = null;
 let visHooked = false;
+let master: GainNode | null = null;
+let sfxBus: GainNode | null = null;
+let musicBus: GainNode | null = null;
+let preloadStarted = false;
 
 export type BgmId = "combat" | "rest" | "event" | "boss" | "reward" | "none";
+export type SfxCue = "attack" | "skill" | "block" | "hurt" | "step";
+
+type SampleId = "attack" | "block" | "hurt" | "step";
 
 type BgmHandle = {
   id: BgmId;
   stop: () => void;
 };
+
+const SAMPLE: Record<SampleId, string> = {
+  attack: "sfx/attack.wav",
+  block: "sfx/block.wav",
+  hurt: "sfx/hurt.wav",
+  step: "sfx/step.wav",
+};
+
+const buffers = new Map<SampleId, AudioBuffer>();
 
 function ac() {
   if (!ctx) {
@@ -31,11 +49,52 @@ function hookVisibility() {
   window.addEventListener("focus", resume);
 }
 
+function buses() {
+  const c = ac();
+  if (!master) {
+    master = c.createGain();
+    master.gain.value = 1;
+    master.connect(c.destination);
+    sfxBus = c.createGain();
+    sfxBus.gain.value = 1;
+    sfxBus.connect(master);
+    musicBus = c.createGain();
+    musicBus.gain.value = 0.9;
+    musicBus.connect(master);
+  }
+  return { c, sfx: sfxBus!, music: musicBus! };
+}
+
 export function unlockAudio() {
   try {
-    ac();
+    buses();
+    preloadSfx();
   } catch {
     /* ignore */
+  }
+}
+
+export function preloadSfx() {
+  if (preloadStarted) return;
+  preloadStarted = true;
+  try {
+    const c = ac();
+    for (const id of Object.keys(SAMPLE) as SampleId[]) {
+      void fetch(asset(SAMPLE[id]))
+        .then((r) => {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.arrayBuffer();
+        })
+        .then((ab) => c.decodeAudioData(ab.slice(0)))
+        .then((buf) => {
+          buffers.set(id, buf);
+        })
+        .catch(() => {
+          /* synth fallback */
+        });
+    }
+  } catch {
+    preloadStarted = false;
   }
 }
 
@@ -50,7 +109,7 @@ function envGain(c: AudioContext, peak: number, dur: number) {
 
 function blip(freq: number, dur: number, type: OscillatorType, gain = 0.04, slide?: number) {
   try {
-    const c = ac();
+    const { c, sfx } = buses();
     const o = c.createOscillator();
     const g = envGain(c, gain, dur);
     o.type = type;
@@ -59,7 +118,7 @@ function blip(freq: number, dur: number, type: OscillatorType, gain = 0.04, slid
       o.frequency.exponentialRampToValueAtTime(Math.max(20, freq * slide), c.currentTime + dur);
     }
     o.connect(g);
-    g.connect(c.destination);
+    g.connect(sfx);
     o.start();
     o.stop(c.currentTime + dur + 0.02);
   } catch {
@@ -69,7 +128,7 @@ function blip(freq: number, dur: number, type: OscillatorType, gain = 0.04, slid
 
 function noiseBurst(dur: number, gain = 0.03) {
   try {
-    const c = ac();
+    const { c, sfx } = buses();
     const n = Math.floor(c.sampleRate * dur);
     const buf = c.createBuffer(1, n, c.sampleRate);
     const data = buf.getChannelData(0);
@@ -82,28 +141,58 @@ function noiseBurst(dur: number, gain = 0.03) {
     f.frequency.value = 800;
     src.connect(f);
     f.connect(g);
-    g.connect(c.destination);
+    g.connect(sfx);
     src.start();
   } catch {
     /* ignore */
   }
 }
 
+const synth: Record<SampleId, () => void> = {
+  attack: () => {
+    blip(110, 0.12, "sawtooth", 0.05, 0.5);
+    noiseBurst(0.08, 0.04);
+  },
+  block: () => blip(300, 0.1, "square", 0.028),
+  hurt: () => {
+    blip(70, 0.2, "sawtooth", 0.055, 0.4);
+    noiseBurst(0.12, 0.035);
+  },
+  step: () => blip(180, 0.08, "triangle", 0.025, 0.7),
+};
+
+function playSample(id: SampleId, gain = 0.7) {
+  const buf = buffers.get(id);
+  if (!buf) {
+    synth[id]();
+    return;
+  }
+  try {
+    const { c, sfx } = buses();
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    src.playbackRate.value = 0.94 + Math.random() * 0.12;
+    const g = c.createGain();
+    g.gain.value = gain;
+    src.connect(g);
+    g.connect(sfx);
+    src.start();
+  } catch {
+    synth[id]();
+  }
+}
+
 export const sfx = {
+  attack: () => playSample("attack", 0.78),
+  block: () => playSample("block", 0.72),
+  hurt: () => playSample("hurt", 0.82),
+  step: () => playSample("step", 0.7),
   select: () => blip(520, 0.06, "sine", 0.03),
   play: () => {
     blip(240, 0.08, "triangle", 0.035);
     blip(360, 0.06, "sine", 0.02);
   },
-  hit: () => {
-    blip(110, 0.12, "sawtooth", 0.05, 0.5);
-    noiseBurst(0.08, 0.04);
-  },
-  hurt: () => {
-    blip(70, 0.2, "sawtooth", 0.055, 0.4);
-    noiseBurst(0.12, 0.035);
-  },
-  block: () => blip(300, 0.1, "square", 0.028),
+  hit: () => playSample("attack", 0.78),
   draw: () => blip(480, 0.05, "sine", 0.018),
   win: () => {
     blip(330, 0.12, "triangle", 0.04);
@@ -118,6 +207,16 @@ export const sfx = {
   },
   ui: () => blip(420, 0.05, "sine", 0.02),
 };
+
+export function playCues(cues: SfxCue[]) {
+  const seen = new Set<SfxCue>();
+  for (const cue of cues) {
+    if (seen.has(cue)) continue;
+    seen.add(cue);
+    if (cue === "skill") sfx.play();
+    else sfx[cue]();
+  }
+}
 
 function tone(
   c: AudioContext,
@@ -192,12 +291,12 @@ function stepLen(id: Exclude<BgmId, "none">) {
 }
 
 function startTheme(id: Exclude<BgmId, "none">): BgmHandle {
-  const c = ac();
+  const { c, music } = buses();
   let stopped = false;
   const live: OscillatorNode[] = [];
-  const master = c.createGain();
-  master.gain.value = 1;
-  master.connect(c.destination);
+  const local = c.createGain();
+  local.gain.value = 1;
+  local.connect(music);
 
   let step = 0;
   let next = c.currentTime + 0.05;
@@ -208,7 +307,7 @@ function startTheme(id: Exclude<BgmId, "none">): BgmHandle {
     if (stopped) return;
     const horizon = c.currentTime + 0.75;
     while (next < horizon) {
-      phrase(c, master, live, id, step, next);
+      phrase(c, local, live, id, step, next);
       step += 1;
       next += dt;
     }
@@ -231,7 +330,7 @@ function startTheme(id: Exclude<BgmId, "none">): BgmHandle {
       }
       live.length = 0;
       try {
-        master.disconnect();
+        local.disconnect();
       } catch {
         /* ignore */
       }

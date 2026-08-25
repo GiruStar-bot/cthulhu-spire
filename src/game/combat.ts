@@ -13,6 +13,8 @@ import { getEnemy } from "./enemies";
 import { powerOf } from "./relics";
 import { pick, shuffle, uid } from "./rng";
 
+export type CombatSfx = "attack" | "skill" | "block" | "hurt";
+
 export interface PlayerHook {
   hp: number;
   maxHp: number;
@@ -262,16 +264,17 @@ export function playCard(
   cardUid: string,
   targetId: string | null,
   rand: () => number,
-): string | null {
-  if (c.phase !== "player" || c.result !== "ongoing") return "自分のターンではない。";
+): { error: string | null; sfx: CombatSfx[] } {
+  const empty: CombatSfx[] = [];
+  if (c.phase !== "player" || c.result !== "ongoing") return { error: "自分のターンではない。", sfx: empty };
   const idx = c.hand.findIndex((x) => x.uid === cardUid);
-  if (idx < 0) return "手札にない。";
+  if (idx < 0) return { error: "手札にない。", sfx: empty };
   const card = c.hand[idx]!;
   const d = getCard(card.defId);
-  if (d.unplayable) return "プレイできない。";
+  if (d.unplayable) return { error: "プレイできない。", sfx: empty };
   const cost = cardCost(card);
-  if (cost > c.energy) return "エネルギーが足りない。";
-  if (d.target === "enemy" && living(c).length > 1 && !targetId) return "対象を選んでください。";
+  if (cost > c.energy) return { error: "エネルギーが足りない。", sfx: empty };
+  if (d.target === "enemy" && living(c).length > 1 && !targetId) return { error: "対象を選んでください。", sfx: empty };
 
   c.hand.splice(idx, 1);
   c.energy -= cost;
@@ -282,7 +285,8 @@ export function playCard(
   }
   finishPlay(c, card, !!d.exhaust);
   checkOver(c, player);
-  return null;
+  const sfx: CombatSfx[] = d.type === "attack" ? ["attack"] : ["skill"];
+  return { error: null, sfx };
 }
 
 function checkOver(c: CombatState, player: PlayerHook) {
@@ -305,7 +309,7 @@ function advanceIntent(e: CombatEnemy) {
   e.intent = d.pattern[e.patternIndex]!;
 }
 
-function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () => number) {
+function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () => number, sfx: CombatSfx[]) {
   if (e.hp <= 0) return;
   e.block = 0;
   const intent: Intent = e.intent;
@@ -321,6 +325,8 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
       const hp = n - blocked;
       player.hp = Math.max(0, player.hp - hp);
       c.floaters.push(floater(`-${n}`, "dmg", "player"));
+      if (hp > 0) sfx.push("hurt");
+      if (blocked > 0) sfx.push("block");
     }
   }
   if (intent.kind === "defend" || intent.block) {
@@ -335,8 +341,9 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
   void rand;
 }
 
-export function endTurn(c: CombatState, player: PlayerHook, rand: () => number) {
-  if (c.phase !== "player" || c.result !== "ongoing") return;
+export function endTurn(c: CombatState, player: PlayerHook, rand: () => number): CombatSfx[] {
+  const sfx: CombatSfx[] = [];
+  if (c.phase !== "player" || c.result !== "ongoing") return sfx;
   c.phase = "enemy";
 
   const kept: CardInst[] = [];
@@ -351,13 +358,13 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number) 
   if (c.vulnerable > 0) c.vulnerable -= 1;
 
   for (const e of living(c)) {
-    enemyAct(e, c, player, rand);
+    enemyAct(e, c, player, rand, sfx);
     if (e.weak > 0) e.weak -= 1;
     if (e.vulnerable > 0) e.vulnerable -= 1;
     advanceIntent(e);
   }
   checkOver(c, player);
-  if (c.result !== "ongoing") return;
+  if (c.result !== "ongoing") return sfx;
 
   c.phase = "player";
   c.block = 0;
@@ -371,6 +378,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number) 
   }
   drawCards(c, 5, rand);
   checkOver(c, player);
+  return sfx;
 }
 
 export function clearFloaters(c: CombatState) {

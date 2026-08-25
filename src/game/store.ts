@@ -26,7 +26,7 @@ import {
   type PlayerHook,
 } from "./combat";
 import { mulberry32, pick, uid } from "./rng";
-import { playBgm, sfx, stopBgm, unlockAudio } from "./audio";
+import { playBgm, playCues, sfx, stopBgm, unlockAudio } from "./audio";
 import {
   clampStats,
   derivedVitals,
@@ -148,6 +148,7 @@ export const useGame = create<GameStore>((set, get) => {
     }
     const spec = s.runFloors[floor - 1];
     if (!spec) return;
+    sfx.step();
 
     const base = {
       ...carry,
@@ -172,7 +173,6 @@ export const useGame = create<GameStore>((set, get) => {
         hp: hook.hp,
         sanity: hook.sanity,
       });
-      sfx.draw();
       return;
     }
     if (spec.type === "rest") {
@@ -341,14 +341,13 @@ export const useGame = create<GameStore>((set, get) => {
         return;
       }
       const hook = hookFrom(s);
-      const err = playCard(s.combat, hook, cardUid, targetId, s.rand);
-      if (err) {
-        set({ toast: err, targeting: null });
+      const played = playCard(s.combat, hook, cardUid, targetId, s.rand);
+      if (played.error) {
+        set({ toast: played.error, targeting: null });
         return;
       }
       applyHook(s, hook);
-      sfx.play();
-      sfx.hit();
+      playCues(played.sfx);
       const combat = { ...s.combat, floaters: s.combat.floaters.slice() };
       const next: Partial<GameStore> = {
         combat,
@@ -383,9 +382,9 @@ export const useGame = create<GameStore>((set, get) => {
       const s = get();
       if (!s.combat) return;
       const hook = hookFrom(s);
-      endTurn(s.combat, hook, s.rand);
+      const cues = endTurn(s.combat, hook, s.rand);
       applyHook(s, hook);
-      sfx.hurt();
+      playCues(cues);
       const combat = { ...s.combat };
       const next: Partial<GameStore> = { combat, hp: hook.hp, sanity: hook.sanity, targeting: null };
       if (combat.result === "win") {

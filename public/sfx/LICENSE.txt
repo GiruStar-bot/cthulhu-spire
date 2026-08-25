@@ -1,0 +1,7 @@
+Kenney (https://kenney.nl) — Creative Commons CC0 1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+
+attack.wav  — RPG Audio / knifeSlice
+block.wav   — Impact Sounds / impactMetal_medium_000
+hurt.wav    — Impact Sounds / impactGeneric_light_000
+step.wav    — Impact Sounds / footstep_concrete_000
