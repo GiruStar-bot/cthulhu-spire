@@ -13,6 +13,7 @@
   --font-display: "Noto Serif JP", "Yu Mincho", serif;
   --font-sans: "Noto Sans JP", "Hiragino Sans", sans-serif;
   --font-mono: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+  --font-title: "Cinzel", "Noto Serif JP", serif;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -72,6 +73,59 @@
       transparent 78%,
       color-mix(in oklab, var(--color-ink) 36%, transparent)
     );
+}
+
+.title-mark {
+  font-family: var(--font-title);
+  color: var(--color-parchment);
+  text-shadow:
+    0 1px 0 color-mix(in oklab, var(--color-ink) 80%, transparent),
+    0 8px 28px color-mix(in oklab, var(--color-ink) 70%, transparent),
+    0 0 36px color-mix(in oklab, var(--color-parchment) 16%, transparent);
+}
+
+.title-mark-of {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.46em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-parchment) 72%, var(--color-muted));
+}
+
+.title-mark-name {
+  display: block;
+  font-size: clamp(3rem, 9vw, 5.75rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.title-float {
+  animation: drift 6.2s ease-in-out infinite;
+}
+
+.title-float-a {
+  animation: drift 4.9s ease-in-out infinite;
+  filter: drop-shadow(0 12px 18px color-mix(in oklab, var(--color-ink) 62%, transparent));
+}
+
+.title-float-b {
+  animation: drift 5.4s ease-in-out infinite reverse;
+  animation-delay: -1.6s;
+  filter: drop-shadow(0 12px 18px color-mix(in oklab, var(--color-ink) 62%, transparent));
 }
 
 .rot-paper::before,
@@ -449,7 +503,10 @@
   .enemy-hit,
   .enemy-strike,
   .enemy-die,
-  .fx-vertigo.is-on {
+  .fx-vertigo.is-on,
+  .title-float,
+  .title-float-a,
+  .title-float-b {
     animation: none;
   }
 

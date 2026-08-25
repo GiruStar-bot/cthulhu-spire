@@ -17,32 +17,36 @@ export function TitleScreen() {
         crossOrigin="anonymous"
       />
       <div className="title-veil absolute inset-0" />
-      <div className="relative z-10 flex max-w-xl flex-col items-center gap-6 px-6 text-center sm:px-12">
-        <p className="font-mono text-xs tracking-widest text-accent">無限の沈降 · 単独調査</p>
-        <h1 className="font-display text-5xl leading-[1.08] text-balance text-parchment sm:text-7xl">
-          Abyss of Cthulhu
+      <div className="relative z-10 flex max-w-xl flex-col items-center gap-8 px-6 text-center sm:px-12">
+        <h1 className="title-mark title-float">
+          <span className="title-mark-of">Abyss of</span>
+          <span className="title-mark-name">Cthulhu</span>
         </h1>
         <p className="max-w-md text-sm leading-relaxed text-pretty text-muted sm:text-base">
           ルルイエへ、単独で沈む。死ねばその人生は終わる。遺物と記録だけが、次の器に残る。
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={begin}
-            className="min-h-11 rounded-[var(--radius-md)] bg-parchment px-6 py-3 font-display text-base text-ink transition-transform duration-(--motion-fast) hover:scale-[1.02] active:scale-[0.98]"
-          >
-            {profile.playerName ? `${profile.playerName}の日誌` : "潜航前点検"}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              unlockAudio();
-              setSettings(true);
-            }}
-            className="min-h-11 rounded-[var(--radius-md)] px-6 py-3 font-display text-base text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_28%,transparent)]"
-          >
-            設定
-          </button>
+          <span className="title-float-a">
+            <button
+              type="button"
+              onClick={begin}
+              className="min-h-11 rounded-[var(--radius-md)] bg-parchment px-6 py-3 font-display text-base text-ink transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.96]"
+            >
+              {profile.playerName ? `${profile.playerName}の日誌` : "潜航前点検"}
+            </button>
+          </span>
+          <span className="title-float-b">
+            <button
+              type="button"
+              onClick={() => {
+                unlockAudio();
+                setSettings(true);
+              }}
+              className="min-h-11 rounded-[var(--radius-md)] px-6 py-3 font-display text-base text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_28%,transparent)] transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.96]"
+            >
+              設定
+            </button>
+          </span>
         </div>
         <p className="font-mono text-xs tracking-wider text-muted">
           回数 {profile.runs} · 最深 {profile.bestFloor ? `第${profile.bestFloor}層` : "未潜航"} · 遺物{" "}
