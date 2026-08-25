@@ -24,6 +24,7 @@ export function CombatView() {
   const toast = useGame((s) => s.toast);
   const dismiss = useGame((s) => s.dismissToast);
   const fx = useCombatFx(hp, maxHp, sanity, maxSanity);
+  useAimAtFoe(targeting, play);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -57,27 +58,7 @@ export function CombatView() {
         <div className="fx-blood" style={{ "--blood": blood } as CSSProperties} />
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
 
-        <div
-          className={cn("combat-foe", targeting ? "is-aiming" : "")}
-          onClick={(e) => {
-            if (!targeting) return;
-            const stages = [...e.currentTarget.querySelectorAll<HTMLElement>(".enemy-stage")];
-            for (const el of stages.reverse()) {
-              if (el.dataset.dead === "1") continue;
-              const canvas = el.querySelector("canvas");
-              const img = el.querySelector("img");
-              const hit = canvas
-                ? opaqueAt(canvas, e.clientX, e.clientY)
-                : img
-                  ? boxAt(img, e.clientX, e.clientY)
-                  : boxAt(el, e.clientX, e.clientY);
-              if (!hit) continue;
-              const uid = el.dataset.uid;
-              if (uid) play(targeting, uid);
-              return;
-            }
-          }}
-        >
+        <div className={cn("combat-foe", targeting ? "is-aiming" : "")}>
           {combat.enemies.map((e) => (
             <EnemyStage
               key={e.uid}
@@ -120,7 +101,7 @@ export function CombatView() {
 
           <div className="min-h-0 flex-1" />
 
-          <div className="pointer-events-auto relative z-10 shrink-0 px-3 sm:px-6">
+          <div className="relative z-10 shrink-0 px-3 sm:px-6">
             <div className="mb-2 flex flex-wrap items-end justify-center gap-8">
               {combat.enemies.map((e) => (
                 <EnemyPlate key={e.uid} enemy={e} targeting={!!targeting} onTarget={() => targeting && play(targeting, e.uid)} />
@@ -263,30 +244,62 @@ function EnemyStage({
   );
 }
 
-function opaqueAt(canvas: HTMLCanvasElement, clientX: number, clientY: number): boolean {
+function useAimAtFoe(targeting: string | null, play: (cardUid: string, targetId?: string | null) => void) {
+  useEffect(() => {
+    if (!targeting) return;
+    const aim = (e: Event) => {
+      const pe = e as PointerEvent | MouseEvent;
+      if (!("clientX" in pe)) return;
+      const t = pe.target as HTMLElement | null;
+      if (t?.closest(".combat-hand")) return;
+      if (t?.closest("[data-enemy-plate]")) return;
+      const el = pickFoe(pe.clientX, pe.clientY);
+      if (!el?.dataset.uid) return;
+      pe.preventDefault();
+      pe.stopPropagation();
+      play(targeting, el.dataset.uid);
+    };
+    document.addEventListener("pointerdown", aim, true);
+    return () => document.removeEventListener("pointerdown", aim, true);
+  }, [targeting, play]);
+}
+
+function pickFoe(clientX: number, clientY: number): HTMLElement | null {
+  const stages = [...document.querySelectorAll<HTMLElement>(".enemy-stage")];
+  let best: HTMLElement | null = null;
+  let bestA = -1;
+  for (const el of stages) {
+    if (el.dataset.dead === "1") continue;
+    const canvas = el.querySelector("canvas");
+    const img = el.querySelector(".enemy-figure img");
+    const media = canvas ?? img;
+    if (!media) continue;
+    const r = media.getBoundingClientRect();
+    if (clientX < r.left || clientX > r.right || clientY < r.top || clientY > r.bottom) continue;
+    const a = canvas ? Math.max(1, alphaAt(canvas, clientX, clientY)) : 1;
+    if (a >= bestA) {
+      bestA = a;
+      best = el;
+    }
+  }
+  return best;
+}
+
+function alphaAt(canvas: HTMLCanvasElement, clientX: number, clientY: number): number {
   const r = canvas.getBoundingClientRect();
   const iw = canvas.width;
   const ih = canvas.height;
-  if (!iw || !ih) return boxAt(canvas, clientX, clientY);
-  const scale = Math.min(r.width / iw, r.height / ih);
-  const dw = iw * scale;
-  const dh = ih * scale;
-  const left = r.left + (r.width - dw) / 2;
-  const top = r.top + (r.height - dh);
-  const x = (clientX - left) / scale;
-  const y = (clientY - top) / scale;
-  if (x < 0 || y < 0 || x >= iw || y >= ih) return false;
+  if (!iw || !ih) return 1;
+  const sx = ((clientX - r.left) / r.width) * iw;
+  const sy = ((clientY - r.top) / r.height) * ih;
+  if (sx < 0 || sy < 0 || sx >= iw || sy >= ih) return 0;
   try {
-    const a = canvas.getContext("2d")?.getImageData(Math.floor(x), Math.floor(y), 1, 1).data[3] ?? 0;
-    return a > 24;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return 1;
+    return ctx.getImageData(Math.floor(sx), Math.floor(sy), 1, 1).data[3];
   } catch {
-    return boxAt(canvas, clientX, clientY);
+    return 1;
   }
-}
-
-function boxAt(el: Element, clientX: number, clientY: number): boolean {
-  const r = el.getBoundingClientRect();
-  return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
 }
 
 function EnemyPlate({
@@ -304,9 +317,13 @@ function EnemyPlate({
   return (
     <button
       type="button"
+      data-enemy-plate=""
       disabled={dead}
       onClick={onTarget}
-      className={cn("min-w-40 text-left", targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-md)] px-2 py-1" : "")}
+      className={cn(
+        "pointer-events-auto min-w-40 text-left",
+        targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-md)] px-2 py-1" : "",
+      )}
     >
       <p className="font-display text-sm text-parchment">{def.name}</p>
       <p className="font-mono text-xs text-accent">{intent}</p>
