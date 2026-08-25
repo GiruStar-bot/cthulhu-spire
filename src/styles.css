@@ -366,10 +366,33 @@
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 78%, transparent 100%);
 }
 
-.enemy-figure.is-cutout img {
+.enemy-figure.is-cutout img,
+.enemy-figure.is-cutout video,
+.enemy-figure.is-cutout canvas {
   filter: contrast(1.06) saturate(0.88) brightness(0.94);
   mask-image: none;
   -webkit-mask-image: none;
+}
+
+.enemy-figure video,
+.enemy-figure canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.creature-video-src {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.creature-video-canvas {
+  position: relative;
+  z-index: 1;
 }
 
 .enemy-shadow {

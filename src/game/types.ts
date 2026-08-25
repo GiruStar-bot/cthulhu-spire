@@ -83,6 +83,7 @@ export interface EnemyDef {
   id: string;
   name: string;
   art: string;
+  poster?: string;
   idleFrames?: string[];
   idleFps?: number;
   maxHp: number;

@@ -1,10 +1,6 @@
 import type { EnemyDef } from "./types";
 import { asset } from "@/lib/asset";
 
-const PRIEST_IDLE = Array.from({ length: 16 }, (_, i) =>
-  asset(`art/priest/sprite_${String(i + 1).padStart(2, "0")}.png`),
-);
-
 export const ENEMIES: Record<string, EnemyDef> = {
   acolyte: {
     id: "acolyte",
@@ -54,9 +50,8 @@ export const ENEMIES: Record<string, EnemyDef> = {
   priest: {
     id: "priest",
     name: "尖塔の大司祭",
-    art: asset("art/boss.jpg"),
-    idleFrames: PRIEST_IDLE,
-    idleFps: 8,
+    art: asset("art/priest/idle.mp4"),
+    poster: asset("art/priest/sprite_01.png"),
     maxHp: 168,
     pattern: [
       { kind: "debuff", dread: 1 },

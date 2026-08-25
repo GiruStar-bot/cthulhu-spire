@@ -1,10 +1,12 @@
 import { CardView } from "@/components/game/CardView";
+import { CreatureMedia } from "@/components/game/CreatureMedia";
 import { Vitals } from "@/components/game/Hud";
 import { POWER_TEXT, canPlay } from "@/game/combat";
 import { getEnemy } from "@/game/enemies";
 import { cardCost, getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
+import { isVideoSrc } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import type { CombatEnemy, Floater } from "@/game/types";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
@@ -166,28 +168,6 @@ function Energy({ n, max }: { n: number; max: number }) {
   );
 }
 
-function EnemyArt({
-  src,
-  frames,
-  fps = 8,
-}: {
-  src: string;
-  frames?: string[];
-  fps?: number;
-}) {
-  const [i, setI] = useState(0);
-  const n = frames?.length ?? 0;
-
-  useEffect(() => {
-    if (n < 2) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => setI((k) => (k + 1) % n), 1000 / fps);
-    return () => window.clearInterval(id);
-  }, [n, fps]);
-
-  return <img src={frames?.[i] ?? src} alt="" crossOrigin="anonymous" />;
-}
-
 function EnemyStage({
   enemy,
   floaters,
@@ -205,6 +185,7 @@ function EnemyStage({
   const def = getEnemy(enemy.defId);
   const intent = intentLabel(enemy);
   const pose = useEnemyPose(enemy.hp, striking);
+  const cutout = isVideoSrc(def.art) || Boolean(def.idleFrames?.length);
   const boss = enemy.maxHp >= 150;
 
   return (
@@ -216,15 +197,15 @@ function EnemyStage({
         "enemy-stage relative text-left outline-none",
         boss ? "is-boss" : "",
         pose === "enter" && "enemy-enter",
-        pose === "idle" && !def.idleFrames?.length && "enemy-idle",
+        pose === "idle" && !cutout && "enemy-idle",
         pose === "hit" && "enemy-hit",
         pose === "strike" && "enemy-strike",
         pose === "die" && "enemy-die",
         targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-lg)]" : "",
       )}
     >
-      <div className={cn("enemy-figure", def.idleFrames?.length && "is-cutout")}>
-        <EnemyArt src={def.art} frames={def.idleFrames} fps={def.idleFps} />
+      <div className={cn("enemy-figure", cutout && "is-cutout")}>
+        <CreatureMedia src={def.art} poster={def.poster} />
         <div className="enemy-impact" />
       </div>
       <div className="enemy-shadow" />
