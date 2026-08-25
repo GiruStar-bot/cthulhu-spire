@@ -128,6 +128,49 @@ function markDefeat(s: GameStore): PlayerProfile {
   return profile;
 }
 
+function presentCombat(
+  get: () => GameStore,
+  set: (p: Partial<GameStore>) => void,
+  combat: CombatState,
+  hook: PlayerHook,
+) {
+  set({
+    combat,
+    hp: hook.hp,
+    sanity: hook.sanity,
+    targeting: null,
+  });
+  if (combat.result === "win") {
+    sfx.win();
+    window.setTimeout(() => {
+      const cur = get();
+      if (cur.combat?.result !== "win") return;
+      playBgm("reward");
+      const heal = powerOf(cur.relics, "postHeal");
+      set({
+        scene: "reward",
+        reward: makeReward(cur),
+        hp: heal > 0 ? Math.min(cur.maxHp, cur.hp + heal) : cur.hp,
+      });
+    }, 920);
+  } else if (combat.result === "lose") {
+    sfx.lose();
+    window.setTimeout(() => {
+      const cur = get();
+      if (cur.combat?.result !== "lose") return;
+      stopBgm();
+      set({ scene: "defeat", profile: markDefeat(cur) });
+    }, 560);
+  }
+  window.setTimeout(() => {
+    const c = get().combat;
+    if (c) {
+      clearFloaters(c);
+      set({ combat: { ...c } });
+    }
+  }, 700);
+}
+
 export const useGame = create<GameStore>((set, get) => {
   function enterFloor(floor: number, carry?: Partial<GameStore>) {
     const s = { ...get(), ...carry };
@@ -349,33 +392,7 @@ export const useGame = create<GameStore>((set, get) => {
       applyHook(s, hook);
       playCues(played.sfx);
       const combat = { ...s.combat, floaters: s.combat.floaters.slice() };
-      const next: Partial<GameStore> = {
-        combat,
-        hp: hook.hp,
-        sanity: hook.sanity,
-        targeting: null,
-      };
-      if (combat.result === "win") {
-        sfx.win();
-        playBgm("reward");
-        next.scene = "reward";
-        next.reward = makeReward(s);
-        const heal = powerOf(s.relics, "postHeal");
-        if (heal > 0) next.hp = Math.min(s.maxHp, hook.hp + heal);
-      } else if (combat.result === "lose") {
-        sfx.lose();
-        stopBgm();
-        next.scene = "defeat";
-        next.profile = markDefeat(s);
-      }
-      set(next);
-      setTimeout(() => {
-        const c = get().combat;
-        if (c) {
-          clearFloaters(c);
-          set({ combat: { ...c } });
-        }
-      }, 700);
+      presentCombat(get, set, combat, hook);
     },
 
     endPlayerTurn: () => {
@@ -385,29 +402,7 @@ export const useGame = create<GameStore>((set, get) => {
       const cues = endTurn(s.combat, hook, s.rand);
       applyHook(s, hook);
       playCues(cues);
-      const combat = { ...s.combat };
-      const next: Partial<GameStore> = { combat, hp: hook.hp, sanity: hook.sanity, targeting: null };
-      if (combat.result === "win") {
-        sfx.win();
-        playBgm("reward");
-        next.scene = "reward";
-        next.reward = makeReward(s);
-        const heal = powerOf(s.relics, "postHeal");
-        if (heal > 0) next.hp = Math.min(s.maxHp, hook.hp + heal);
-      } else if (combat.result === "lose") {
-        sfx.lose();
-        stopBgm();
-        next.scene = "defeat";
-        next.profile = markDefeat(s);
-      }
-      set(next);
-      setTimeout(() => {
-        const c = get().combat;
-        if (c) {
-          clearFloaters(c);
-          set({ combat: { ...c } });
-        }
-      }, 700);
+      presentCombat(get, set, { ...s.combat }, hook);
     },
 
     pickReward: (card) => {

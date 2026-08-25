@@ -1,12 +1,13 @@
 import { CardView } from "@/components/game/CardView";
-import { asset } from "@/lib/asset";
 import { Vitals } from "@/components/game/Hud";
 import { POWER_TEXT, canPlay } from "@/game/combat";
 import { getEnemy } from "@/game/enemies";
 import { cardCost, getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
+import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
 import type { CombatEnemy, Floater } from "@/game/types";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 
 export function CombatView() {
   const combat = useGame((s) => s.combat);
@@ -16,125 +17,133 @@ export function CombatView() {
   const setTargeting = useGame((s) => s.setTargeting);
   const hp = useGame((s) => s.hp);
   const maxHp = useGame((s) => s.maxHp);
+  const sanity = useGame((s) => s.sanity);
+  const maxSanity = useGame((s) => s.maxSanity);
   const toast = useGame((s) => s.toast);
   const dismiss = useGame((s) => s.dismissToast);
+  const fx = useCombatFx(hp, maxHp, sanity, maxSanity);
 
   if (!combat) return null;
 
+  const ratio = hp / Math.max(1, maxHp);
+  const blood = ratio > 0.45 ? 0 : ratio > 0.22 ? 0.42 : 0.78;
+
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
-      <img
-        src={asset("art/corridor.jpg")}
-        alt=""
-        className="pointer-events-none absolute inset-0 size-full object-cover opacity-35"
-        crossOrigin="anonymous"
-      />
-      <div className="absolute inset-0 bg-linear-to-b from-ink/40 via-transparent to-ink" />
+      <ShakeRoot tick={fx.tick} traumaRef={fx.traumaRef} className="flex min-h-dvh flex-col">
+        <img
+          src={asset("art/corridor.jpg")}
+          alt=""
+          className="pointer-events-none absolute inset-0 size-full object-cover opacity-35"
+          crossOrigin="anonymous"
+        />
+        <div className="absolute inset-0 bg-linear-to-b from-ink/40 via-transparent to-ink" />
 
-      <div className="relative z-10 flex min-h-dvh flex-col gap-3 px-3 py-3 sm:px-6">
-        <div className="flex flex-col gap-2">
-          <Vitals />
-          {toast ? (
+        <div className="fx-blood" style={{ "--blood": blood } as CSSProperties} />
+        <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
+
+        <div className="relative z-10 flex min-h-dvh flex-col gap-3 px-3 py-3 sm:px-6">
+          <div className="flex flex-col gap-2">
+            <Vitals />
+            {toast ? (
+              <button
+                type="button"
+                onClick={dismiss}
+                className="rounded-[var(--radius-md)] bg-surface px-3 py-2 text-left text-sm text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-accent)_40%,transparent)]"
+              >
+                {toast}
+              </button>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-[var(--radius-sm)] bg-surface px-2 py-1 font-mono text-xs text-parchment tabular-nums shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]">
+                エネルギー {combat.energy}/{combat.maxEnergy}
+              </span>
+              <Energy n={combat.energy} max={combat.maxEnergy} />
+              <span className="rounded-[var(--radius-sm)] bg-surface px-2 py-1 font-mono text-xs text-parchment tabular-nums shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]">
+                ブロック {combat.block}
+              </span>
+              {combat.strength ? (
+                <span className="font-mono text-xs text-accent">筋力 {combat.strength}</span>
+              ) : null}
+              {combat.weak ? (
+                <span className="font-mono text-xs text-blood">弱体 {combat.weak}</span>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="flex min-h-40 flex-1 items-end justify-center gap-6 pt-2 sm:items-center">
+            {combat.enemies.map((e) => (
+              <EnemyStage
+                key={e.uid}
+                enemy={e}
+                floaters={combat.floaters.filter((f) => f.who === e.uid)}
+                targeting={!!targeting}
+                striking={fx.playerHit && e.hp > 0}
+                onTarget={() => {
+                  if (targeting) play(targeting, e.uid);
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {combat.powers.map((p) => (
+              <span
+                key={p}
+                className="rounded-full bg-surface px-2 py-1 font-mono text-xs text-muted shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]"
+              >
+                {POWER_TEXT[p]}
+              </span>
+            ))}
+            {combat.log.slice(-1).map((l) => (
+              <span key={l} className="text-xs text-muted italic">
+                {l}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex min-h-48 flex-1 gap-2 overflow-x-auto pb-2 pt-4">
+              {combat.hand.map((card) => {
+                const playable = canPlay(combat, card) && combat.phase === "player";
+                return (
+                  <CardView
+                    key={card.uid}
+                    card={card}
+                    playable={playable}
+                    selected={targeting === card.uid}
+                    compact
+                    onClick={() => {
+                      if (!playable) {
+                        const d = getCard(card.defId);
+                        if (d.unplayable) return;
+                        if (cardCost(card) > combat.energy) return;
+                      }
+                      if (targeting === card.uid) setTargeting(null);
+                      else play(card.uid);
+                    }}
+                  />
+                );
+              })}
+            </div>
             <button
               type="button"
-              onClick={dismiss}
-              className="rounded-[var(--radius-md)] border border-accent/40 bg-surface px-3 py-2 text-left text-sm text-parchment"
+              onClick={endTurn}
+              disabled={combat.phase !== "player"}
+              className="mb-4 min-h-14 shrink-0 rounded-[var(--radius-md)] bg-parchment px-4 py-3 font-display text-ink transition-transform duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40"
             >
-              {toast}
+              終了
+              <span className="block font-mono text-xs tracking-wider opacity-70">ターン</span>
             </button>
+          </div>
+
+          {targeting ? (
+            <p className="text-center font-mono text-xs tracking-wider text-accent">敵を選択</p>
           ) : null}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1 font-mono text-[11px] text-parchment tabular-nums">
-              エネルギー {combat.energy}/{combat.maxEnergy}
-            </span>
-            <Energy n={combat.energy} max={combat.maxEnergy} />
-            <span className="rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1 font-mono text-[11px] text-parchment tabular-nums">
-              ブロック {combat.block}
-            </span>
-            {combat.strength ? (
-              <span className="font-mono text-[11px] text-accent">筋力 {combat.strength}</span>
-            ) : null}
-            {combat.weak ? (
-              <span className="font-mono text-[11px] text-blood">弱体 {combat.weak}</span>
-            ) : null}
-          </div>
+
+          <PlayerFloaters floaters={combat.floaters.filter((f) => f.who === "player")} />
         </div>
-
-        <div className="flex min-h-40 flex-1 items-end justify-center gap-4 pt-2 sm:items-center">
-          {combat.enemies.map((e) => (
-            <EnemyCard
-              key={e.uid}
-              enemy={e}
-              floaters={combat.floaters.filter((f) => f.who === e.uid)}
-              targeting={!!targeting}
-              onTarget={() => {
-                if (targeting) play(targeting, e.uid);
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {combat.powers.map((p) => (
-            <span
-              key={p}
-              className="rounded-full border border-border bg-surface px-2 py-1 font-mono text-[10px] text-muted"
-            >
-              {POWER_TEXT[p]}
-            </span>
-          ))}
-          {combat.log.slice(-1).map((l) => (
-            <span key={l} className="text-xs text-muted italic">
-              {l}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex items-end gap-2">
-          <div className="flex min-h-48 flex-1 gap-2 overflow-x-auto pb-2 pt-4">
-            {combat.hand.map((card) => {
-              const playable = canPlay(combat, card) && combat.phase === "player";
-              return (
-                <CardView
-                  key={card.uid}
-                  card={card}
-                  playable={playable}
-                  selected={targeting === card.uid}
-                  compact
-                  onClick={() => {
-                    if (!playable) {
-                      const d = getCard(card.defId);
-                      if (d.unplayable) return;
-                      if (cardCost(card) > combat.energy) return;
-                    }
-                    if (targeting === card.uid) setTargeting(null);
-                    else play(card.uid);
-                  }}
-                />
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            onClick={endTurn}
-            disabled={combat.phase !== "player"}
-            className="mb-4 min-h-14 shrink-0 rounded-[var(--radius-md)] bg-parchment px-4 py-3 font-display text-ink disabled:opacity-40"
-          >
-            終了
-            <span className="block font-mono text-[10px] tracking-wider opacity-70">
-              ターン
-            </span>
-          </button>
-        </div>
-
-        {targeting ? (
-          <p className="text-center font-mono text-[11px] tracking-wider text-accent">
-            敵を選択
-          </p>
-        ) : null}
-
-        <PlayerFloaters floaters={combat.floaters.filter((f) => f.who === "player")} hp={hp} max={maxHp} />
-      </div>
+      </ShakeRoot>
     </section>
   );
 }
@@ -146,8 +155,10 @@ function Energy({ n, max }: { n: number; max: number }) {
         <span
           key={i}
           className={cn(
-            "size-3 rounded-full border",
-            i < n ? "border-accent bg-accent" : "border-border bg-transparent",
+            "size-3 rounded-full",
+            i < n
+              ? "bg-accent"
+              : "shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]",
           )}
         />
       ))}
@@ -155,55 +166,64 @@ function Energy({ n, max }: { n: number; max: number }) {
   );
 }
 
-function EnemyCard({
+function EnemyStage({
   enemy,
   floaters,
   targeting,
+  striking,
   onTarget,
 }: {
   enemy: CombatEnemy;
   floaters: Floater[];
   targeting: boolean;
+  striking: boolean;
   onTarget: () => void;
 }) {
   const dead = enemy.hp <= 0;
   const def = getEnemy(enemy.defId);
   const intent = intentLabel(enemy);
+  const pose = useEnemyPose(enemy.hp, striking);
+  const boss = enemy.maxHp >= 150;
+
   return (
     <button
       type="button"
       disabled={dead}
       onClick={onTarget}
       className={cn(
-        "relative w-32 sm:w-40 text-left",
+        "enemy-stage relative text-left outline-none",
+        boss ? "is-boss" : "",
+        pose === "enter" && "enemy-enter",
+        pose === "idle" && "enemy-idle",
+        pose === "hit" && "enemy-hit",
+        pose === "strike" && "enemy-strike",
+        pose === "die" && "enemy-die",
         targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-lg)]" : "",
-        dead ? "opacity-30" : "",
       )}
     >
-      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface">
-        <img src={def.art} alt="" className="h-36 w-full object-cover sm:h-44" crossOrigin="anonymous" />
-        <div className="space-y-1 p-2">
-          <p className="font-display text-sm text-parchment">{def.name}</p>
-          <p className="font-mono text-[10px] text-accent">{intent}</p>
-          <div className="h-1.5 overflow-hidden rounded-full bg-ink-2">
-            <div
-              className="h-full bg-blood"
-              style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }}
-            />
-          </div>
-          <p className="font-mono text-[10px] text-muted tabular-nums">
-            {enemy.hp}/{enemy.maxHp}
-            {enemy.block ? ` · 防 ${enemy.block}` : ""}
-            {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
-          </p>
-        </div>
+      <div className="enemy-figure">
+        <img src={def.art} alt="" crossOrigin="anonymous" />
+        <div className="enemy-impact" />
       </div>
-      <div className="pointer-events-none absolute top-6 left-1/2 -translate-x-1/2">
+      <div className="enemy-shadow" />
+      <div className="relative z-10 mt-2 space-y-1 px-1">
+        <p className="font-display text-sm text-parchment">{def.name}</p>
+        <p className="font-mono text-xs text-accent">{intent}</p>
+        <div className="h-1.5 overflow-hidden rounded-full bg-ink-2">
+          <div className="h-full bg-blood" style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} />
+        </div>
+        <p className="font-mono text-xs text-muted tabular-nums">
+          {enemy.hp}/{enemy.maxHp}
+          {enemy.block ? ` · 防 ${enemy.block}` : ""}
+          {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
+        </p>
+      </div>
+      <div className="pointer-events-none absolute top-8 left-1/2 -translate-x-1/2">
         {floaters.map((f) => (
           <span
             key={f.id}
             className={cn(
-              "block animate-floater font-display text-xl",
+              "block animate-floater font-display text-2xl",
               f.kind === "dmg" ? "text-blood" : "text-accent",
             )}
           >
@@ -215,13 +235,42 @@ function EnemyCard({
   );
 }
 
-function PlayerFloaters({
-  floaters,
-}: {
-  floaters: Floater[];
-  hp: number;
-  max: number;
-}) {
+function useEnemyPose(hp: number, striking: boolean) {
+  const [pose, setPose] = useState<"enter" | "idle" | "hit" | "strike" | "die">(hp <= 0 ? "die" : "enter");
+  const hpRef = useRef(hp);
+
+  useEffect(() => {
+    if (pose !== "enter") return;
+    const t = window.setTimeout(() => setPose("idle"), 720);
+    return () => window.clearTimeout(t);
+  }, [pose]);
+
+  useEffect(() => {
+    if (hp <= 0) {
+      setPose("die");
+      hpRef.current = hp;
+      return;
+    }
+    if (hp < hpRef.current) {
+      setPose("hit");
+      hpRef.current = hp;
+      const t = window.setTimeout(() => setPose("idle"), 300);
+      return () => window.clearTimeout(t);
+    }
+    hpRef.current = hp;
+  }, [hp]);
+
+  useEffect(() => {
+    if (!striking || hp <= 0) return;
+    setPose("strike");
+    const t = window.setTimeout(() => setPose("idle"), 430);
+    return () => window.clearTimeout(t);
+  }, [striking, hp]);
+
+  return pose;
+}
+
+function PlayerFloaters({ floaters }: { floaters: Floater[] }) {
   if (!floaters.length) return null;
   return (
     <div className="pointer-events-none absolute bottom-56 left-1/2 -translate-x-1/2">
@@ -251,4 +300,96 @@ function intentLabel(e: CombatEnemy) {
   if (i.kind === "buff") return `強化 筋+${i.strength ?? 0}`;
   if (i.kind === "debuff") return i.dread ? "侵食" : "弱体化";
   return "不明";
+}
+
+function reducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function useCombatFx(hp: number, maxHp: number, sanity: number, maxSanity: number) {
+  const traumaRef = useRef(0);
+  const hpRef = useRef(hp);
+  const sanRef = useRef(sanity);
+  const [tick, setTick] = useState(0);
+  const [vertigo, setVertigo] = useState(false);
+  const [playerHit, setPlayerHit] = useState(false);
+
+  const pulseVertigo = () => {
+    if (reducedMotion()) return;
+    setVertigo(true);
+    window.setTimeout(() => setVertigo(false), 500);
+  };
+
+  const addTrauma = (n: number) => {
+    if (reducedMotion()) return;
+    traumaRef.current = Math.min(1, traumaRef.current + n);
+    setTick((x) => x + 1);
+  };
+
+  useEffect(() => {
+    if (hp < hpRef.current) {
+      addTrauma(0.55 + Math.min(0.35, (hpRef.current - hp) / Math.max(1, maxHp)));
+      setPlayerHit(true);
+      window.setTimeout(() => setPlayerHit(false), 450);
+    }
+    hpRef.current = hp;
+  }, [hp, maxHp]);
+
+  useEffect(() => {
+    if (sanity < sanRef.current) pulseVertigo();
+    sanRef.current = sanity;
+  }, [sanity]);
+
+  useEffect(() => {
+    if (sanity / Math.max(1, maxSanity) >= 0.45) return;
+    const id = window.setInterval(pulseVertigo, 9000);
+    return () => window.clearInterval(id);
+  }, [sanity, maxSanity]);
+
+  return { traumaRef, tick, vertigo, playerHit };
+}
+
+function ShakeRoot({
+  tick,
+  traumaRef,
+  className,
+  children,
+}: {
+  tick: number;
+  traumaRef: RefObject<number>;
+  className?: string;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (reducedMotion()) return;
+    let last = performance.now();
+    let raf = 0;
+    const loop = (now: number) => {
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      traumaRef.current = Math.max(0, traumaRef.current - 3.2 * dt);
+      const mag = traumaRef.current * traumaRef.current;
+      const el = ref.current;
+      if (el) {
+        if (mag < 0.002) el.style.transform = "";
+        else {
+          const x = mag * 8 * Math.sin(now * 0.061);
+          const y = mag * 6 * Math.sin(now * 0.083);
+          const r = mag * 0.9 * Math.sin(now * 0.047);
+          el.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${r.toFixed(3)}deg)`;
+        }
+      }
+      if (traumaRef.current > 0.01) raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [tick, traumaRef]);
+
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
 }

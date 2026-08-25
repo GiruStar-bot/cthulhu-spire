@@ -48,27 +48,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-floater {
-    animation: none;
-  }
-}
-
-@keyframes floater {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-28px);
-  }
-}
-
-.animate-floater {
-  animation: floater 0.7s var(--ease-smooth-out) forwards;
-}
-
 .rot-paper::before,
 .rot-paper::after,
 .card-rot::after {
@@ -214,4 +193,246 @@
   isolation: isolate;
   mix-blend-mode: normal;
   font-variant-numeric: tabular-nums;
+}
+
+.card-rot.is-playable:active {
+  transform: rotate(var(--tilt, 0deg)) scale(0.96);
+}
+
+@keyframes floater {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.72);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.18);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-36px) scale(1);
+  }
+}
+
+.animate-floater {
+  animation: floater 0.7s var(--ease-smooth-out) forwards;
+}
+
+.enemy-stage {
+  transform-origin: 50% 100%;
+}
+
+.enemy-figure {
+  position: relative;
+  width: min(42vw, 17.5rem);
+  height: min(38dvh, 20rem);
+}
+
+.enemy-stage.is-boss .enemy-figure {
+  width: min(52vw, 22rem);
+  height: min(44dvh, 24rem);
+}
+
+.enemy-figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: contrast(1.12) saturate(0.62) brightness(0.82);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 78%, transparent 100%);
+}
+
+.enemy-shadow {
+  height: 0.7rem;
+  margin: -0.35rem auto 0;
+  width: 58%;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-ink) 82%, transparent);
+  filter: blur(6px);
+}
+
+.enemy-impact {
+  pointer-events: none;
+  position: absolute;
+  inset: 18% 8% 22%;
+  opacity: 0;
+  background: linear-gradient(
+    108deg,
+    transparent 42%,
+    color-mix(in oklab, var(--color-parchment) 88%, transparent) 49%,
+    color-mix(in oklab, var(--color-blood) 70%, transparent) 51%,
+    transparent 58%
+  );
+}
+
+.enemy-enter {
+  animation: enemy-enter 700ms var(--ease-smooth-out) both;
+}
+
+.enemy-idle {
+  animation: enemy-breathe 3.8s ease-in-out infinite;
+}
+
+.enemy-hit {
+  animation: enemy-hit 280ms var(--ease-smooth-out);
+}
+
+.enemy-hit .enemy-impact {
+  animation: enemy-slash 220ms var(--ease-smooth-out);
+}
+
+.enemy-strike {
+  animation: enemy-strike 420ms var(--ease-smooth-out);
+}
+
+.enemy-die {
+  animation: enemy-die 880ms ease-in forwards;
+}
+
+@keyframes enemy-enter {
+  from {
+    opacity: 0;
+    transform: translateY(36px) scale(0.92);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes enemy-breathe {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.03) translateY(-6px);
+  }
+}
+
+@keyframes enemy-hit {
+  0% {
+    transform: translateX(0) scale(1);
+    filter: brightness(2.4);
+  }
+  32% {
+    transform: translateX(10px) scale(0.96, 1.06);
+    filter: brightness(1.4);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes enemy-slash {
+  0% {
+    opacity: 0.95;
+    transform: scaleX(0.15);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1.25);
+  }
+}
+
+@keyframes enemy-strike {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  38% {
+    transform: translateY(22px) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes enemy-die {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: grayscale(0) brightness(1);
+  }
+  28% {
+    transform: scale(1.08, 0.92) translateY(4px);
+    filter: brightness(1.6);
+  }
+  100% {
+    opacity: 0.18;
+    transform: scale(1.04, 0.42) translateY(28px);
+    filter: grayscale(1) brightness(0.55);
+  }
+}
+
+.fx-blood {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  opacity: var(--blood, 0);
+  background:
+    radial-gradient(120% 70% at 50% 118%, color-mix(in oklab, var(--color-blood) 70%, transparent), transparent 46%),
+    radial-gradient(70% 46% at 0% -4%, color-mix(in oklab, var(--color-blood) 48%, transparent), transparent 58%),
+    radial-gradient(70% 46% at 100% -4%, color-mix(in oklab, var(--color-blood) 48%, transparent), transparent 58%);
+  transition: opacity 420ms var(--ease-smooth-out);
+}
+
+.fx-vertigo {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 29;
+  opacity: 0;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-accent) 16%, transparent),
+      transparent 38%,
+      color-mix(in oklab, var(--color-blood) 18%, transparent)
+    );
+  mix-blend-mode: screen;
+}
+
+.fx-vertigo.is-on {
+  animation: vertigo 480ms var(--ease-smooth-out);
+}
+
+@keyframes vertigo {
+  0% {
+    opacity: 0.55;
+    transform: skewX(1.1deg) translateX(5px) scale(1.02);
+  }
+  45% {
+    opacity: 0.22;
+    transform: skewX(-0.7deg) translateX(-3px);
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-floater,
+  .enemy-enter,
+  .enemy-idle,
+  .enemy-hit,
+  .enemy-strike,
+  .enemy-die,
+  .fx-vertigo.is-on {
+    animation: none;
+  }
+
+  .enemy-die {
+    opacity: 0.3;
+    filter: grayscale(1);
+  }
+
+  .fx-blood {
+    transition: none;
+  }
 }
