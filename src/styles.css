@@ -75,6 +75,15 @@
     );
 }
 
+.title-bg-video {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.title-bg-video.is-on {
+  opacity: 1;
+}
+
 .title-mark {
   font-family: var(--font-title);
   color: var(--color-parchment);

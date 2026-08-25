@@ -1,42 +1,19 @@
 import { getSfxVolume, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
+import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
+
+const TITLE_CLIPS = ["art/title.mp4", "art/title-city.mp4", "art/title-hall.mp4"] as const;
 
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
   const profile = useGame((s) => s.profile);
   const [settings, setSettings] = useState(false);
-  const bgRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const v = bgRef.current;
-    if (!v) return;
-    const play = v.play();
-    if (play) void play.catch(() => {});
-  }, []);
 
   return (
     <section className="relative flex min-h-dvh items-center justify-center overflow-hidden">
-      <img
-        src={asset("art/title.jpg")}
-        alt=""
-        className="absolute inset-0 size-full object-cover"
-        crossOrigin="anonymous"
-      />
-      <video
-        ref={bgRef}
-        className="title-bg-video absolute inset-0 size-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        poster={asset("art/title.jpg")}
-        aria-hidden
-      >
-        <source src={asset("art/title.mp4")} type="video/mp4" />
-      </video>
+      <TitleReel />
       <div className="title-veil absolute inset-0" />
       <div className="relative z-10 flex max-w-xl flex-col items-center gap-8 px-6 text-center sm:px-12">
         <h1 className="title-mark title-float">
@@ -73,6 +50,78 @@ export function TitleScreen() {
       </div>
       {settings ? <SettingsPanel onClose={() => setSettings(false)} /> : null}
     </section>
+  );
+}
+
+function TitleReel() {
+  const clipsRef = useRef(TITLE_CLIPS.map((p) => asset(p)));
+  const aRef = useRef<HTMLVideoElement>(null);
+  const bRef = useRef<HTMLVideoElement>(null);
+  const idxRef = useRef(0);
+  const frontRef = useRef(0);
+  const [front, setFront] = useState(0);
+
+  useEffect(() => {
+    const clips = clipsRef.current;
+    clips.forEach((src) => {
+      const el = document.createElement("video");
+      el.muted = true;
+      el.preload = "auto";
+      el.src = src;
+    });
+    const first = aRef.current;
+    if (!first) return;
+    first.src = clips[0];
+    void first.play().catch(() => {});
+  }, []);
+
+  const advance = () => {
+    const clips = clipsRef.current;
+    const next = (idxRef.current + 1) % clips.length;
+    const nextFront = 1 - frontRef.current;
+    const idle = nextFront === 0 ? aRef.current : bRef.current;
+    if (idle) {
+      idle.src = clips[next];
+      idle.currentTime = 0;
+      void idle.play().catch(() => {});
+    }
+    idxRef.current = next;
+    frontRef.current = nextFront;
+    setFront(nextFront);
+  };
+
+  return (
+    <>
+      <img
+        src={asset("art/title.jpg")}
+        alt=""
+        className="absolute inset-0 size-full object-cover"
+        crossOrigin="anonymous"
+      />
+      <video
+        ref={aRef}
+        className={cn("title-bg-video absolute inset-0 size-full object-cover", front === 0 && "is-on")}
+        muted
+        playsInline
+        preload="auto"
+        poster={asset("art/title.jpg")}
+        aria-hidden
+        onEnded={() => {
+          if (frontRef.current === 0) advance();
+        }}
+      />
+      <video
+        ref={bRef}
+        className={cn("title-bg-video absolute inset-0 size-full object-cover", front === 1 && "is-on")}
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden
+        onEnded={() => {
+          if (frontRef.current === 1) advance();
+        }}
+      />
+    </>
   );
 }
 
