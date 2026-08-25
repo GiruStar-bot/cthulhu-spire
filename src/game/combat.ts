@@ -6,9 +6,11 @@ import type {
   Floater,
   Intent,
   PowerId,
+  RelicInstance,
 } from "./types";
 import { cardCost, cardEffects, getCard, makeCard } from "./cards";
 import { getEnemy } from "./enemies";
+import { powerOf } from "./relics";
 import { pick, shuffle, uid } from "./rng";
 
 export interface PlayerHook {
@@ -16,7 +18,7 @@ export interface PlayerHook {
   maxHp: number;
   sanity: number;
   maxSanity: number;
-  relics: string[];
+  relics: RelicInstance[];
   extraStrength: number;
   extraEnergyNext: number;
 }
@@ -96,17 +98,19 @@ export function startCombat(
 ): CombatState {
   const draw = shuffle(deck.map((c) => ({ ...c, uid: uid("c") })), rand);
   const enemies = enemyIds.map((id) => makeEnemy(id, floor, rand));
-  const extraEnergy = player.relics.includes("candle") ? 1 : 0;
+  const energyBonus = powerOf(player.relics, "energy") > 0 ? 1 : 0;
+  const strBonus = powerOf(player.relics, "strength");
+  const drawBonus = powerOf(player.relics, "draw");
   const c: CombatState = {
     enemies,
     draw,
     discard: [],
     exhaust: [],
     hand: [],
-    energy: 3 + extraEnergy + (player.extraEnergyNext || 0),
-    maxEnergy: 3 + extraEnergy,
+    energy: 3 + energyBonus + (player.extraEnergyNext || 0),
+    maxEnergy: 3 + energyBonus,
     block: 0,
-    strength: player.relics.includes("notebook") ? 1 : 0,
+    strength: strBonus,
     dexterity: 0,
     weak: 0,
     vulnerable: 0,
@@ -118,7 +122,7 @@ export function startCombat(
     floaters: [],
   };
   c.strength += player.extraStrength;
-  const firstDraw = 5 + (player.relics.includes("lens") ? 2 : 0);
+  const firstDraw = 5 + drawBonus;
   drawCards(c, firstDraw, rand);
   if (player.sanity <= 0) {
     addToDiscard(c, makeCard("dread"));
@@ -219,9 +223,10 @@ export function changeSanity(player: PlayerHook, c: CombatState, delta: number) 
     c.floaters.push(floater(`${delta > 0 ? "+" : ""}${delta}`, "sanity", "player"));
   }
   if (delta < 0) {
-    if (player.relics.includes("idol")) {
-      c.block += 3;
-      c.floaters.push(floater("+3", "block", "player"));
+    const idolBlock = powerOf(player.relics, "sanityBlock");
+    if (idolBlock > 0) {
+      c.block += idolBlock;
+      c.floaters.push(floater(`+${idolBlock}`, "block", "player"));
     }
     if (c.powers.includes("bloodOath")) {
       const amt = 2;
@@ -272,8 +277,6 @@ export function playCard(
   c.cardsPlayed += 1;
   runEffects(cardEffects(card), c, player, targetId, rand, card);
   if (d.type === "attack" && c.powers.includes("resolve")) {
-    const n = card.upgraded && d.id === "resolve" ? 4 : 3;
-    // Resolve power uses 3, upgraded resolve card is the power itself. Keep 3/4 based on whether upgraded resolve is in powers - we don't store upgraded powers. Use 3 always, 4 if echo... Keep 3.
     c.block += 3;
   }
   finishPlay(c, card, !!d.exhaust);
@@ -355,7 +358,6 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number) 
   checkOver(c, player);
   if (c.result !== "ongoing") return;
 
-  // player turn start
   c.phase = "player";
   c.block = 0;
   c.energy = c.maxEnergy;
