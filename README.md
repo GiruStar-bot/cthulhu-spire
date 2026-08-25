@@ -1,4 +1,4 @@
-# Abyss of Cthulhu
+# Abyss of R'lyeh
 
 Slay the Spire × クトゥルフ神話のデッキビルディング・ローグライク。
 

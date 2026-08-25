@@ -20,11 +20,8 @@ export function TitleScreen() {
       <div className="relative z-10 flex max-w-xl flex-col items-center gap-8 px-6 text-center sm:px-12">
         <h1 className="title-mark title-float">
           <span className="title-mark-of">Abyss of</span>
-          <span className="title-mark-name">Cthulhu</span>
+          <span className="title-mark-name">R'lyeh</span>
         </h1>
-        <p className="max-w-md text-sm leading-relaxed text-pretty text-muted sm:text-base">
-          ルルイエへ、単独で沈む。死ねばその人生は終わる。遺物と記録だけが、次の器に残る。
-        </p>
         <div className="flex flex-wrap items-center justify-center gap-4">
           <span className="title-float-a">
             <button

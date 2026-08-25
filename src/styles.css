@@ -96,11 +96,12 @@
 
 .title-mark-name {
   display: block;
-  font-size: clamp(3rem, 9vw, 5.75rem);
+  font-size: clamp(2.5rem, 12vw, 5.75rem);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   line-height: 1.02;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 @keyframes drift {
