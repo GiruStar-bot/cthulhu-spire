@@ -1,31 +1,23 @@
-# Project Structure (Planned)
+# Project Structure
 
 ```
 cthulhu-spire/
 ├── README.md
 ├── docs/
+│   ├── GAME_VISION.md      # 本線のゲーム像・システム（正）
 │   ├── DESIGN_PILLARS.md
 │   ├── VISION.md
 │   ├── TECHNICAL_NOTES.md
 │   └── PROJECT_STRUCTURE.md
-├── design/
-│   ├── cards/
-│   ├── relics/
-│   ├── enemies/
-│   └── events/
-├── art/
-│   ├── style-guide.md
-│   ├── cards/
-│   ├── characters/
-│   └── environments/
-├── src/                  # Godot project root (to be created)
-│   ├── project.godot
-│   ├── data/
-│   ├── systems/
-│   ├── ui/
-│   └── scenes/
-└── tools/
+├── src/                    # 現行 Web デモ（React + Vite）
+├── public/art/
+└── .github/workflows/pages.yml
 ```
 
-現在はデザイン・ドキュメントフェーズ。
-`src/` はエンジン選定とアーキテクチャ決定後に本格的に作成する。
+## 現状
+
+- **公開デモ:** GitHub Pages の Web 版。旧骨格（三面・マップ分岐）
+- **本線方針:** `docs/GAME_VISION.md`（無限登攀・死亡リセット）
+- 本実装エンジン（Godot 等）は未着手
+
+デモを本線仕様へ作り替えるのが次の実装課題。
