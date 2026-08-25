@@ -8,16 +8,41 @@ export function TitleScreen() {
   const profile = useGame((s) => s.profile);
   const [settings, setSettings] = useState(false);
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, []);
+
   return (
-    <section className="relative flex min-h-dvh items-center justify-center overflow-hidden">
+    <section
+      className="title-stage"
+      style={{
+        position: "relative",
+        display: "flex",
+        height: "100dvh",
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+      }}
+    >
       <img
         src={asset("art/title.jpg")}
         alt=""
-        className="absolute inset-0 size-full object-cover"
+        className="title-stage-art"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
         crossOrigin="anonymous"
       />
-      <div className="title-veil absolute inset-0" />
-      <div className="relative z-10 flex max-w-xl flex-col items-center gap-8 px-6 text-center sm:px-12">
+      <div className="title-veil" />
+      <div className="title-stage-ui">
         <h1 className="title-mark title-float">
           <span className="title-mark-of">Abyss of</span>
           <span className="title-mark-name">R'lyeh</span>
