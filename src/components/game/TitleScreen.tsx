@@ -1,16 +1,9 @@
-import { playBgm, unlockAudio } from "@/game/audio";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
-import { useEffect } from "react";
 
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
   const profile = useGame((s) => s.profile);
-
-  useEffect(() => {
-    unlockAudio();
-    playBgm("title");
-  }, []);
 
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden">

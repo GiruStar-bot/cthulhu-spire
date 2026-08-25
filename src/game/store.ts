@@ -26,7 +26,7 @@ import {
   type PlayerHook,
 } from "./combat";
 import { mulberry32, pick, uid } from "./rng";
-import { playBgm, sfx, unlockAudio } from "./audio";
+import { playBgm, sfx, stopBgm, unlockAudio } from "./audio";
 import {
   clampStats,
   derivedVitals,
@@ -134,7 +134,7 @@ export const useGame = create<GameStore>((set, get) => {
     if (floor > (s.runFloors.length || DEMO_MAX_FLOOR)) {
       const profile = { ...s.profile, bestFloor: Math.max(s.profile.bestFloor, s.floor), wins: s.profile.wins + 1 };
       persist(profile);
-      playBgm("title");
+      stopBgm();
       set({
         ...carry,
         scene: "victory",
@@ -160,7 +160,7 @@ export const useGame = create<GameStore>((set, get) => {
     };
 
     if (spec.type === "combat" || spec.type === "elite" || spec.type === "boss") {
-      playBgm(spec.type === "boss" ? "boss" : "combat", floor);
+      playBgm(spec.type === "boss" ? "boss" : "combat");
       const ids = spec.enemyIds?.length ? spec.enemyIds : encounterIds(spec.type, floor, s.rand);
       const hook = hookFrom(s as GameStore);
       const combat = startCombat(s.deck, ids, hook, floor, s.rand);
@@ -176,11 +176,11 @@ export const useGame = create<GameStore>((set, get) => {
       return;
     }
     if (spec.type === "rest") {
-      playBgm("descent", floor);
+      playBgm("rest");
       set({ ...base, scene: "rest", restMode: "choose" });
       return;
     }
-    playBgm("descent", floor);
+    playBgm("event");
     const ev = EVENTS.find((e) => e.id === spec.eventId) ?? pick(EVENTS, s.rand);
     set({ ...base, scene: "event", event: ev });
   }
@@ -212,7 +212,7 @@ export const useGame = create<GameStore>((set, get) => {
 
     begin: () => {
       unlockAudio();
-      playBgm("prepare");
+      stopBgm();
       const profile = loadProfile();
       const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
       const rand = mulberry32(seed);
@@ -358,14 +358,14 @@ export const useGame = create<GameStore>((set, get) => {
       };
       if (combat.result === "win") {
         sfx.win();
-        playBgm("descent", s.floor);
+        playBgm("reward");
         next.scene = "reward";
         next.reward = makeReward(s);
         const heal = powerOf(s.relics, "postHeal");
         if (heal > 0) next.hp = Math.min(s.maxHp, hook.hp + heal);
       } else if (combat.result === "lose") {
         sfx.lose();
-        playBgm("title");
+        stopBgm();
         next.scene = "defeat";
         next.profile = markDefeat(s);
       }
@@ -390,14 +390,14 @@ export const useGame = create<GameStore>((set, get) => {
       const next: Partial<GameStore> = { combat, hp: hook.hp, sanity: hook.sanity, targeting: null };
       if (combat.result === "win") {
         sfx.win();
-        playBgm("descent", s.floor);
+        playBgm("reward");
         next.scene = "reward";
         next.reward = makeReward(s);
         const heal = powerOf(s.relics, "postHeal");
         if (heal > 0) next.hp = Math.min(s.maxHp, hook.hp + heal);
       } else if (combat.result === "lose") {
         sfx.lose();
-        playBgm("title");
+        stopBgm();
         next.scene = "defeat";
         next.profile = markDefeat(s);
       }
@@ -452,7 +452,7 @@ export const useGame = create<GameStore>((set, get) => {
       if (spec?.type === "boss" && s.floor === 50) {
         profile = { ...profile, bestFloor: Math.max(profile.bestFloor, s.floor) };
         persist(profile);
-        playBgm("descent", s.floor);
+        playBgm("rest");
         set({
           scene: "between",
           deck,
@@ -476,7 +476,7 @@ export const useGame = create<GameStore>((set, get) => {
           wins: profile.wins + 1,
         };
         persist(profile);
-        playBgm("title");
+        stopBgm();
         set({
           scene: "victory",
           deck,
@@ -613,7 +613,7 @@ export const useGame = create<GameStore>((set, get) => {
     dismissToast: () => set({ toast: null }),
     continueClimb: () => enterFloor(get().floor + 1),
     giveUp: () => {
-      playBgm("title");
+      stopBgm();
       set({ scene: "title", combat: null, runFloors: [], profile: loadProfile() });
     },
   };

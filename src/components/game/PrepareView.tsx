@@ -1,6 +1,5 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { DEMO_MAX_FLOOR, layerLabel, tallyFloors } from "@/game/floors";
-import { playBgm, unlockAudio } from "@/game/audio";
 import { MAX_LOADOUT, STAT_BUDGET, STAT_MIN, unlockedFeatures } from "@/game/profile";
 import { RELICS, relicDesc, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
@@ -23,11 +22,6 @@ export function PrepareView() {
   const features = useMemo(() => unlockedFeatures(profile.stats), [profile.stats]);
   const tally = useMemo(() => tallyFloors(runFloors), [runFloors]);
   const canStart = playerName.trim().length > 0 && sum === STAT_BUDGET;
-
-  useEffect(() => {
-    unlockAudio();
-    playBgm("prepare");
-  }, []);
 
   return (
     <section className="relative min-h-dvh overflow-hidden bg-ink px-4 py-8 sm:px-10">

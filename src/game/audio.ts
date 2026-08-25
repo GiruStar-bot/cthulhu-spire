@@ -2,13 +2,11 @@ let ctx: AudioContext | null = null;
 let bgmHandle: BgmHandle | null = null;
 let currentBgm: BgmId | null = null;
 let visHooked = false;
-let noiseBuf: AudioBuffer | null = null;
 
-export type BgmId = "title" | "prepare" | "descent" | "combat" | "boss" | "none";
+export type BgmId = "combat" | "rest" | "event" | "boss" | "reward" | "none";
 
 type BgmHandle = {
   id: BgmId;
-  setFloor: (floor: number) => void;
   stop: () => void;
 };
 
@@ -121,192 +119,118 @@ export const sfx = {
   ui: () => blip(420, 0.05, "sine", 0.02),
 };
 
-function pressure(floor: number) {
-  const t = Math.max(0, Math.min(1, (floor - 1) / 99));
-  return t * t;
-}
-
-function brownLoop(c: AudioContext) {
-  if (noiseBuf && noiseBuf.sampleRate === c.sampleRate) return noiseBuf;
-  const n = Math.floor(c.sampleRate * 2.8);
-  const buf = c.createBuffer(1, n, c.sampleRate);
-  const data = buf.getChannelData(0);
-  let last = 0;
-  let peak = 0.0001;
-  for (let i = 0; i < n; i++) {
-    last = (last + (Math.random() * 2 - 1) * 0.02) / 1.02;
-    data[i] = last;
-    peak = Math.max(peak, Math.abs(last));
-  }
-  const inv = 1 / peak;
-  for (let i = 0; i < n; i++) data[i] *= inv;
-  noiseBuf = buf;
-  return buf;
-}
-
-function fireCreak(c: AudioContext, dest: AudioNode, quiet: boolean, floor: number) {
-  const dur = 0.7 + Math.random() * 0.45;
-  const n = Math.floor(c.sampleRate * dur);
-  const buf = c.createBuffer(1, n, c.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < n; i++) data[i] = Math.random() * 2 - 1;
-  const src = c.createBufferSource();
-  src.buffer = buf;
-  const bp = c.createBiquadFilter();
-  bp.type = "bandpass";
-  bp.frequency.value = 140 + Math.random() * 120;
-  bp.Q.value = 7.5;
-  const g = c.createGain();
-  const t = c.currentTime;
-  const peak = (quiet ? 0.01 : 0.018) + pressure(floor) * 0.008;
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(peak, t + 0.05);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  src.connect(bp);
-  bp.connect(g);
-  g.connect(dest);
-  src.start();
-  src.stop(t + dur + 0.05);
-}
-
-function fireWhale(c: AudioContext, dest: AudioNode, floor: number) {
+function tone(
+  c: AudioContext,
+  dest: AudioNode,
+  live: OscillatorNode[],
+  freq: number,
+  when: number,
+  dur: number,
+  peak: number,
+  type: OscillatorType,
+) {
   const o = c.createOscillator();
-  o.type = "sine";
   const g = c.createGain();
-  const t = c.currentTime;
-  const startF = 86 - pressure(floor) * 20;
-  o.frequency.setValueAtTime(startF, t);
-  o.frequency.exponentialRampToValueAtTime(Math.max(32, startF * 0.58), t + 2.5);
-  const peak = 0.009 + pressure(floor) * 0.004;
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(peak, t + 0.4);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 2.9);
+  o.type = type;
+  o.frequency.setValueAtTime(freq, when);
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.exponentialRampToValueAtTime(peak, when + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
   o.connect(g);
   g.connect(dest);
-  o.start();
-  o.stop(t + 3.2);
+  o.start(when);
+  o.stop(when + dur + 0.03);
+  live.push(o);
+  o.onended = () => {
+    try {
+      o.disconnect();
+      g.disconnect();
+    } catch {
+      /* ignore */
+    }
+  };
 }
 
-function startHydrophone(id: Exclude<BgmId, "none">, floor: number): BgmHandle {
+function phrase(c: AudioContext, dest: AudioNode, live: OscillatorNode[], id: Exclude<BgmId, "none">, step: number, t: number) {
+  if (id === "combat" || id === "boss") {
+    const i = step % 8;
+    const k = id === "boss" ? 1.12 : 1;
+    if (i === 0) {
+      tone(c, dest, live, 36.71, t, 0.7, 0.02 * k, "triangle");
+      if (id === "boss") tone(c, dest, live, 55, t, 0.45, 0.01, "sine");
+    } else if (i === 2) {
+      tone(c, dest, live, 55, t, 0.42, 0.014 * k, "triangle");
+    } else if (i === 4) {
+      tone(c, dest, live, 36.71, t, 0.58, 0.017 * k, "triangle");
+    } else if (i === 6) {
+      tone(c, dest, live, 46.25, t, 0.5, 0.013 * k, "sine");
+    }
+    return;
+  }
+  if (id === "rest") {
+    tone(c, dest, live, 130.81, t, 1.85, 0.013, "sine");
+    tone(c, dest, live, 155.56, t + 1.7, 1.9, 0.011, "sine");
+    tone(c, dest, live, 196, t + 3.5, 2.4, 0.01, "sine");
+    return;
+  }
+  if (id === "event") {
+    tone(c, dest, live, 164.81, t, 1.2, 0.012, "sine");
+    tone(c, dest, live, 174.61, t, 1.2, 0.01, "sine");
+    tone(c, dest, live, 110, t + 1.45, 1.6, 0.01, "triangle");
+    return;
+  }
+  tone(c, dest, live, 98, t, 2.4, 0.011, "sine");
+  tone(c, dest, live, 147, t + 0.12, 2.3, 0.009, "sine");
+}
+
+function stepLen(id: Exclude<BgmId, "none">) {
+  if (id === "combat") return 0.9;
+  if (id === "boss") return 0.72;
+  if (id === "rest") return 8.6;
+  if (id === "event") return 7;
+  return 6.2;
+}
+
+function startTheme(id: Exclude<BgmId, "none">): BgmHandle {
   const c = ac();
   let stopped = false;
-  let floorNow = floor;
-  const fight = id === "combat" || id === "boss";
-  const quiet = id === "prepare";
-  const ambience = id === "title" || id === "prepare" || id === "descent";
-
+  const live: OscillatorNode[] = [];
   const master = c.createGain();
+  master.gain.value = 1;
   master.connect(c.destination);
 
-  const waterLp = c.createBiquadFilter();
-  waterLp.type = "lowpass";
-  const waterGain = c.createGain();
-  const hullGain = c.createGain();
-  const pulseLevel = c.createGain();
-  pulseLevel.gain.value = 0.0001;
-
-  const noise = c.createBufferSource();
-  noise.buffer = brownLoop(c);
-  noise.loop = true;
-  noise.connect(waterLp);
-  waterLp.connect(waterGain);
-  waterGain.connect(master);
-
-  const hull = c.createOscillator();
-  hull.type = "sine";
-  const hull2 = c.createOscillator();
-  hull2.type = "sine";
-  hull2.detune.value = 9;
-  hull.connect(hullGain);
-  hull2.connect(hullGain);
-  hullGain.connect(master);
-
-  const pulse = c.createOscillator();
-  pulse.type = "sine";
-  pulse.frequency.value = 32;
-  const lfo = c.createOscillator();
-  const lfoG = c.createGain();
-  lfoG.gain.value = 0;
-  pulse.connect(pulseLevel);
-  pulseLevel.connect(master);
-  lfo.connect(lfoG);
-  lfoG.connect(pulseLevel.gain);
-
-  const swell = c.createOscillator();
-  swell.frequency.value = 0.06;
-  const swellG = c.createGain();
-  swellG.gain.value = 0.0035;
-  swell.connect(swellG);
-  swellG.connect(waterGain.gain);
-
-  const applyFloor = (f: number) => {
-    floorNow = f;
-    const p = pressure(f);
-    const t = c.currentTime;
-    const base =
-      id === "title" ? 0.04 : id === "prepare" ? 0.028 : id === "descent" ? 0.034 : id === "combat" ? 0.018 : 0.022;
-    master.gain.setTargetAtTime(base + p * (fight ? 0.005 : 0.01), t, 0.45);
-
-    const cutoff = fight ? 150 - p * 70 : id === "title" ? 360 - p * 60 : id === "prepare" ? 320 : 270 - p * 160;
-    waterLp.frequency.setTargetAtTime(Math.max(72, cutoff), t, 0.55);
-    waterLp.Q.setTargetAtTime(0.55 + p * 0.35, t, 0.55);
-    waterGain.gain.setTargetAtTime(fight ? 0.2 + p * 0.1 : 0.36 + p * 0.2, t, 0.4);
-
-    hull.frequency.setTargetAtTime(fight || id === "descent" ? 25 - p * 5 : 34, t, 0.5);
-    hull2.frequency.setTargetAtTime(fight || id === "descent" ? 39 - p * 7 : 51, t, 0.5);
-    hullGain.gain.setTargetAtTime(fight ? 0.16 + p * 0.07 : 0.26 + p * 0.14, t, 0.4);
-
-    if (fight) {
-      pulseLevel.gain.setTargetAtTime(0.01 + p * 0.005, t, 0.3);
-      lfoG.gain.setTargetAtTime(0.007 + p * 0.003, t, 0.3);
-      lfo.frequency.setTargetAtTime(id === "boss" ? 0.46 : 0.68, t, 0.3);
-    } else {
-      pulseLevel.gain.setTargetAtTime(0.0001, t, 0.2);
-      lfoG.gain.setTargetAtTime(0, t, 0.2);
-    }
-  };
-
-  applyFloor(floor);
-
-  hull.start();
-  hull2.start();
-  pulse.start();
-  lfo.start();
-  swell.start();
-  noise.start();
-
-  let nextCreak = c.currentTime + (quiet ? 6 : 2.5) + Math.random() * 5;
-  let nextWhale = c.currentTime + 5 + Math.random() * 7;
+  let step = 0;
+  let next = c.currentTime + 0.05;
   let timer = 0;
+  const dt = stepLen(id);
 
-  const tick = () => {
+  const loop = () => {
     if (stopped) return;
-    const now = c.currentTime;
-    if (ambience && now >= nextCreak) {
-      fireCreak(c, master, quiet, floorNow);
-      nextCreak = now + (quiet ? 9 + Math.random() * 10 : 6 + Math.random() * 9);
+    const horizon = c.currentTime + 0.75;
+    while (next < horizon) {
+      phrase(c, master, live, id, step, next);
+      step += 1;
+      next += dt;
     }
-    if (ambience && !quiet && now >= nextWhale) {
-      fireWhale(c, master, floorNow);
-      nextWhale = now + 16 + Math.random() * 20;
-    }
-    timer = window.setTimeout(tick, 350);
+    timer = window.setTimeout(loop, 160);
   };
-  tick();
+  loop();
 
   return {
     id,
-    setFloor: applyFloor,
     stop: () => {
       stopped = true;
       window.clearTimeout(timer);
+      for (const o of live) {
+        try {
+          o.stop();
+          o.disconnect();
+        } catch {
+          /* ignore */
+        }
+      }
+      live.length = 0;
       try {
-        hull.stop();
-        hull2.stop();
-        pulse.stop();
-        lfo.stop();
-        swell.stop();
-        noise.stop();
         master.disconnect();
       } catch {
         /* ignore */
@@ -327,18 +251,15 @@ export function stopBgm() {
   stopBgmInternal();
 }
 
-export function playBgm(id: BgmId, floor = 1) {
+export function playBgm(id: BgmId) {
   if (id === "none") {
     stopBgmInternal();
     return;
   }
-  if (currentBgm === id && bgmHandle) {
-    bgmHandle.setFloor(floor);
-    return;
-  }
+  if (currentBgm === id && bgmHandle) return;
   stopBgmInternal();
   try {
-    bgmHandle = startHydrophone(id, floor);
+    bgmHandle = startTheme(id);
     currentBgm = id;
   } catch {
     bgmHandle = null;
