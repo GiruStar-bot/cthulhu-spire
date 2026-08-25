@@ -1,4 +1,5 @@
 import { CardView } from "@/components/game/CardView";
+import { asset } from "@/lib/asset";
 import { getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
 
@@ -39,7 +40,7 @@ export function RestView() {
   return (
     <section className="relative min-h-dvh overflow-hidden bg-ink">
       <img
-        src="/art/corridor.jpg"
+        src={asset("art/corridor.jpg")}
         alt=""
         className="absolute inset-0 size-full object-cover opacity-30"
         crossOrigin="anonymous"

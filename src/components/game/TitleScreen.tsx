@@ -1,4 +1,5 @@
 import { useGame } from "@/game/store";
+import { asset } from "@/lib/asset";
 
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
@@ -7,7 +8,7 @@ export function TitleScreen() {
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden">
       <img
-        src="/art/title.jpg"
+        src={asset("art/title.jpg")}
         alt=""
         className="absolute inset-0 size-full object-cover"
         crossOrigin="anonymous"

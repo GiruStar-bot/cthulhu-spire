@@ -1,4 +1,5 @@
 import { useGame } from "@/game/store";
+import { asset } from "@/lib/asset";
 
 export function EventView() {
   const event = useGame((s) => s.event);
@@ -8,7 +9,7 @@ export function EventView() {
   return (
     <section className="relative min-h-dvh overflow-hidden bg-ink">
       <img
-        src="/art/corridor.jpg"
+        src={asset("art/corridor.jpg")}
         alt=""
         className="absolute inset-0 size-full object-cover opacity-25"
         crossOrigin="anonymous"

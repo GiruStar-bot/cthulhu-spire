@@ -1,4 +1,5 @@
 import { Vitals } from "@/components/game/Hud";
+import { asset } from "@/lib/asset";
 import { ACT_TITLE, BOSS_LABEL } from "@/game/acts";
 import type { MapNode, NodeType } from "@/game/types";
 import { useGame } from "@/game/store";
@@ -37,7 +38,7 @@ export function MapView() {
   return (
     <section className="relative min-h-dvh overflow-hidden bg-ink">
       <img
-        src="/art/corridor.jpg"
+        src={asset("art/corridor.jpg")}
         alt=""
         className="pointer-events-none absolute inset-0 size-full object-cover opacity-25"
         crossOrigin="anonymous"

@@ -1,4 +1,5 @@
 import { Vitals } from "@/components/game/Hud";
+import { asset } from "@/lib/asset";
 import { ACT_SHORT, ACT_TITLE } from "@/game/acts";
 import { getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
@@ -13,7 +14,7 @@ export function BetweenView() {
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
       <img
-        src="/art/corridor.jpg"
+        src={asset("art/corridor.jpg")}
         alt=""
         className="absolute inset-0 size-full object-cover opacity-30"
         crossOrigin="anonymous"

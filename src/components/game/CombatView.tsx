@@ -1,4 +1,5 @@
 import { CardView } from "@/components/game/CardView";
+import { asset } from "@/lib/asset";
 import { Vitals } from "@/components/game/Hud";
 import { POWER_TEXT, canPlay } from "@/game/combat";
 import { getEnemy } from "@/game/enemies";
@@ -21,7 +22,7 @@ export function CombatView() {
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
       <img
-        src="/art/corridor.jpg"
+        src={asset("art/corridor.jpg")}
         alt=""
         className="pointer-events-none absolute inset-0 size-full object-cover opacity-35"
         crossOrigin="anonymous"

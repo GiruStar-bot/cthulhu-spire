@@ -1,4 +1,5 @@
 import type { CharacterDef } from "./types";
+import { asset } from "@/lib/asset";
 
 export const CHARACTERS: Record<string, CharacterDef> = {
   investigator: {
@@ -7,7 +8,7 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     title: "壊れた学者",
     blurb:
       "手順を守る生存者。打撃、結界、そして照らすほどに深く切る記録。肉体は厚い。精神は脆い。",
-    art: "/art/investigator.jpg",
+    art: asset("art/investigator.jpg"),
     maxHp: 78,
     maxSanity: 50,
     starter: [
@@ -29,7 +30,7 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     title: "自ら開く器",
     blurb:
       "力は、自分で開ける扉。鞭撃、儀式、供物。肉体は薄い。精神は、すでに半分使われている。",
-    art: "/art/cultist.jpg",
+    art: asset("art/cultist.jpg"),
     maxHp: 66,
     maxSanity: 42,
     starter: [

@@ -1,4 +1,5 @@
 import { useGame } from "@/game/store";
+import { asset } from "@/lib/asset";
 
 export function EndView({ kind }: { kind: "victory" | "defeat" }) {
   const giveUp = useGame((s) => s.giveUp);
@@ -10,7 +11,7 @@ export function EndView({ kind }: { kind: "victory" | "defeat" }) {
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
       <img
-        src={win ? "/art/title.jpg" : "/art/boss.jpg"}
+        src={asset(win ? "art/title.jpg" : "art/boss.jpg")}
         alt=""
         className="absolute inset-0 size-full object-cover opacity-40"
         crossOrigin="anonymous"
