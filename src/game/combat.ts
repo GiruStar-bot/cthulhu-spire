@@ -390,7 +390,6 @@ export function encounterIds(
   floor: number,
   rand: () => number,
 ): string[] {
-  if (kind === "combat" && floor === 1) return ["priest"];
   if (kind === "boss") {
     if (floor >= 100) return ["mouth"];
     return ["herald"];

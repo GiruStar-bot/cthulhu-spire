@@ -1,11 +1,18 @@
 import type { EnemyDef } from "./types";
 import { asset } from "@/lib/asset";
 
+function clip(dir: string): Pick<EnemyDef, "art" | "poster"> {
+  return {
+    art: asset(`art/${dir}/idle.mp4`),
+    poster: asset(`art/${dir}/poster.jpg`),
+  };
+}
+
 export const ENEMIES: Record<string, EnemyDef> = {
   acolyte: {
     id: "acolyte",
     name: "侍祭",
-    art: asset("art/acolyte.jpg"),
+    ...clip("acolyte"),
     maxHp: 32,
     pattern: [
       { kind: "attack", damage: 7 },
@@ -16,7 +23,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   drowned: {
     id: "drowned",
     name: "溺れた眷属",
-    art: asset("art/deepone.jpg"),
+    ...clip("deepone"),
     maxHp: 44,
     pattern: [
       { kind: "attack", damage: 9 },
@@ -27,7 +34,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   byakhee: {
     id: "byakhee",
     name: "翼ある飢え",
-    art: asset("art/byakhee.jpg"),
+    ...clip("byakhee"),
     maxHp: 38,
     pattern: [
       { kind: "debuff", weak: 2 },
@@ -38,7 +45,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   starveling: {
     id: "starveling",
     name: "飢えし仔",
-    art: asset("art/deepone.jpg"),
+    ...clip("deepone"),
     maxHp: 86,
     pattern: [
       { kind: "buff", strength: 2 },
@@ -64,7 +71,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   herald: {
     id: "herald",
     name: "呼び声の使徒",
-    art: asset("art/boss.jpg"),
+    ...clip("herald"),
     maxHp: 214,
     pattern: [
       { kind: "debuff", dread: 1, weak: 2 },
@@ -77,7 +84,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   mouth: {
     id: "mouth",
     name: "口そのもの",
-    art: asset("art/title.jpg"),
+    ...clip("mouth"),
     maxHp: 268,
     pattern: [
       { kind: "debuff", dread: 2 },
