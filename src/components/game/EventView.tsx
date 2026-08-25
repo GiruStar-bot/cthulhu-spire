@@ -37,7 +37,7 @@ export function EventView() {
               key={c.id}
               type="button"
               onClick={() => resolve(c.id)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-border bg-surface px-4 py-3 text-left font-display text-parchment hover:border-accent"
+              className="rot-paper min-h-12 px-4 py-3 text-left font-display text-parchment hover:brightness-110"
             >
               {c.label}
               <span className="mt-1 block font-sans text-xs font-normal text-muted">{c.result}</span>

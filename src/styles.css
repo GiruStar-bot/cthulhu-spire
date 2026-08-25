@@ -32,11 +32,13 @@
 
   html,
   body,
-  #root {
+  #app {
     min-height: 100dvh;
     background: var(--color-ink);
     color: var(--color-parchment);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -59,4 +61,151 @@
 
 .animate-floater {
   animation: floater 0.7s var(--ease-smooth-out) forwards;
+}
+
+.rot-paper::before,
+.rot-paper::after,
+.card-rot::after {
+  pointer-events: none;
+}
+
+.rot-paper {
+  position: relative;
+  isolation: isolate;
+  background: color-mix(in oklab, var(--color-surface) 68%, var(--color-parchment) 32%);
+  clip-path: polygon(
+    0.6% 2.4%,
+    7% 0.4%,
+    22% 1.8%,
+    48% 0%,
+    71% 1.4%,
+    93% 0.2%,
+    99.4% 3.2%,
+    100% 28%,
+    98.6% 61%,
+    100% 88%,
+    96% 100%,
+    62% 98.4%,
+    31% 100%,
+    8% 97.2%,
+    0% 92%,
+    1.2% 58%,
+    0% 24%
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-parchment) 22%, transparent),
+    0 22px 48px color-mix(in oklab, var(--color-ink) 58%, transparent);
+}
+
+.rot-paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 8% 4%, color-mix(in oklab, var(--color-blood) 38%, transparent) 0 12%, transparent 38%),
+    radial-gradient(ellipse at 94% 8%, color-mix(in oklab, var(--color-ink) 62%, transparent) 0 14%, transparent 42%),
+    radial-gradient(ellipse at 18% 92%, color-mix(in oklab, var(--color-blood) 22%, transparent) 0 18%, transparent 48%),
+    radial-gradient(ellipse at 78% 100%, color-mix(in oklab, var(--color-ink) 40%, transparent) 0 16%, transparent 46%),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 15px,
+      color-mix(in oklab, var(--color-parchment) 9%, transparent) 15px 16px
+    );
+  mix-blend-mode: multiply;
+  opacity: 0.78;
+}
+
+.rot-paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 2px,
+      color-mix(in oklab, var(--color-ink) 7%, transparent) 2px 3px
+    ),
+    repeating-linear-gradient(
+      32deg,
+      transparent 0 17px,
+      color-mix(in oklab, var(--color-ink) 5%, transparent) 17px 18px
+    );
+  opacity: 0.22;
+}
+
+.rot-paper > * {
+  position: relative;
+  z-index: 1;
+}
+
+.journal-head {
+  border-bottom: 2px solid color-mix(in oklab, var(--color-parchment) 30%, transparent);
+  box-shadow: 0 3px 0 color-mix(in oklab, var(--color-parchment) 12%, transparent);
+  padding-bottom: 0.85rem;
+}
+
+.journal-rule {
+  border-bottom: 1px solid color-mix(in oklab, var(--color-parchment) 24%, transparent);
+}
+
+.ink-stamp {
+  isolation: isolate;
+  background: color-mix(in oklab, var(--color-parchment) 86%, var(--color-blood) 14%);
+  color: var(--color-ink);
+  clip-path: polygon(2% 16%, 18% 2%, 76% 0%, 98% 14%, 100% 68%, 84% 100%, 16% 97%, 0% 76%);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-ink) 28%, transparent),
+    inset 0 0 22px color-mix(in oklab, var(--color-blood) 16%, transparent);
+  letter-spacing: 0.14em;
+}
+
+.ink-stamp:disabled {
+  background: color-mix(in oklab, var(--color-ink-2) 80%, var(--color-parchment) 20%);
+  color: var(--color-muted);
+  box-shadow: none;
+}
+
+.card-rot {
+  position: relative;
+  isolation: isolate;
+  clip-path: polygon(1.8% 3.4%, 22% 0.6%, 78% 0%, 98.6% 2.2%, 100% 74%, 97.2% 100%, 24% 98.2%, 0% 96%);
+  transform: rotate(var(--tilt, 0deg));
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-parchment) 22%, transparent),
+    0 12px 28px color-mix(in oklab, var(--color-ink) 50%, transparent);
+}
+
+.card-rot.is-playable:hover {
+  transform: rotate(var(--tilt, 0deg)) translateY(-6px);
+}
+
+.card-rot.is-lift {
+  transform: rotate(var(--tilt, 0deg)) translateY(-8px);
+}
+
+.card-rot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 10% 8%, color-mix(in oklab, var(--color-blood) 42%, transparent) 0 12%, transparent 32%),
+    radial-gradient(ellipse at 100% 100%, color-mix(in oklab, var(--color-ink) 62%, transparent) 0 16%, transparent 42%),
+    linear-gradient(
+      158deg,
+      color-mix(in oklab, var(--color-parchment) 12%, transparent),
+      transparent 36%,
+      color-mix(in oklab, var(--color-ink) 24%, transparent)
+    );
+  mix-blend-mode: multiply;
+  opacity: 0.52;
+}
+
+.card-rot .card-live {
+  z-index: 10;
+  isolation: isolate;
+  mix-blend-mode: normal;
+  font-variant-numeric: tabular-nums;
 }

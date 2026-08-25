@@ -271,7 +271,7 @@ export const useGame = create<GameStore>((set, get) => {
     startRun: () => {
       const s = get();
       const profile = { ...s.profile };
-      const name = (s.playerName || profile.playerName || "無名の登攀者").trim().slice(0, 16);
+      const name = (s.playerName || profile.playerName || "無名の潜航者").trim().slice(0, 16);
       profile.playerName = name;
       profile.stats = clampStats(profile.stats);
       const sum = profile.stats.body + profile.stats.mind + profile.stats.will;
@@ -589,7 +589,7 @@ export const useGame = create<GameStore>((set, get) => {
         } else {
           hp = Math.max(1, hp - 10);
           runStrength += 2;
-          toast = "肺にガラス。体力-10。登攀中、筋力+2。";
+          toast = "肺にガラス。体力-10。沈降中、筋力+2。";
         }
       }
 

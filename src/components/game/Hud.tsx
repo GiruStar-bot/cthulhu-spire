@@ -1,5 +1,5 @@
 import { CHARACTERS } from "@/game/characters";
-import { DEMO_MAX_FLOOR, floorBand } from "@/game/floors";
+import { floorBand, layerLabel } from "@/game/floors";
 import { relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ export function Vitals() {
         <Bar label="正気" value={sanity} max={maxSanity} tone="sanity" />
       </div>
       <span className="font-mono text-[10px] tracking-wider text-muted">
-        {floorBand(floor)} {floor}/{DEMO_MAX_FLOOR}
+        {floorBand(floor)} · <span className="tabular-nums text-parchment">{layerLabel(floor)}</span>
       </span>
       <div className="flex flex-wrap gap-1">
         {relics.map((r) => (

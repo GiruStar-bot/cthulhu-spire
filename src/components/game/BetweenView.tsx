@@ -1,6 +1,6 @@
 import { Vitals } from "@/components/game/Hud";
 import { asset } from "@/lib/asset";
-import { DEMO_MAX_FLOOR } from "@/game/floors";
+import { DEMO_MAX_FLOOR, layerLabel } from "@/game/floors";
 import { getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
 
@@ -20,11 +20,11 @@ export function BetweenView() {
       />
       <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/75 to-ink/40" />
       <div className="relative z-10 mt-auto flex flex-col gap-5 px-6 pb-16 sm:px-12">
-        <p className="font-mono text-[11px] tracking-widest text-accent">{floor}階を踏破した</p>
-        <h2 className="font-display text-4xl text-parchment sm:text-5xl">塔は、まだ続く</h2>
+        <p className="font-mono text-[11px] tracking-widest text-accent">{layerLabel(floor)}まで沈んだ</p>
+        <h2 className="font-display text-4xl text-parchment sm:text-5xl">都市は、まだ沈む</h2>
         <p className="max-w-md text-sm leading-relaxed text-muted">
-          大ボスは倒した。肉体もデッキも遺物も、削れたまま連れていく。デモは{DEMO_MAX_FLOOR}
-          階まで。次の一歩で、ただちに次の階へ落ちる。
+          大ボスは倒した。肉体もデッキも遺物も、削れたまま連れていく。デモは第{DEMO_MAX_FLOOR}
+          層まで。次の一歩で、ただちに次の層へ沈む。
         </p>
         <Vitals />
         <p className="font-mono text-[11px] text-muted">
@@ -46,7 +46,7 @@ export function BetweenView() {
           onClick={advance}
           className="w-fit min-h-11 rounded-[var(--radius-md)] bg-parchment px-6 py-3 font-display text-ink"
         >
-          {floor + 1}階へ落ちる
+          {layerLabel(floor + 1)}へ沈む
         </button>
       </div>
     </section>

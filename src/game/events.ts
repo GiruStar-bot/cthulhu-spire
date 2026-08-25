@@ -38,7 +38,7 @@ export const EVENTS: GameEvent[] = [
     body: "黒いガラスを通り過ぎる。反射は、すでに廊下の先で待っている。",
     choices: [
       { id: "follow", label: "追う", result: "次の戦闘、最初のターンにエネルギー+2。" },
-      { id: "smash", label: "割る", result: "体力-10。この登攀中、筋力+2。" },
+      { id: "smash", label: "割る", result: "体力-10。この沈降中、筋力+2。" },
     ],
   },
 ];

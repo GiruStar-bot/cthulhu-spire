@@ -18,8 +18,8 @@ export function RestView() {
     return (
       <section className="min-h-dvh bg-ink px-4 py-10">
         <Vitals />
-        <h2 className="font-display mt-6 text-3xl text-parchment">カードを刻む</h2>
-        <p className="mt-2 text-sm text-muted">デッキの1枚を強化する。終われば次の階へ落ちる。</p>
+        <h2 className="font-display mt-6 text-3xl text-balance text-parchment">カードを刻む</h2>
+        <p className="mt-2 text-sm text-pretty text-muted">デッキの1枚を強化する。終われば次の層へ沈む。</p>
         <div className="mt-6 flex flex-wrap gap-3">
           {upgradable.map((c) => (
             <button key={c.uid} type="button" onClick={() => restUpgrade(c.uid)}>
@@ -55,15 +55,15 @@ export function RestView() {
           <button
             type="button"
             onClick={dismiss}
-            className="rounded-[var(--radius-md)] border border-accent/40 bg-surface px-4 py-3 text-left text-sm text-parchment"
+            className="rounded-[var(--radius-md)] border border-border bg-surface px-4 py-3 text-left text-sm text-parchment"
           >
             {toast}
           </button>
         ) : null}
-        <p className="font-mono text-[11px] tracking-widest text-accent">乾いた窪み</p>
-        <h2 className="font-display text-4xl text-parchment">休息</h2>
-        <p className="max-w-md text-sm text-muted">
-          火は小さく、色が少し違う。それでも火だ。傷を癒すか、カードが自分を思い出すまで刻むか。選んだあと、次の階へ落ちる。
+        <p className="font-mono text-xs tracking-widest text-accent">乾いた窪み</p>
+        <h2 className="font-display text-4xl text-balance text-parchment">休息</h2>
+        <p className="max-w-md text-sm text-pretty text-muted">
+          火は小さく、色が少し違う。それでも火だ。傷を癒すか、カードが自分を思い出すまで刻むか。選んだあと、次の層へ沈む。
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <button

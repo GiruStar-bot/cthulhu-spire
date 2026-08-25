@@ -6,10 +6,14 @@ import { pick } from "./rng";
 export const DEMO_MAX_FLOOR = 100;
 
 export function floorBand(floor: number): string {
-  if (floor >= 100) return "頂";
-  if (floor >= 67) return "口へ";
-  if (floor >= 34) return "曲がる階";
-  return "塩の回廊";
+  if (floor >= 100) return "最深";
+  if (floor >= 67) return "口の層";
+  if (floor >= 34) return "曲がる層";
+  return "表層";
+}
+
+export function layerLabel(floor: number): string {
+  return `第${floor}層`;
 }
 
 export function floorKindLabel(type: FloorKind, floor: number): string {
