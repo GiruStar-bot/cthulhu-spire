@@ -1,5 +1,5 @@
 import { isVideoSrc, videoStem } from "@/lib/media";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function CreatureMedia({
   src,
@@ -17,39 +17,20 @@ export function CreatureMedia({
 function CreatureVideo({ src, poster }: { src: string; poster?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [useCanvas, setUseCanvas] = useState(false);
-  const reduce =
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const stem = videoStem(src);
 
   useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    el.muted = true;
-    if (reduce) {
-      el.pause();
-      return;
-    }
-    void el.play().catch(() => {});
-  }, [src, reduce]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const onMeta = () => {
-      const current = video.currentSrc || "";
-      setUseCanvas(/\.mp4(\?|#|$)/i.test(current));
-    };
-    video.addEventListener("loadedmetadata", onMeta);
-    return () => video.removeEventListener("loadedmetadata", onMeta);
-  }, [src]);
-
-  useEffect(() => {
-    if (!useCanvas || reduce) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    video.muted = true;
+    if (reduce) video.pause();
+    else void video.play().catch(() => {});
+
     let raf = 0;
     const tick = () => {
       if (video.readyState >= 2 && video.videoWidth) {
@@ -60,50 +41,63 @@ function CreatureVideo({ src, poster }: { src: string; poster?: string }) {
           canvas.height = h;
         }
         ctx.drawImage(video, 0, 0, w, h);
-        const img = ctx.getImageData(0, 0, w, h);
-        const d = img.data;
-        for (let i = 0; i < d.length; i += 4) {
-          const r = d[i];
-          const g = d[i + 1];
-          const b = d[i + 2];
-          const mag = Math.min(r, b) - g;
-          if (r > 90 && b > 90 && mag > 28) {
-            const t = Math.min(255, mag * 2.4);
-            d[i + 3] = Math.max(0, 255 - t);
-            d[i] = Math.min(r, g + 24);
-            d[i + 2] = Math.min(b, g + 24);
-          }
-        }
-        ctx.putImageData(img, 0, 0);
+        keyMagenta(ctx, w, h);
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [useCanvas, reduce]);
-
-  const stem = videoStem(src);
+  }, [src]);
 
   return (
     <>
       <video
         ref={videoRef}
-        className={useCanvas ? "creature-video-src" : undefined}
+        className="creature-video-src"
         muted
         loop
         playsInline
-        autoPlay={!reduce}
+        autoPlay
         preload="auto"
         poster={poster}
-        onLoadedMetadata={(e) => {
-          const current = e.currentTarget.currentSrc || "";
-          setUseCanvas(/\.mp4(\?|#|$)/i.test(current));
-        }}
+        crossOrigin="anonymous"
       >
-        <source src={`${stem}.webm`} type="video/webm" />
         <source src={`${stem}.mp4`} type="video/mp4" />
+        <source src={`${stem}.webm`} type="video/webm" />
       </video>
-      {useCanvas ? <canvas ref={canvasRef} className="creature-video-canvas" /> : null}
+      <canvas ref={canvasRef} className="creature-video-canvas" aria-hidden />
     </>
   );
+}
+
+function keyMagenta(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  const n = w * h;
+  const corners = [0, (w - 1) * 4, (h - 1) * w * 4, ((h - 1) * w + w - 1) * 4];
+  let kr = 0;
+  let kg = 0;
+  let kb = 0;
+  for (const p of corners) {
+    kr += d[p];
+    kg += d[p + 1];
+    kb += d[p + 2];
+  }
+  kr /= 4;
+  kg /= 4;
+  kb /= 4;
+  const dist2 = 96 * 96;
+
+  for (let p = 0; p < d.length; p += 4) {
+    const dr = d[p] - kr;
+    const dg = d[p + 1] - kg;
+    const db = d[p + 2] - kb;
+    if (dr * dr + dg * dg + db * db <= dist2) {
+      d[p] = 0;
+      d[p + 1] = 0;
+      d[p + 2] = 0;
+      d[p + 3] = 0;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
 }
