@@ -14,7 +14,15 @@ export type CharacterId = "investigator" | "cultist";
 export type CardType = "attack" | "skill" | "power" | "status";
 export type Rarity = "starter" | "common" | "uncommon" | "rare" | "status";
 export type CardTarget = "none" | "enemy" | "all";
-export type NodeType = "start" | "combat" | "elite" | "rest" | "event" | "boss";
+export type FloorKind = "combat" | "elite" | "rest" | "event" | "boss";
+export type NodeType = "start" | FloorKind;
+
+export interface FloorSpec {
+  floor: number;
+  type: FloorKind;
+  eventId?: string;
+  enemyIds?: string[];
+}
 export type IntentKind = "attack" | "defend" | "buff" | "debuff" | "unknown";
 export type RelicKind =
   | "draw"

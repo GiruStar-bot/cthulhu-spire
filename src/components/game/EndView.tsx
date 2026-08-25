@@ -4,7 +4,6 @@ import { asset } from "@/lib/asset";
 export function EndView({ kind }: { kind: "victory" | "defeat" }) {
   const giveUp = useGame((s) => s.giveUp);
   const floor = useGame((s) => s.floor);
-  const act = useGame((s) => s.act);
   const profile = useGame((s) => s.profile);
   const playerName = useGame((s) => s.playerName);
   const win = kind === "victory";
@@ -26,7 +25,7 @@ export function EndView({ kind }: { kind: "victory" | "defeat" }) {
         <p className="max-w-md text-sm text-muted">
           {win
             ? `${playerName || "登攀者"}の記録は残る。遺物は次の人生へ。`
-            : `${playerName || "登攀者"}は ${act}面 ${floor}階で止まった。名と遺物だけが塔の外に残る。`}
+            : `${playerName || "登攀者"}は ${floor}階で止まった。名と遺物だけが塔の外に残る。`}
         </p>
         <p className="font-mono text-[11px] text-muted">
           最高階 {profile.bestFloor} · 所持遺物 {profile.collection.length}

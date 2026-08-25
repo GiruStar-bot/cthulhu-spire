@@ -2,7 +2,6 @@ import { BetweenView } from "@/components/game/BetweenView";
 import { CombatView } from "@/components/game/CombatView";
 import { EndView } from "@/components/game/EndView";
 import { EventView } from "@/components/game/EventView";
-import { MapView } from "@/components/game/MapView";
 import { PrepareView } from "@/components/game/PrepareView";
 import { RestView } from "@/components/game/RestView";
 import { RewardView } from "@/components/game/RewardView";
@@ -17,7 +16,6 @@ export function GameApp() {
     case "prepare":
       return <PrepareView />;
     case "map":
-      return <MapView />;
     case "combat":
       return <CombatView />;
     case "reward":

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { DEMO_MAX_FLOOR, tallyFloors } from "@/game/floors";
 import { MAX_LOADOUT, STAT_BUDGET, STAT_MIN, unlockedFeatures } from "@/game/profile";
 import { RELICS, relicDesc, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
@@ -12,10 +13,13 @@ export function PrepareView() {
   const toggleLoadout = useGame((s) => s.toggleLoadout);
   const startRun = useGame((s) => s.startRun);
   const toast = useGame((s) => s.toast);
+  const runFloors = useGame((s) => s.runFloors);
+  const seed = useGame((s) => s.seed);
 
   const sum = profile.stats.body + profile.stats.mind + profile.stats.will;
   const remain = STAT_BUDGET - sum;
   const features = useMemo(() => unlockedFeatures(profile.stats), [profile.stats]);
+  const tally = useMemo(() => tallyFloors(runFloors), [runFloors]);
   const canStart = playerName.trim().length > 0 && sum === STAT_BUDGET;
 
   return (
@@ -23,8 +27,16 @@ export function PrepareView() {
       <p className="font-mono text-[11px] tracking-widest text-accent">器を調える</p>
       <h2 className="font-display mt-2 text-3xl text-parchment sm:text-4xl">登攀の準備</h2>
       <p className="mt-2 max-w-xl text-sm text-muted">
-        名を刻み、肉体・知識・意志を振り、遺物を最大{MAX_LOADOUT}つまで持ち込む。遺物は一度得れば永久に残る。
+        回廊はすでに抽選された。名を刻み、肉体・知識・意志を振り、遺物を最大{MAX_LOADOUT}
+        つまで持ち込む。始めた瞬間、1階へ落ちる。
       </p>
+      {runFloors.length > 0 ? (
+        <p className="mt-3 font-mono text-[11px] tracking-wider text-accent">
+          {DEMO_MAX_FLOOR}階確定 · 守護 {tally.combat + tally.elite} · 予兆 {tally.event} · 休息{" "}
+          {tally.rest} · 中ボス {tally.mid} · 大ボス {tally.boss}
+          <span className="ml-2 text-muted">SEED {seed.toString(16)}</span>
+        </p>
+      ) : null}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <div className="space-y-6">

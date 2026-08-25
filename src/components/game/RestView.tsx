@@ -1,4 +1,5 @@
 import { CardView } from "@/components/game/CardView";
+import { Vitals } from "@/components/game/Hud";
 import { asset } from "@/lib/asset";
 import { getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
@@ -8,14 +9,17 @@ export function RestView() {
   const deck = useGame((s) => s.deck);
   const restHeal = useGame((s) => s.restHeal);
   const restUpgrade = useGame((s) => s.restUpgrade);
+  const toast = useGame((s) => s.toast);
+  const dismiss = useGame((s) => s.dismissToast);
   const set = useGame.setState;
   const upgradable = deck.filter((c) => !c.upgraded && getCard(c.defId).type !== "status");
 
   if (restMode === "upgrade") {
     return (
       <section className="min-h-dvh bg-ink px-4 py-10">
-        <h2 className="font-display text-3xl text-parchment">カードを刻む</h2>
-        <p className="mt-2 text-sm text-muted">デッキの1枚を強化する。</p>
+        <Vitals />
+        <h2 className="font-display mt-6 text-3xl text-parchment">カードを刻む</h2>
+        <p className="mt-2 text-sm text-muted">デッキの1枚を強化する。終われば次の階へ落ちる。</p>
         <div className="mt-6 flex flex-wrap gap-3">
           {upgradable.map((c) => (
             <button key={c.uid} type="button" onClick={() => restUpgrade(c.uid)}>
@@ -28,7 +32,7 @@ export function RestView() {
         ) : null}
         <button
           type="button"
-          className="mt-8 text-sm text-muted"
+          className="mt-8 min-h-11 text-sm text-muted"
           onClick={() => set({ restMode: "choose" })}
         >
           戻る
@@ -46,10 +50,20 @@ export function RestView() {
         crossOrigin="anonymous"
       />
       <div className="relative z-10 flex min-h-dvh flex-col justify-end gap-4 px-6 py-12">
+        <Vitals />
+        {toast ? (
+          <button
+            type="button"
+            onClick={dismiss}
+            className="rounded-[var(--radius-md)] border border-accent/40 bg-surface px-4 py-3 text-left text-sm text-parchment"
+          >
+            {toast}
+          </button>
+        ) : null}
         <p className="font-mono text-[11px] tracking-widest text-accent">乾いた窪み</p>
         <h2 className="font-display text-4xl text-parchment">休息</h2>
         <p className="max-w-md text-sm text-muted">
-          火は小さく、色が少し違う。それでも火だ。傷を癒すか、カードが自分を思い出すまで刻むか。
+          火は小さく、色が少し違う。それでも火だ。傷を癒すか、カードが自分を思い出すまで刻むか。選んだあと、次の階へ落ちる。
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <button

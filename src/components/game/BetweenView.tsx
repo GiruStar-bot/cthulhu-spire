@@ -1,15 +1,14 @@
 import { Vitals } from "@/components/game/Hud";
 import { asset } from "@/lib/asset";
-import { ACT_SHORT, ACT_TITLE } from "@/game/acts";
+import { DEMO_MAX_FLOOR } from "@/game/floors";
 import { getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
 
 export function BetweenView() {
-  const act = useGame((s) => s.act);
+  const floor = useGame((s) => s.floor);
   const deck = useGame((s) => s.deck);
   const relics = useGame((s) => s.relics);
-  const advance = useGame((s) => s.advanceAct);
-  const next = Math.min(3, act + 1);
+  const advance = useGame((s) => s.continueClimb);
 
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
@@ -21,16 +20,16 @@ export function BetweenView() {
       />
       <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/75 to-ink/40" />
       <div className="relative z-10 mt-auto flex flex-col gap-5 px-6 pb-16 sm:px-12">
-        <p className="font-mono text-[11px] tracking-widest text-accent">{ACT_SHORT[act]}を踏破した</p>
-        <h2 className="font-display text-4xl text-parchment sm:text-5xl">{ACT_TITLE[next]}</h2>
+        <p className="font-mono text-[11px] tracking-widest text-accent">{floor}階を踏破した</p>
+        <h2 className="font-display text-4xl text-parchment sm:text-5xl">塔は、まだ続く</h2>
         <p className="max-w-md text-sm leading-relaxed text-muted">
-          肉体もデッキも遺物も、削れたまま連れていく。塔は続いており、次の面はより濃い。
+          大ボスは倒した。肉体もデッキも遺物も、削れたまま連れていく。デモは{DEMO_MAX_FLOOR}
+          階まで。次の一歩で、ただちに次の階へ落ちる。
         </p>
         <Vitals />
         <p className="font-mono text-[11px] text-muted">
           デッキ {deck.length}枚
-          {relics.length ? ` · 遺物 ${relics.length}` : ""} · 強化{" "}
-          {deck.filter((c) => c.upgraded).length}
+          {relics.length ? ` · 遺物 ${relics.length}` : ""} · 強化 {deck.filter((c) => c.upgraded).length}
         </p>
         <ul className="max-w-md text-xs leading-relaxed text-muted">
           {deck.slice(0, 12).map((c) => (
@@ -47,7 +46,7 @@ export function BetweenView() {
           onClick={advance}
           className="w-fit min-h-11 rounded-[var(--radius-md)] bg-parchment px-6 py-3 font-display text-ink"
         >
-          {ACT_SHORT[next]}へ進む
+          {floor + 1}階へ落ちる
         </button>
       </div>
     </section>

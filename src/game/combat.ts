@@ -28,7 +28,7 @@ function floater(text: string, kind: Floater["kind"], who: Floater["who"]): Floa
 }
 
 function scaleHp(base: number, floor: number) {
-  return Math.round(base * (1 + floor * 0.07));
+  return Math.round(base * (1 + Math.max(0, floor - 1) * 0.03));
 }
 
 export function makeEnemy(defId: string, floor: number, rand: () => number): CombatEnemy {
@@ -380,20 +380,19 @@ export function clearFloaters(c: CombatState) {
 export function encounterIds(
   kind: "combat" | "elite" | "boss",
   floor: number,
-  act: number,
   rand: () => number,
 ): string[] {
   if (kind === "boss") {
-    if (act >= 3) return ["mouth"];
-    if (act === 2) return ["herald"];
-    return ["priest"];
+    if (floor >= 100) return ["mouth"];
+    return ["herald"];
   }
   if (kind === "elite") {
-    if (act >= 3) return ["starveling", "byakhee"];
-    return ["starveling"];
+    if (floor >= 70) return ["starveling", "byakhee"];
+    if (floor >= 20) return ["starveling"];
+    return ["byakhee"];
   }
   const pool = ["acolyte", "drowned", "byakhee"] as const;
-  const double = act >= 2 ? 0.55 : floor >= 5 ? 0.45 : 0.12;
+  const double = floor >= 40 ? 0.5 : floor >= 12 ? 0.35 : 0.12;
   if (rand() < double) {
     return [pick(pool, rand), pick(["acolyte", "drowned"] as const, rand)];
   }

@@ -16,6 +16,8 @@ export function CombatView() {
   const setTargeting = useGame((s) => s.setTargeting);
   const hp = useGame((s) => s.hp);
   const maxHp = useGame((s) => s.maxHp);
+  const toast = useGame((s) => s.toast);
+  const dismiss = useGame((s) => s.dismissToast);
 
   if (!combat) return null;
 
@@ -32,6 +34,15 @@ export function CombatView() {
       <div className="relative z-10 flex min-h-dvh flex-col gap-3 px-3 py-3 sm:px-6">
         <div className="flex flex-col gap-2">
           <Vitals />
+          {toast ? (
+            <button
+              type="button"
+              onClick={dismiss}
+              className="rounded-[var(--radius-md)] border border-accent/40 bg-surface px-3 py-2 text-left text-sm text-parchment"
+            >
+              {toast}
+            </button>
+          ) : null}
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1 font-mono text-[11px] text-parchment tabular-nums">
               エネルギー {combat.energy}/{combat.maxEnergy}

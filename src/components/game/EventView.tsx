@@ -1,9 +1,12 @@
+import { Vitals } from "@/components/game/Hud";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 
 export function EventView() {
   const event = useGame((s) => s.event);
   const resolve = useGame((s) => s.resolveEvent);
+  const toast = useGame((s) => s.toast);
+  const dismiss = useGame((s) => s.dismissToast);
   if (!event) return null;
 
   return (
@@ -15,6 +18,16 @@ export function EventView() {
         crossOrigin="anonymous"
       />
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col justify-end gap-5 px-6 py-12">
+        <Vitals />
+        {toast ? (
+          <button
+            type="button"
+            onClick={dismiss}
+            className="rounded-[var(--radius-md)] border border-accent/40 bg-surface px-4 py-3 text-left text-sm text-parchment"
+          >
+            {toast}
+          </button>
+        ) : null}
         <p className="font-mono text-[11px] tracking-widest text-accent">予兆</p>
         <h2 className="font-display text-3xl text-parchment sm:text-4xl">{event.title}</h2>
         <p className="text-sm leading-relaxed text-muted sm:text-base">{event.body}</p>

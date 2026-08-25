@@ -27,7 +27,7 @@ export function TitleScreen() {
           クトゥルスパイア
         </h1>
         <p className="max-w-md text-sm leading-relaxed text-muted sm:text-base">
-          名を刻み、肉体と知識と意志を振り、遺物を六つまで携えて塔へ入る。死ねばその人生は終わる。遺物と記録だけが、次の器に残る。
+          名を刻み、肉体と知識と意志を振る。器を調えた瞬間、100階までの回廊は抽選される。登攀を始めれば、ただちに1階へ落ちる。死ねばその人生は終わる。遺物と記録だけが、次の器に残る。
         </p>
         <div className="flex flex-wrap items-center gap-4">
           <button
