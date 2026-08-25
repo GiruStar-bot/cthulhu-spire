@@ -1,9 +1,9 @@
 import { BetweenView } from "@/components/game/BetweenView";
-import { ClassSelect } from "@/components/game/ClassSelect";
 import { CombatView } from "@/components/game/CombatView";
 import { EndView } from "@/components/game/EndView";
 import { EventView } from "@/components/game/EventView";
 import { MapView } from "@/components/game/MapView";
+import { PrepareView } from "@/components/game/PrepareView";
 import { RestView } from "@/components/game/RestView";
 import { RewardView } from "@/components/game/RewardView";
 import { TitleScreen } from "@/components/game/TitleScreen";
@@ -14,8 +14,8 @@ export function GameApp() {
   switch (scene) {
     case "title":
       return <TitleScreen />;
-    case "classSelect":
-      return <ClassSelect />;
+    case "prepare":
+      return <PrepareView />;
     case "map":
       return <MapView />;
     case "combat":
