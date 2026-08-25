@@ -1,6 +1,6 @@
 import { CHARACTERS } from "@/game/characters";
 import { ACT_SHORT } from "@/game/acts";
-import { RELICS } from "@/game/relics";
+import { relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ export function Vitals() {
   const relics = useGame((s) => s.relics);
   const floor = useGame((s) => s.floor);
   const act = useGame((s) => s.act);
+  const playerName = useGame((s) => s.playerName);
   const ch = character ? CHARACTERS[character] : null;
 
   return (
@@ -25,19 +26,22 @@ export function Vitals() {
           crossOrigin="anonymous"
         />
       ) : null}
-      <Bar label="肉体" value={hp} max={maxHp} tone="hp" />
-      <Bar label="正気" value={sanity} max={maxSanity} tone="sanity" />
+      <div className="min-w-0">
+        <p className="truncate font-display text-sm text-parchment">{playerName || "無名"}</p>
+        <Bar label="肉体" value={hp} max={maxHp} tone="hp" />
+        <Bar label="正気" value={sanity} max={maxSanity} tone="sanity" />
+      </div>
       <span className="font-mono text-[10px] tracking-wider text-muted">
         {ACT_SHORT[act]} 階 {floor}
       </span>
       <div className="flex flex-wrap gap-1">
-        {relics.map((id) => (
+        {relics.map((r) => (
           <span
-            key={id}
-            title={RELICS[id]?.text}
+            key={r.uid}
+            title={relicLabel(r)}
             className="rounded-full border border-border bg-surface px-2 py-1 font-mono text-[10px] text-parchment"
           >
-            {RELICS[id]?.name}
+            {relicLabel(r)}
           </span>
         ))}
       </div>

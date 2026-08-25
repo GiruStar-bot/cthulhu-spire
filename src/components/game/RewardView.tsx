@@ -1,7 +1,7 @@
 import { CardView } from "@/components/game/CardView";
 import { MAX_ACT } from "@/game/acts";
 import { nodeById } from "@/game/map";
-import { RELICS } from "@/game/relics";
+import { relicDesc, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 
 export function RewardView() {
@@ -28,8 +28,12 @@ export function RewardView() {
       ) : null}
       {reward.relic ? (
         <p className="mt-3 max-w-lg text-sm text-muted">
-          遺物を得た：<span className="text-parchment">{RELICS[reward.relic]?.name}</span> —{" "}
-          {RELICS[reward.relic]?.text}
+          遺物を記録する：
+          <span className="text-parchment"> {relicLabel(reward.relic)}</span> —{" "}
+          {relicDesc(reward.relic)}
+          <span className="mt-1 block font-mono text-[10px] text-accent">
+            永久コレクションに追加。持込は最大6。
+          </span>
         </p>
       ) : null}
       <div className="mt-8 flex flex-wrap justify-center gap-4">
