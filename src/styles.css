@@ -77,6 +77,15 @@
   pointer-events: none;
 }
 
+.title-bg-video {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.title-bg-video.is-on {
+  opacity: 1;
+}
+
 .title-stage-ui {
   position: relative;
   z-index: 10;
@@ -542,6 +551,10 @@
   .title-float-a,
   .title-float-b {
     animation: none;
+  }
+
+  .title-bg-video {
+    display: none;
   }
 
   .enemy-die {

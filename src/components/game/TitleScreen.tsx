@@ -1,7 +1,17 @@
 import { getSfxVolume, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+
+const TITLE_CLIPS = ["art/title.mp4", "art/title-city.mp4", "art/title-hall.mp4"] as const;
+
+const ART_FILL: CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+};
 
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
@@ -34,13 +44,7 @@ export function TitleScreen() {
         overflow: "hidden",
       }}
     >
-      <img
-        src={asset("art/title.jpg")}
-        alt=""
-        className="title-stage-art"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-        crossOrigin="anonymous"
-      />
+      <TitleReel />
       <div className="title-veil" />
       <div className="title-stage-ui">
         <h1 className="title-mark title-float">
@@ -77,6 +81,77 @@ export function TitleScreen() {
       </div>
       {settings ? <SettingsPanel onClose={() => setSettings(false)} /> : null}
     </section>
+  );
+}
+
+function TitleReel() {
+  const clipsRef = useRef(TITLE_CLIPS.map((p) => asset(p)));
+  const aRef = useRef<HTMLVideoElement>(null);
+  const bRef = useRef<HTMLVideoElement>(null);
+  const idxRef = useRef(0);
+  const frontRef = useRef(0);
+  const [front, setFront] = useState(0);
+
+  useEffect(() => {
+    const clips = clipsRef.current;
+    clips.forEach((src) => {
+      const el = document.createElement("video");
+      el.muted = true;
+      el.preload = "auto";
+      el.src = src;
+    });
+    const first = aRef.current;
+    if (!first) return;
+    first.src = clips[0];
+    void first.play().catch(() => {});
+  }, []);
+
+  const advance = () => {
+    const clips = clipsRef.current;
+    const next = (idxRef.current + 1) % clips.length;
+    const nextFront = 1 - frontRef.current;
+    const idle = nextFront === 0 ? aRef.current : bRef.current;
+    if (idle) {
+      idle.src = clips[next];
+      idle.currentTime = 0;
+      void idle.play().catch(() => {});
+    }
+    idxRef.current = next;
+    frontRef.current = nextFront;
+    setFront(nextFront);
+  };
+
+  return (
+    <div
+      className="title-stage-art"
+      style={{ position: "absolute", inset: 0, overflow: "hidden" }}
+      aria-hidden
+    >
+      <img src={asset("art/title.jpg")} alt="" className="title-stage-art" style={ART_FILL} crossOrigin="anonymous" />
+      <video
+        ref={aRef}
+        className={front === 0 ? "title-stage-art title-bg-video is-on" : "title-stage-art title-bg-video"}
+        style={ART_FILL}
+        muted
+        playsInline
+        preload="auto"
+        poster={asset("art/title.jpg")}
+        onEnded={() => {
+          if (frontRef.current === 0) advance();
+        }}
+      />
+      <video
+        ref={bRef}
+        className={front === 1 ? "title-stage-art title-bg-video is-on" : "title-stage-art title-bg-video"}
+        style={ART_FILL}
+        muted
+        playsInline
+        preload="auto"
+        onEnded={() => {
+          if (frontRef.current === 1) advance();
+        }}
+      />
+    </div>
   );
 }
 
