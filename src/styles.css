@@ -366,6 +366,12 @@
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 78%, transparent 100%);
 }
 
+.enemy-figure.is-cutout img {
+  filter: contrast(1.06) saturate(0.88) brightness(0.94);
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
 .enemy-shadow {
   height: 0.7rem;
   margin: -0.35rem auto 0;

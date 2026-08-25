@@ -166,6 +166,28 @@ function Energy({ n, max }: { n: number; max: number }) {
   );
 }
 
+function EnemyArt({
+  src,
+  frames,
+  fps = 8,
+}: {
+  src: string;
+  frames?: string[];
+  fps?: number;
+}) {
+  const [i, setI] = useState(0);
+  const n = frames?.length ?? 0;
+
+  useEffect(() => {
+    if (n < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => setI((k) => (k + 1) % n), 1000 / fps);
+    return () => window.clearInterval(id);
+  }, [n, fps]);
+
+  return <img src={frames?.[i] ?? src} alt="" crossOrigin="anonymous" />;
+}
+
 function EnemyStage({
   enemy,
   floaters,
@@ -194,15 +216,15 @@ function EnemyStage({
         "enemy-stage relative text-left outline-none",
         boss ? "is-boss" : "",
         pose === "enter" && "enemy-enter",
-        pose === "idle" && "enemy-idle",
+        pose === "idle" && !def.idleFrames?.length && "enemy-idle",
         pose === "hit" && "enemy-hit",
         pose === "strike" && "enemy-strike",
         pose === "die" && "enemy-die",
         targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-lg)]" : "",
       )}
     >
-      <div className="enemy-figure">
-        <img src={def.art} alt="" crossOrigin="anonymous" />
+      <div className={cn("enemy-figure", def.idleFrames?.length && "is-cutout")}>
+        <EnemyArt src={def.art} frames={def.idleFrames} fps={def.idleFps} />
         <div className="enemy-impact" />
       </div>
       <div className="enemy-shadow" />
