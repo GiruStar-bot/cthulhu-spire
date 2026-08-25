@@ -39,7 +39,7 @@ export function CardView({
       style={{ "--tilt": `${tiltOf(card.uid)}deg` } as CSSProperties}
       className={cn(
         "card-rot relative flex shrink-0 flex-col overflow-hidden text-left transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
-        compact ? "h-48 w-28" : "h-60 w-36 sm:h-72 sm:w-40",
+        compact ? "h-44 w-28" : "h-60 w-36 sm:h-72 sm:w-40",
         "bg-surface",
         selected ? "is-lift" : "",
         playable && onClick ? "is-playable" : "",

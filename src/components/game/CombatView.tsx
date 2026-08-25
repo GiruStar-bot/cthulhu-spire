@@ -25,38 +25,66 @@ export function CombatView() {
   const dismiss = useGame((s) => s.dismissToast);
   const fx = useCombatFx(hp, maxHp, sanity, maxSanity);
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, []);
+
   if (!combat) return null;
 
   const ratio = hp / Math.max(1, maxHp);
   const blood = ratio > 0.45 ? 0 : ratio > 0.22 ? 0.42 : 0.78;
 
   return (
-    <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
-      <ShakeRoot tick={fx.tick} traumaRef={fx.traumaRef} className="flex min-h-dvh flex-col">
+    <section className="relative h-dvh overflow-hidden bg-ink">
+      <ShakeRoot tick={fx.tick} traumaRef={fx.traumaRef} className="relative h-dvh overflow-hidden">
         <img
           src={asset("art/corridor.jpg")}
           alt=""
-          className="pointer-events-none absolute inset-0 size-full object-cover opacity-35"
+          className="pointer-events-none absolute inset-0 z-0 size-full object-cover opacity-35"
           crossOrigin="anonymous"
         />
-        <div className="absolute inset-0 bg-linear-to-b from-ink/40 via-transparent to-ink" />
+        <div className="absolute inset-0 z-0 bg-linear-to-b from-ink/40 via-transparent to-ink" />
 
         <div className="fx-blood" style={{ "--blood": blood } as CSSProperties} />
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
 
-        <div className="relative z-10 flex min-h-dvh flex-col gap-3 px-3 py-3 sm:px-6">
-          <div className="flex flex-col gap-2">
+        <div className="combat-foe">
+          {combat.enemies.map((e) => (
+            <EnemyStage
+              key={e.uid}
+              enemy={e}
+              floaters={combat.floaters.filter((f) => f.who === e.uid)}
+              targeting={!!targeting}
+              striking={fx.playerHit && e.hp > 0}
+              onTarget={() => {
+                if (targeting) play(targeting, e.uid);
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="relative z-10 flex h-dvh flex-col">
+          <div className="pointer-events-auto shrink-0 px-3 pt-3 sm:px-6">
             <Vitals />
             {toast ? (
               <button
                 type="button"
                 onClick={dismiss}
-                className="rounded-[var(--radius-md)] bg-surface px-3 py-2 text-left text-sm text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-accent)_40%,transparent)]"
+                className="mt-2 rounded-[var(--radius-md)] bg-surface px-3 py-2 text-left text-sm text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-accent)_40%,transparent)]"
               >
                 {toast}
               </button>
             ) : null}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="rounded-[var(--radius-sm)] bg-surface px-2 py-1 font-mono text-xs text-parchment tabular-nums shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]">
                 エネルギー {combat.energy}/{combat.maxEnergy}
               </span>
@@ -73,39 +101,33 @@ export function CombatView() {
             </div>
           </div>
 
-          <div className="flex min-h-40 flex-1 items-end justify-center gap-6 pt-2 sm:items-center">
-            {combat.enemies.map((e) => (
-              <EnemyStage
-                key={e.uid}
-                enemy={e}
-                floaters={combat.floaters.filter((f) => f.who === e.uid)}
-                targeting={!!targeting}
-                striking={fx.playerHit && e.hp > 0}
-                onTarget={() => {
-                  if (targeting) play(targeting, e.uid);
-                }}
-              />
-            ))}
+          <div className="min-h-0 flex-1" />
+
+          <div className="pointer-events-auto relative z-10 shrink-0 px-3 sm:px-6">
+            <div className="mb-2 flex flex-wrap items-end justify-center gap-8">
+              {combat.enemies.map((e) => (
+                <EnemyPlate key={e.uid} enemy={e} targeting={!!targeting} onTarget={() => targeting && play(targeting, e.uid)} />
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {combat.powers.map((p) => (
+                <span
+                  key={p}
+                  className="rounded-full bg-surface px-2 py-1 font-mono text-xs text-muted shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]"
+                >
+                  {POWER_TEXT[p]}
+                </span>
+              ))}
+              {combat.log.slice(-1).map((l) => (
+                <span key={l} className="text-xs text-muted italic">
+                  {l}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {combat.powers.map((p) => (
-              <span
-                key={p}
-                className="rounded-full bg-surface px-2 py-1 font-mono text-xs text-muted shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]"
-              >
-                {POWER_TEXT[p]}
-              </span>
-            ))}
-            {combat.log.slice(-1).map((l) => (
-              <span key={l} className="text-xs text-muted italic">
-                {l}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex items-end gap-2">
-            <div className="flex min-h-48 flex-1 gap-2 overflow-x-auto pb-2 pt-4">
+          <div className="combat-hand pointer-events-auto relative z-20 flex shrink-0 items-end gap-2 px-3 pb-2 sm:px-6">
+            <div className="flex max-h-[26dvh] flex-1 gap-2 overflow-x-auto overflow-y-hidden pt-2">
               {combat.hand.map((card) => {
                 const playable = canPlay(combat, card) && combat.phase === "player";
                 return (
@@ -132,7 +154,7 @@ export function CombatView() {
               type="button"
               onClick={endTurn}
               disabled={combat.phase !== "player"}
-              className="mb-4 min-h-14 shrink-0 rounded-[var(--radius-md)] bg-parchment px-4 py-3 font-display text-ink transition-transform duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40"
+              className="mb-2 min-h-14 shrink-0 rounded-[var(--radius-md)] bg-parchment px-4 py-3 font-display text-ink transition-transform duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40"
             >
               終了
               <span className="block font-mono text-xs tracking-wider opacity-70">ターン</span>
@@ -140,7 +162,9 @@ export function CombatView() {
           </div>
 
           {targeting ? (
-            <p className="text-center font-mono text-xs tracking-wider text-accent">敵を選択</p>
+            <p className="pointer-events-none absolute bottom-[28dvh] left-0 right-0 z-20 text-center font-mono text-xs tracking-wider text-accent">
+              敵を選択
+            </p>
           ) : null}
 
           <PlayerFloaters floaters={combat.floaters.filter((f) => f.who === "player")} />
@@ -183,7 +207,6 @@ function EnemyStage({
 }) {
   const dead = enemy.hp <= 0;
   const def = getEnemy(enemy.defId);
-  const intent = intentLabel(enemy);
   const pose = useEnemyPose(enemy.hp, striking);
   const cutout = isVideoSrc(def.art) || Boolean(def.idleFrames?.length);
   const boss = enemy.maxHp >= 150;
@@ -209,19 +232,7 @@ function EnemyStage({
         <div className="enemy-impact" />
       </div>
       <div className="enemy-shadow" />
-      <div className="relative z-10 mt-2 space-y-1 px-1">
-        <p className="font-display text-sm text-parchment">{def.name}</p>
-        <p className="font-mono text-xs text-accent">{intent}</p>
-        <div className="h-1.5 overflow-hidden rounded-full bg-ink-2">
-          <div className="h-full bg-blood" style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} />
-        </div>
-        <p className="font-mono text-xs text-muted tabular-nums">
-          {enemy.hp}/{enemy.maxHp}
-          {enemy.block ? ` · 防 ${enemy.block}` : ""}
-          {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
-        </p>
-      </div>
-      <div className="pointer-events-none absolute top-8 left-1/2 -translate-x-1/2">
+      <div className="pointer-events-none absolute top-[18%] left-1/2 -translate-x-1/2">
         {floaters.map((f) => (
           <span
             key={f.id}
@@ -234,6 +245,39 @@ function EnemyStage({
           </span>
         ))}
       </div>
+    </button>
+  );
+}
+
+function EnemyPlate({
+  enemy,
+  targeting,
+  onTarget,
+}: {
+  enemy: CombatEnemy;
+  targeting: boolean;
+  onTarget: () => void;
+}) {
+  const def = getEnemy(enemy.defId);
+  const intent = intentLabel(enemy);
+  const dead = enemy.hp <= 0;
+  return (
+    <button
+      type="button"
+      disabled={dead}
+      onClick={onTarget}
+      className={cn("min-w-40 text-left", targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-md)] px-2 py-1" : "")}
+    >
+      <p className="font-display text-sm text-parchment">{def.name}</p>
+      <p className="font-mono text-xs text-accent">{intent}</p>
+      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink-2">
+        <div className="h-full bg-blood" style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} />
+      </div>
+      <p className="font-mono text-xs text-muted tabular-nums">
+        {enemy.hp}/{enemy.maxHp}
+        {enemy.block ? ` · 防 ${enemy.block}` : ""}
+        {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
+      </p>
     </button>
   );
 }
