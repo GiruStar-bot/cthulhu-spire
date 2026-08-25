@@ -3,7 +3,7 @@ import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
-const TITLE_CLIPS = ["art/title.mp4", "art/title-city.mp4", "art/title-hall.mp4"] as const;
+const TITLE_CLIPS = ["art/title.mp4", "art/title-city.mp4", "art/title-gates.mp4"] as const;
 
 const ART_FILL: CSSProperties = {
   position: "absolute",
