@@ -1,2 +1,37 @@
-# cthulhu-spire
-Cthulhu Spire - Slay the Spire remixed with Cthulhu Mythos. A deck-building roguelike of cosmic horror.
+# Cthulhu Spire
+
+**Slay the Spire** をクトゥルフ神話（宇宙的恐怖）とリミックスしたデッキビルディング・ローグライク。
+
+> 知識は力であり、同時に滅びへの道である。
+
+## 概要
+プレイヤーは黒き尖塔（Cthulhu Spire）を登る（あるいは深淵へ降る）探究者／信者となる。  
+カードは儀式・禁断の知識・エルダーサインとして機能し、**Sanity（正気度）** がゲームの中核リソースとなる。
+
+## デザインピラー
+1. **宇宙的無力感と主体性の幻想** — プレイヤーは強く感じるが、宇宙は無関心または敵対的
+2. **知識の両刃性** — 力を得ることはSanityを削り、危険な選択肢を開く
+3. **儀式的デッキ構築** — カードは単なる攻撃ではなく、何かを呼び起こす行為
+4. **非ユークリッド的雰囲気** — マップ・イベント・敵に「おかしい空間」を感じさせる
+5. **恐怖を優先** — パワーファンタジーより、ゆっくりと侵食される感覚を重視
+
+## 技術方針
+- 推奨エンジン: **Godot 4.x**（GDScript / C#）
+- データ駆動設計（カード・レリック・イベントはResourceで管理）
+- コンバットロジックとプレゼンテーションの明確な分離
+
+## リポジトリ構成（予定）
+```
+cthulhu-spire/
+├── docs/               # デザイン文書・仕様
+├── design/             # カードリスト・バランスシートなど
+├── art/                # 生成したアセット・スタイルガイド
+├── src/                # ゲーム本体（Godotプロジェクト）
+└── tools/              # 便利スクリプト
+```
+
+## 開発ステータス
+現在、Grok連携によるデザイン・アート・技術設計フェーズ。
+
+---
+*This project is being developed with Grok as Creative Director, Art Director, and Engine Specialist.*

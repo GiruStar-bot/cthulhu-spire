@@ -1,0 +1,38 @@
+# Godot 4
+.godot/
+*.translation
+export_presets.cfg
+export/
+
+# Unity (if used later)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# General
+.DS_Store
+*.log
+*.tmp
+*.bak
+.idea/
+.vscode/
+*.swp
+*~
