@@ -4,15 +4,17 @@ Slay the Spire × クトゥルフ神話のデッキビルディング・ロー�
 
 > 知識は力であり、同時に滅びへの道である。
 
-## プレイ
+**リポジトリ:** https://github.com/GiruStar-bot/cthulhu-spire
 
-GitHub Pages で公開されます。
+**プレイ（GitHub Pages）:** https://girustar-bot.github.io/cthulhu-spire/
 
-`https://girustar-bot.github.io/cthulhu-spire/`
+初回だけ、GitHub の **Settings → Pages → Branch を `gh-pages` / root** にすると公開されます。以降は `main` への push で自動更新します。
 
 ## ローカル起動
 
 ```bash
+git clone https://github.com/GiruStar-bot/cthulhu-spire.git
+cd cthulhu-spire
 npm install
 npm run dev
 ```
@@ -34,4 +36,4 @@ npm run preview
 ## 技術
 
 - React 19 + Vite + Tailwind v4 + zustand
-- 静的サイトとして GitHub Pages にデプロイ
+- 静的サイト。`gh-pages` ブランチへデプロイ
