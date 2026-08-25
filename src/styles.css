@@ -40,6 +40,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  input[type="range"] {
+    accent-color: var(--color-parchment);
+    height: 1.5rem;
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

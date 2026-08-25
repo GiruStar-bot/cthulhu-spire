@@ -1,5 +1,8 @@
 import { asset } from "@/lib/asset";
 
+const AUDIO_KEY = "cthulhu-spire-audio-v1";
+const SFX_CEILING = 0.8;
+
 let ctx: AudioContext | null = null;
 let bgmHandle: BgmHandle | null = null;
 let currentBgm: BgmId | null = null;
@@ -8,6 +11,7 @@ let master: GainNode | null = null;
 let sfxBus: GainNode | null = null;
 let musicBus: GainNode | null = null;
 let preloadStarted = false;
+let sfxVolume = 1;
 
 export type BgmId = "combat" | "rest" | "event" | "boss" | "reward" | "none";
 export type SfxCue = "attack" | "skill" | "block" | "hurt" | "step";
@@ -56,13 +60,59 @@ function buses() {
     master.gain.value = 1;
     master.connect(c.destination);
     sfxBus = c.createGain();
-    sfxBus.gain.value = 1;
     sfxBus.connect(master);
     musicBus = c.createGain();
     musicBus.gain.value = 0.9;
     musicBus.connect(master);
+    applySfxGain();
   }
   return { c, sfx: sfxBus!, music: musicBus! };
+}
+
+function applySfxGain() {
+  if (!sfxBus || !ctx) return;
+  const g = sfxVolume * sfxVolume * SFX_CEILING;
+  sfxBus.gain.setTargetAtTime(g, ctx.currentTime, 0.02);
+}
+
+function loadAudioSettings() {
+  if (typeof localStorage === "undefined") return;
+  try {
+    const raw = localStorage.getItem(AUDIO_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw) as { sfx?: number };
+    if (typeof d.sfx === "number" && Number.isFinite(d.sfx)) {
+      sfxVolume = Math.max(0, Math.min(1, d.sfx));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+function persistAudio() {
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.setItem(AUDIO_KEY, JSON.stringify({ sfx: sfxVolume }));
+  } catch {
+    /* ignore */
+  }
+}
+
+loadAudioSettings();
+
+export function getSfxVolume() {
+  return sfxVolume;
+}
+
+export function setSfxVolume(value: number) {
+  sfxVolume = Math.max(0, Math.min(1, value));
+  persistAudio();
+  try {
+    buses();
+    applySfxGain();
+  } catch {
+    /* ignore */
+  }
 }
 
 export function unlockAudio() {
