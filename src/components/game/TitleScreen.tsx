@@ -19,7 +19,7 @@ export function TitleScreen() {
           クトゥルスパイア
         </h1>
         <p className="max-w-md text-sm leading-relaxed text-muted sm:text-base">
-          在ってはならない塔へ、儀式のデッキを携えて登る。エネルギーを使い、ブロックを積み、正気を貨幣にする。頂は、優しくない。
+          在ってはならない塔へ、儀式のデッキを携えて登る。一面を越えても肉体もカードも引き継がれる。エネルギーを使い、ブロックを積み、正気を貨幣にする。頂は、優しくない。
         </p>
         <div className="flex flex-wrap items-center gap-4">
           <button

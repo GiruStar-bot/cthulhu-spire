@@ -1,3 +1,4 @@
+import { BetweenView } from "@/components/game/BetweenView";
 import { ClassSelect } from "@/components/game/ClassSelect";
 import { CombatView } from "@/components/game/CombatView";
 import { EndView } from "@/components/game/EndView";
@@ -25,6 +26,8 @@ export function GameApp() {
       return <RestView />;
     case "event":
       return <EventView />;
+    case "between":
+      return <BetweenView />;
     case "victory":
       return <EndView kind="victory" />;
     case "defeat":

@@ -6,6 +6,7 @@ export type Scene =
   | "reward"
   | "rest"
   | "event"
+  | "between"
   | "victory"
   | "defeat";
 

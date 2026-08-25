@@ -3,6 +3,7 @@ import { useGame } from "@/game/store";
 export function EndView({ kind }: { kind: "victory" | "defeat" }) {
   const giveUp = useGame((s) => s.giveUp);
   const floor = useGame((s) => s.floor);
+  const act = useGame((s) => s.act);
   const meta = useGame((s) => s.meta);
   const win = kind === "victory";
 
@@ -25,7 +26,7 @@ export function EndView({ kind }: { kind: "victory" | "defeat" }) {
         <p className="max-w-md text-sm text-muted">
           {win
             ? "口は静かだ。知識は残る。もう一度登っても、かつての自分には戻れない。"
-            : `尖塔が、記録を保管する。到達した階は ${floor}。`}
+            : `尖塔が、記録を保管する。到達したのは ${act}面 ${floor}階。`}
         </p>
         <p className="font-mono text-[11px] text-muted">
           勝利 {meta.wins} · 最高階 {meta.bestFloor}

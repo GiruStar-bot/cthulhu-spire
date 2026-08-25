@@ -374,11 +374,24 @@ export function clearFloaters(c: CombatState) {
   c.floaters = [];
 }
 
-export function encounterIds(kind: "combat" | "elite" | "boss", floor: number, rand: () => number): string[] {
-  if (kind === "boss") return ["priest"];
-  if (kind === "elite") return ["starveling"];
+export function encounterIds(
+  kind: "combat" | "elite" | "boss",
+  floor: number,
+  act: number,
+  rand: () => number,
+): string[] {
+  if (kind === "boss") {
+    if (act >= 3) return ["mouth"];
+    if (act === 2) return ["herald"];
+    return ["priest"];
+  }
+  if (kind === "elite") {
+    if (act >= 3) return ["starveling", "byakhee"];
+    return ["starveling"];
+  }
   const pool = ["acolyte", "drowned", "byakhee"] as const;
-  if (floor >= 5 && rand() < 0.45) {
+  const double = act >= 2 ? 0.55 : floor >= 5 ? 0.45 : 0.12;
+  if (rand() < double) {
     return [pick(pool, rand), pick(["acolyte", "drowned"] as const, rand)];
   }
   return [pick(pool, rand)];

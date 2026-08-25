@@ -1,16 +1,8 @@
 import { Vitals } from "@/components/game/Hud";
+import { ACT_TITLE, BOSS_LABEL } from "@/game/acts";
 import type { MapNode, NodeType } from "@/game/types";
 import { useGame } from "@/game/store";
 import { cn } from "@/lib/utils";
-
-const LABEL: Record<NodeType, string> = {
-  start: "閾",
-  combat: "守護",
-  elite: "精鋭",
-  rest: "休息",
-  event: "予兆",
-  boss: "口",
-};
 
 export function MapView() {
   const map = useGame((s) => s.map);
@@ -20,8 +12,22 @@ export function MapView() {
   const giveUp = useGame((s) => s.giveUp);
   const toast = useGame((s) => s.toast);
   const dismiss = useGame((s) => s.dismissToast);
+  const act = useGame((s) => s.act);
   const current = map.find((n) => n.id === currentId);
   const available = new Set(current?.next ?? []);
+
+  const label = (type: NodeType) => {
+    if (type === "boss") return BOSS_LABEL[act] ?? "口";
+    const base: Record<NodeType, string> = {
+      start: "閾",
+      combat: "守護",
+      elite: "精鋭",
+      rest: "休息",
+      event: "予兆",
+      boss: "口",
+    };
+    return base[type];
+  };
 
   const rows = 9;
   const grouped: MapNode[][] = Array.from({ length: rows }, (_, r) =>
@@ -39,7 +45,7 @@ export function MapView() {
       <div className="relative z-10 flex min-h-dvh flex-col gap-4 px-4 py-5 sm:px-8">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="font-mono text-[11px] tracking-widest text-accent">尖塔</p>
+            <p className="font-mono text-[11px] tracking-widest text-accent">{ACT_TITLE[act]}</p>
             <h2 className="font-display text-2xl text-parchment">道を選ぶ</h2>
           </div>
           <button
@@ -83,7 +89,7 @@ export function MapView() {
                       !can && !seen && "border-border/50 text-muted/50",
                     )}
                   >
-                    {LABEL[n.type]}
+                    {label(n.type)}
                   </button>
                 );
               })}
@@ -91,7 +97,7 @@ export function MapView() {
           ))}
         </div>
         <p className="font-mono text-[10px] tracking-wider text-muted">
-          いまいる地点からのみ、次の道が開く。目指すは「口」。
+          いまいる地点からのみ、次の道が開く。三面の「口」まで、肉体とデッキは引き継がれる。
         </p>
       </div>
     </section>

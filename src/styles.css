@@ -32,7 +32,7 @@
 
   html,
   body,
-  #app {
+  #root {
     min-height: 100dvh;
     background: var(--color-ink);
     color: var(--color-parchment);

@@ -11,6 +11,7 @@ import type {
 import { CHARACTERS } from "./characters";
 import { cardText, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
+import { climbDepth, MAX_ACT } from "./acts";
 import { generateMap, nodeById } from "./map";
 import { RELIC_IDS, RELICS } from "./relics";
 import {
@@ -78,6 +79,7 @@ export interface GameStore {
   relics: string[];
   runStrength: number;
   extraEnergyNext: number;
+  act: number;
   map: MapNode[];
   currentId: string | null;
   visited: string[];
@@ -101,6 +103,7 @@ export interface GameStore {
   resolveEvent: (choiceId: string) => void;
   dismissToast: () => void;
   toMap: () => void;
+  advanceAct: () => void;
   giveUp: () => void;
 }
 
@@ -127,6 +130,7 @@ export const useGame = create<GameStore>((set, get) => ({
   relics: [],
   runStrength: 0,
   extraEnergyNext: 0,
+  act: 1,
   map: [],
   currentId: null,
   visited: [],
@@ -164,6 +168,7 @@ export const useGame = create<GameStore>((set, get) => ({
       relics: [],
       runStrength: 0,
       extraEnergyNext: 0,
+      act: 1,
       map,
       currentId: start.id,
       visited: [start.id],
@@ -187,9 +192,9 @@ export const useGame = create<GameStore>((set, get) => ({
     set({ currentId: id, visited: [...s.visited, id], floor, targeting: null });
 
     if (node.type === "combat" || node.type === "elite" || node.type === "boss") {
-      const ids = encounterIds(node.type, floor, s.rand);
+      const ids = encounterIds(node.type, floor, s.act, s.rand);
       const hook = hookFrom({ ...get(), extraEnergyNext: get().extraEnergyNext });
-      const combat = startCombat(get().deck, ids, hook, floor, s.rand);
+      const combat = startCombat(get().deck, ids, hook, climbDepth(s.act, floor), s.rand);
       applyHook(get() as GameStore, hook);
       set({
         scene: "combat",
@@ -248,7 +253,7 @@ export const useGame = create<GameStore>((set, get) => ({
       sfx.lose();
       const meta = {
         ...s.meta,
-        bestFloor: Math.max(s.meta.bestFloor, s.floor),
+        bestFloor: Math.max(s.meta.bestFloor, climbDepth(s.act, s.floor)),
       };
       saveMeta(meta);
       next.scene = "defeat";
@@ -278,7 +283,7 @@ export const useGame = create<GameStore>((set, get) => ({
       next.reward = makeReward(s);
     } else if (combat.result === "lose") {
       sfx.lose();
-      const meta = { ...s.meta, bestFloor: Math.max(s.meta.bestFloor, s.floor) };
+      const meta = { ...s.meta, bestFloor: Math.max(s.meta.bestFloor, climbDepth(s.act, s.floor)) };
       saveMeta(meta);
       next.scene = "defeat";
       next.meta = meta;
@@ -308,9 +313,28 @@ export const useGame = create<GameStore>((set, get) => ({
     }
     const node = s.currentId ? nodeById(s.map, s.currentId) : null;
     if (node?.type === "boss") {
-      const meta = { ...s.meta, wins: s.meta.wins + 1, bestFloor: Math.max(s.meta.bestFloor, s.floor) };
+      const depth = climbDepth(s.act, s.floor);
+      const meta = {
+        ...s.meta,
+        bestFloor: Math.max(s.meta.bestFloor, depth),
+        wins: s.act >= MAX_ACT ? s.meta.wins + 1 : s.meta.wins,
+      };
       saveMeta(meta);
-      set({ scene: "victory", deck, relics, hp, maxHp, meta, reward: null });
+      if (s.act >= MAX_ACT) {
+        set({ scene: "victory", deck, relics, hp, maxHp, meta, reward: null, combat: null });
+        return;
+      }
+      set({
+        scene: "between",
+        deck,
+        relics,
+        hp,
+        maxHp,
+        meta,
+        reward: null,
+        combat: null,
+        toast: null,
+      });
       return;
     }
     set({ scene: "map", deck, relics, hp, maxHp, reward: null, combat: null });
@@ -418,6 +442,34 @@ export const useGame = create<GameStore>((set, get) => ({
 
   dismissToast: () => set({ toast: null }),
   toMap: () => set({ scene: "map", combat: null, reward: null, event: null, restMode: null }),
+  advanceAct: () => {
+    const s = get();
+    if (s.act >= MAX_ACT) return;
+    const map = generateMap(s.rand);
+    const start = map.find((n) => n.type === "start");
+    if (!start) return;
+    const heal = Math.round(s.maxHp * 0.22);
+    const hp = Math.min(s.maxHp, s.hp + heal);
+    const sanity = Math.min(s.maxSanity, s.sanity + 8);
+    const nextAct = s.act + 1;
+    set({
+      act: nextAct,
+      map,
+      currentId: start.id,
+      visited: [start.id],
+      floor: 0,
+      hp,
+      sanity,
+      scene: "map",
+      combat: null,
+      reward: null,
+      event: null,
+      restMode: null,
+      targeting: null,
+      extraEnergyNext: 0,
+      toast: `肉体・デッキ・遺物はそのまま。体力+${heal}、正気+8。`,
+    });
+  },
   giveUp: () => set({ scene: "title", combat: null }),
 }));
 

@@ -59,6 +59,32 @@ export const ENEMIES: Record<string, EnemyDef> = {
       { kind: "attack", damage: 22 },
     ],
   },
+  herald: {
+    id: "herald",
+    name: "呼び声の使徒",
+    art: "/art/boss.jpg",
+    maxHp: 214,
+    pattern: [
+      { kind: "debuff", dread: 1, weak: 2 },
+      { kind: "attack", damage: 16, hits: 2 },
+      { kind: "buff", strength: 3 },
+      { kind: "attack", damage: 24 },
+      { kind: "defend", block: 18 },
+    ],
+  },
+  mouth: {
+    id: "mouth",
+    name: "口そのもの",
+    art: "/art/title.jpg",
+    maxHp: 268,
+    pattern: [
+      { kind: "debuff", dread: 2 },
+      { kind: "attack", damage: 12, hits: 3 },
+      { kind: "buff", strength: 4 },
+      { kind: "attack", damage: 28 },
+      { kind: "attack", damage: 18, hits: 2 },
+    ],
+  },
 };
 
 export function getEnemy(id: string): EnemyDef {

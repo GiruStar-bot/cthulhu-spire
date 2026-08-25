@@ -1,4 +1,5 @@
 import { CHARACTERS } from "@/game/characters";
+import { ACT_SHORT } from "@/game/acts";
 import { RELICS } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ export function Vitals() {
   const character = useGame((s) => s.character);
   const relics = useGame((s) => s.relics);
   const floor = useGame((s) => s.floor);
+  const act = useGame((s) => s.act);
   const ch = character ? CHARACTERS[character] : null;
 
   return (
@@ -25,7 +27,9 @@ export function Vitals() {
       ) : null}
       <Bar label="肉体" value={hp} max={maxHp} tone="hp" />
       <Bar label="正気" value={sanity} max={maxSanity} tone="sanity" />
-      <span className="font-mono text-[10px] tracking-wider text-muted">階 {floor}</span>
+      <span className="font-mono text-[10px] tracking-wider text-muted">
+        {ACT_SHORT[act]} 階 {floor}
+      </span>
       <div className="flex flex-wrap gap-1">
         {relics.map((id) => (
           <span

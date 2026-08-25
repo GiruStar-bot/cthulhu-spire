@@ -1,33 +1,37 @@
-# Cthulhu Spire / クトゥルスパイア
+# クトゥルスパイア / Cthulhu Spire
 
-**Slay the Spire** をクトゥルフ神話（宇宙的恐怖）とリミックスしたデッキビルディング・ローグライク。
+Slay the Spire × クトゥルフ神話のデッキビルディング・ローグライク（Webデモ）。
 
 > 知識は力であり、同時に滅びへの道である。
 
-## 概要
-プレイヤーは黒き尖塔を登る探究者／信者となる。  
-カードは儀式・禁断の知識・エルダーサインとして機能し、**正気（Sanity）** が中核リソースになる。
+## プレイ
 
-## デザインピラー
-1. **宇宙的無力感と主体性の幻想**
-2. **知識の両刃性** — 力を得ることは正気を削る
-3. **儀式的デッキ構築**
-4. **非ユークリッド的雰囲気**
-5. **恐怖を優先**
+GitHub Pages で公開されます。
 
-## リポジトリ構成
+`https://girustar-bot.github.io/cthulhu-spire/`
 
-```
-cthulhu-spire/
-├── docs/          # デザイン文書
-├── web-demo/      # プレイ可能な Web デモ（日本語UI）のソース
-└── README.md
+## ローカル起動
+
+```bash
+npm install
+npm run dev
 ```
 
-## 開発ステータス
+ブラウザで表示された URL を開く。
 
-- デザイン文書：`docs/`
-- **プレイ可能デモ（日本語）**：`web-demo/` — クラス選択、マップ、戦闘、イベント、休息、ボスまで一通り遊べる
+```bash
+npm run build
+npm run preview
+```
 
----
-*This project is being developed with Grok as Creative Director, Art Director, and Engine Specialist.*
+## 操作
+
+1. 登攀を始める → クラスを選ぶ
+2. マップで道を選ぶ
+3. カードをタップしてプレイ（対象が必要なときは敵をタップ）
+4. ターン終了
+
+## 技術
+
+- React 19 + Vite + Tailwind v4 + zustand
+- 静的サイトとして GitHub Pages にデプロイ
