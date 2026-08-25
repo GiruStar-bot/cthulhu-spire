@@ -3,8 +3,6 @@ import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
-const TITLE_CLIPS = ["art/title.mp4", "art/title-city.mp4", "art/title-gates.mp4"] as const;
-
 const ART_FILL: CSSProperties = {
   position: "absolute",
   inset: 0,
@@ -85,41 +83,14 @@ export function TitleScreen() {
 }
 
 function TitleReel() {
-  const clipsRef = useRef(TITLE_CLIPS.map((p) => asset(p)));
-  const aRef = useRef<HTMLVideoElement>(null);
-  const bRef = useRef<HTMLVideoElement>(null);
-  const idxRef = useRef(0);
-  const frontRef = useRef(0);
-  const [front, setFront] = useState(0);
+  const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const clips = clipsRef.current;
-    clips.forEach((src) => {
-      const el = document.createElement("video");
-      el.muted = true;
-      el.preload = "auto";
-      el.src = src;
-    });
-    const first = aRef.current;
-    if (!first) return;
-    first.src = clips[0];
-    void first.play().catch(() => {});
+    const el = ref.current;
+    if (!el) return;
+    el.muted = true;
+    void el.play().catch(() => {});
   }, []);
-
-  const advance = () => {
-    const clips = clipsRef.current;
-    const next = (idxRef.current + 1) % clips.length;
-    const nextFront = 1 - frontRef.current;
-    const idle = nextFront === 0 ? aRef.current : bRef.current;
-    if (idle) {
-      idle.src = clips[next];
-      idle.currentTime = 0;
-      void idle.play().catch(() => {});
-    }
-    idxRef.current = next;
-    frontRef.current = nextFront;
-    setFront(nextFront);
-  };
 
   return (
     <div
@@ -127,29 +98,18 @@ function TitleReel() {
       style={{ position: "absolute", inset: 0, overflow: "hidden" }}
       aria-hidden
     >
-      <img src={asset("art/title.jpg")} alt="" className="title-stage-art" style={ART_FILL} crossOrigin="anonymous" />
+      <img src={asset("art/title-city.jpg")} alt="" className="title-stage-art" style={ART_FILL} />
       <video
-        ref={aRef}
-        className={front === 0 ? "title-stage-art title-bg-video is-on" : "title-stage-art title-bg-video"}
+        ref={ref}
+        className="title-stage-art title-bg-video is-on"
         style={ART_FILL}
+        src={asset("art/title-city.mp4")}
+        poster={asset("art/title-city.jpg")}
         muted
+        loop
         playsInline
+        autoPlay
         preload="auto"
-        poster={asset("art/title.jpg")}
-        onEnded={() => {
-          if (frontRef.current === 0) advance();
-        }}
-      />
-      <video
-        ref={bRef}
-        className={front === 1 ? "title-stage-art title-bg-video is-on" : "title-stage-art title-bg-video"}
-        style={ART_FILL}
-        muted
-        playsInline
-        preload="auto"
-        onEnded={() => {
-          if (frontRef.current === 1) advance();
-        }}
       />
     </div>
   );
