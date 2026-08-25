@@ -229,8 +229,7 @@ export function changeSanity(player: PlayerHook, c: CombatState, delta: number) 
       c.floaters.push(floater(`+${idolBlock}`, "block", "player"));
     }
     if (c.powers.includes("bloodOath")) {
-      const amt = 2;
-      c.strength += amt;
+      c.strength += 2;
     }
     if (before > 0 && player.sanity === 0) {
       addToDiscard(c, makeCard("dread"));
