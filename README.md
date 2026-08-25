@@ -1,4 +1,4 @@
-# クトゥルスパイア / Cthulhu Spire
+# Abyss of Cthulhu
 
 Slay the Spire × クトゥルフ神話のデッキビルディング・ローグライク。
 

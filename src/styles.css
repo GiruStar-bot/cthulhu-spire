@@ -57,6 +57,23 @@
   overflow-y: auto;
 }
 
+.title-veil {
+  background:
+    radial-gradient(
+      ellipse at 50% 48%,
+      color-mix(in oklab, var(--color-ink) 42%, transparent) 0 18%,
+      color-mix(in oklab, var(--color-ink) 18%, transparent) 42%,
+      transparent 64%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-ink) 28%, transparent),
+      transparent 22%,
+      transparent 78%,
+      color-mix(in oklab, var(--color-ink) 36%, transparent)
+    );
+}
+
 .rot-paper::before,
 .rot-paper::after,
 .card-rot::after {
