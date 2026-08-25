@@ -160,7 +160,7 @@ export const useGame = create<GameStore>((set, get) => {
     };
 
     if (spec.type === "combat" || spec.type === "elite" || spec.type === "boss") {
-      playBgm("combat");
+      playBgm(spec.type === "boss" ? "boss" : "combat", floor);
       const ids = spec.enemyIds?.length ? spec.enemyIds : encounterIds(spec.type, floor, s.rand);
       const hook = hookFrom(s as GameStore);
       const combat = startCombat(s.deck, ids, hook, floor, s.rand);
@@ -176,11 +176,11 @@ export const useGame = create<GameStore>((set, get) => {
       return;
     }
     if (spec.type === "rest") {
-      playBgm("map");
+      playBgm("descent", floor);
       set({ ...base, scene: "rest", restMode: "choose" });
       return;
     }
-    playBgm("map");
+    playBgm("descent", floor);
     const ev = EVENTS.find((e) => e.id === spec.eventId) ?? pick(EVENTS, s.rand);
     set({ ...base, scene: "event", event: ev });
   }
@@ -212,7 +212,7 @@ export const useGame = create<GameStore>((set, get) => {
 
     begin: () => {
       unlockAudio();
-      playBgm("title");
+      playBgm("prepare");
       const profile = loadProfile();
       const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
       const rand = mulberry32(seed);
@@ -358,7 +358,7 @@ export const useGame = create<GameStore>((set, get) => {
       };
       if (combat.result === "win") {
         sfx.win();
-        playBgm("map");
+        playBgm("descent", s.floor);
         next.scene = "reward";
         next.reward = makeReward(s);
         const heal = powerOf(s.relics, "postHeal");
@@ -390,7 +390,7 @@ export const useGame = create<GameStore>((set, get) => {
       const next: Partial<GameStore> = { combat, hp: hook.hp, sanity: hook.sanity, targeting: null };
       if (combat.result === "win") {
         sfx.win();
-        playBgm("map");
+        playBgm("descent", s.floor);
         next.scene = "reward";
         next.reward = makeReward(s);
         const heal = powerOf(s.relics, "postHeal");
@@ -452,6 +452,7 @@ export const useGame = create<GameStore>((set, get) => {
       if (spec?.type === "boss" && s.floor === 50) {
         profile = { ...profile, bestFloor: Math.max(profile.bestFloor, s.floor) };
         persist(profile);
+        playBgm("descent", s.floor);
         set({
           scene: "between",
           deck,
