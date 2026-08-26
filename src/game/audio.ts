@@ -34,7 +34,7 @@ const SAMPLE: Record<SampleId, string> = {
 const buffers = new Map<SampleId, AudioBuffer>();
 const loopBuffers = new Map<string, AudioBuffer>();
 const LOOP_SRC: Partial<Record<BgmId, string>> = {
-  title: "music/maoudamashii-title.mp3",
+  title: "music/dunkle-herrlichkeit.mp3",
 };
 
 function ac() {
