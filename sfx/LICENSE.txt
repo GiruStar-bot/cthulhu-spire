@@ -6,4 +6,4 @@ block.wav   — Impact Sounds / impactMetal_medium_000
 hurt.wav    — Impact Sounds / impactGeneric_light_000
 step.wav    — Impact Sounds / footstep_concrete_000
 
-lose.mp3    — provided by the project (death sting)
+lose.mp3    — 魔王魂 / MaouDamashii  https://maou.audio/
