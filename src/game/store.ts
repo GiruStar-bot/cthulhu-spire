@@ -33,9 +33,11 @@ import {
   equippedRelics,
   loadProfile,
   MAX_LOADOUT,
+  riteGain,
   saveProfile,
-  STAT_BUDGET,
   STAT_MIN,
+  statBudget,
+  statSum,
 } from "./profile";
 
 function hookFrom(s: GameStore): PlayerHook {
@@ -104,6 +106,7 @@ export interface GameStore {
   dismissToast: () => void;
   continueClimb: () => void;
   giveUp: () => void;
+  spendRite: (key: keyof PlayerStats) => void;
 }
 
 function weightedCard(owner: CharacterId, rand: () => number): CardInst {
@@ -120,9 +123,12 @@ function starterPath(stats: PlayerStats): CharacterId {
 }
 
 function markDefeat(s: GameStore): PlayerProfile {
+  const gain = riteGain(s.floor);
   const profile = {
     ...s.profile,
     bestFloor: Math.max(s.profile.bestFloor, s.floor),
+    earnedPoints: Math.max(0, (s.profile.earnedPoints | 0) + gain),
+    unspentPoints: Math.max(0, (s.profile.unspentPoints | 0) + gain),
   };
   persist(profile);
   return profile;
@@ -282,10 +288,11 @@ export const useGame = create<GameStore>((set, get) => {
     setStat: (key, value) => {
       const profile = { ...get().profile, stats: { ...get().profile.stats } };
       const next = Math.max(STAT_MIN, value | 0);
-      const others = profile.stats.body + profile.stats.mind + profile.stats.will - profile.stats[key];
-      if (others + next > STAT_BUDGET) return;
+      const others = statSum(profile.stats) - profile.stats[key];
+      if (others + next > statBudget(profile)) return;
       profile.stats[key] = next;
       profile.stats = clampStats(profile.stats);
+      profile.unspentPoints = Math.max(0, statBudget(profile) - statSum(profile.stats));
       persist(profile);
       set({ profile });
       sfx.select();
@@ -317,9 +324,9 @@ export const useGame = create<GameStore>((set, get) => {
       const name = (s.playerName || profile.playerName || "無名の潜航者").trim().slice(0, 16);
       profile.playerName = name;
       profile.stats = clampStats(profile.stats);
-      const sum = profile.stats.body + profile.stats.mind + profile.stats.will;
-      if (sum !== STAT_BUDGET) {
-        set({ toast: `ステータス合計を${STAT_BUDGET}にしてください。` });
+      const sum = statSum(profile.stats);
+      if (sum !== statBudget(profile)) {
+        set({ toast: `ステータス合計を${statBudget(profile)}にしてください。` });
         return;
       }
       profile.runs += 1;
@@ -606,6 +613,18 @@ export const useGame = create<GameStore>((set, get) => {
 
     dismissToast: () => set({ toast: null }),
     continueClimb: () => enterFloor(get().floor + 1),
+    spendRite: (key) => {
+      const s = get();
+      if ((s.profile.unspentPoints | 0) <= 0) return;
+      const profile = {
+        ...s.profile,
+        stats: { ...s.profile.stats, [key]: s.profile.stats[key] + 1 },
+        unspentPoints: s.profile.unspentPoints - 1,
+      };
+      persist(profile);
+      set({ profile });
+      sfx.select();
+    },
     giveUp: () => {
       stopBgm();
       set({ scene: "title", combat: null, runFloors: [], profile: loadProfile() });

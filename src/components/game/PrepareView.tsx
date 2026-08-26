@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { DEMO_MAX_FLOOR, layerLabel, tallyFloors } from "@/game/floors";
-import { MAX_LOADOUT, STAT_BUDGET, STAT_MIN, unlockedFeatures } from "@/game/profile";
+import { MAX_LOADOUT, STAT_MIN, statBudget, statSum, unlockedFeatures } from "@/game/profile";
 import { RELICS, relicDesc, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
@@ -17,11 +17,12 @@ export function PrepareView() {
   const runFloors = useGame((s) => s.runFloors);
   const seed = useGame((s) => s.seed);
 
-  const sum = profile.stats.body + profile.stats.mind + profile.stats.will;
-  const remain = STAT_BUDGET - sum;
+  const sum = statSum(profile.stats);
+  const budget = statBudget(profile);
+  const remain = budget - sum;
   const features = useMemo(() => unlockedFeatures(profile.stats), [profile.stats]);
   const tally = useMemo(() => tallyFloors(runFloors), [runFloors]);
-  const canStart = playerName.trim().length > 0 && sum === STAT_BUDGET;
+  const canStart = playerName.trim().length > 0 && sum === budget;
 
   return (
     <section className="relative flex h-dvh flex-col overflow-hidden bg-ink px-3 py-3 sm:px-6">
@@ -65,7 +66,7 @@ export function PrepareView() {
               <div className="flex items-baseline justify-between">
                 <h3 className="font-display text-lg text-parchment">器の配分</h3>
                 <span className={cn("font-mono text-xs tabular-nums", remain === 0 ? "text-accent" : "text-blood")}>
-                  残り {remain} / 合計 {STAT_BUDGET}
+                  残り {remain} / 合計 {budget}
                 </span>
               </div>
               <div className="mt-1">
@@ -159,7 +160,7 @@ export function PrepareView() {
           </button>
           {toast ? <p className="text-sm text-blood">{toast}</p> : null}
           {!canStart ? (
-            <p className="text-sm text-muted">名前を入れ、配分をちょうど{STAT_BUDGET}に振り切ってください。</p>
+            <p className="text-sm text-muted">名前を入れ、配分をちょうど{budget}に振り切ってください。</p>
           ) : null}
         </div>
       </div>

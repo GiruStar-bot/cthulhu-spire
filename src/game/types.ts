@@ -160,6 +160,8 @@ export interface PlayerProfile {
   bestFloor: number;
   wins: number;
   runs: number;
+  earnedPoints: number;
+  unspentPoints: number;
 }
 
 export interface MapNode {

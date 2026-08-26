@@ -14,7 +14,21 @@ export function emptyProfile(): PlayerProfile {
     bestFloor: 0,
     wins: 0,
     runs: 0,
+    earnedPoints: 0,
+    unspentPoints: 0,
   };
+}
+
+export function statSum(stats: PlayerStats) {
+  return stats.body + stats.mind + stats.will;
+}
+
+export function statBudget(profile: PlayerProfile) {
+  return STAT_BUDGET + Math.max(0, profile.earnedPoints | 0);
+}
+
+export function riteGain(floor: number) {
+  return Math.max(0, Math.floor(floor / 10));
 }
 
 export function clampStats(stats: PlayerStats): PlayerStats {
@@ -53,6 +67,8 @@ export function loadProfile(): PlayerProfile {
       stats: clampStats(p.stats ?? emptyProfile().stats),
       collection: Array.isArray(p.collection) ? p.collection : [],
       loadoutIds: Array.isArray(p.loadoutIds) ? p.loadoutIds.slice(0, MAX_LOADOUT) : [],
+      earnedPoints: Math.max(0, p.earnedPoints | 0),
+      unspentPoints: Math.max(0, p.unspentPoints | 0),
     };
   } catch {
     return emptyProfile();
