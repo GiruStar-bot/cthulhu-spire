@@ -3,7 +3,7 @@ import { DEMO_MAX_FLOOR, layerLabel, tallyFloors } from "@/game/floors";
 import { MAX_LOADOUT, STAT_MIN, statBudget, statSum, unlockedFeatures } from "@/game/profile";
 import { RELICS, relicDesc, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
-import { asset } from "@/lib/asset";
+import { StageBack } from "@/components/game/StageBack";
 import { cn } from "@/lib/utils";
 
 export function PrepareView() {
@@ -26,13 +26,8 @@ export function PrepareView() {
 
   return (
     <section className="relative flex h-dvh flex-col overflow-hidden bg-ink px-3 py-3 sm:px-6">
-      <img
-        src={asset("art/corridor.jpg")}
-        alt=""
-        className="pointer-events-none absolute inset-0 size-full object-cover opacity-30"
-        crossOrigin="anonymous"
-      />
-      <div className="absolute inset-0 bg-ink/70" />
+      <StageBack opacity={0.3} />
+      <div className="absolute inset-0 bg-ink/55" />
       <div className="rot-paper relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col px-5 py-5 sm:px-8">
         <header className="shrink-0">
           <p className="font-mono text-xs tracking-widest text-accent">ルルイエ調査団 · 単独</p>

@@ -1,11 +1,11 @@
 import { CardView } from "@/components/game/CardView";
 import { CreatureMedia } from "@/components/game/CreatureMedia";
 import { Vitals } from "@/components/game/Hud";
+import { StageBack } from "@/components/game/StageBack";
 import { POWER_TEXT, canPlay } from "@/game/combat";
 import { getEnemy } from "@/game/enemies";
 import { cardCost, getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
-import { asset } from "@/lib/asset";
 import { isVideoSrc } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import type { CombatEnemy, Floater } from "@/game/types";
@@ -47,13 +47,7 @@ export function CombatView() {
   return (
     <section className="relative h-dvh overflow-hidden bg-ink">
       <ShakeRoot tick={fx.tick} traumaRef={fx.traumaRef} className="relative h-dvh overflow-hidden">
-        <img
-          src={asset("art/corridor.jpg")}
-          alt=""
-          className="pointer-events-none absolute inset-0 z-0 size-full object-cover opacity-35"
-          crossOrigin="anonymous"
-        />
-        <div className="absolute inset-0 z-0 bg-linear-to-b from-ink/40 via-transparent to-ink" />
+        <StageBack opacity={0.42} />
 
         <div className="fx-blood" style={{ "--blood": blood } as CSSProperties} />
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />

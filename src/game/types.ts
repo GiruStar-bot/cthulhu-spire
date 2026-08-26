@@ -79,6 +79,8 @@ export interface CardInst {
   upgraded: boolean;
 }
 
+export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne";
+
 export interface EnemyDef {
   id: string;
   name: string;
@@ -89,6 +91,7 @@ export interface EnemyDef {
   maxHp: number;
   pattern: Intent[];
   trait?: EnemyTrait;
+  biome: BiomeId;
 }
 
 export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split";

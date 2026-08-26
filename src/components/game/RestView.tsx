@@ -1,6 +1,6 @@
 import { CardView } from "@/components/game/CardView";
 import { Vitals } from "@/components/game/Hud";
-import { asset } from "@/lib/asset";
+import { StageBack } from "@/components/game/StageBack";
 import { getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
 
@@ -16,7 +16,9 @@ export function RestView() {
 
   if (restMode === "upgrade") {
     return (
-      <section className="min-h-dvh bg-ink px-4 py-10">
+      <section className="relative min-h-dvh overflow-hidden bg-ink px-4 py-10">
+        <StageBack opacity={0.22} />
+        <div className="relative z-10">
         <Vitals />
         <h2 className="font-display mt-6 text-3xl text-balance text-parchment">カードを刻む</h2>
         <p className="mt-2 text-sm text-pretty text-muted">デッキの1枚を強化する。終われば次の層へ沈む。</p>
@@ -37,18 +39,14 @@ export function RestView() {
         >
           戻る
         </button>
+        </div>
       </section>
     );
   }
 
   return (
     <section className="relative min-h-dvh overflow-hidden bg-ink">
-      <img
-        src={asset("art/corridor.jpg")}
-        alt=""
-        className="absolute inset-0 size-full object-cover opacity-30"
-        crossOrigin="anonymous"
-      />
+      <StageBack opacity={0.3} />
       <div className="relative z-10 flex min-h-dvh flex-col justify-end gap-4 px-6 py-12">
         <Vitals />
         {toast ? (

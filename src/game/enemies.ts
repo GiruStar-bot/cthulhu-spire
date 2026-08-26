@@ -13,6 +13,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "acolyte",
     name: "侍祭",
     ...clip("acolyte"),
+    biome: "street",
     maxHp: 32,
     pattern: [
       { kind: "attack", damage: 7 },
@@ -24,6 +25,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "drowned",
     name: "溺れた眷属",
     ...clip("deepone"),
+    biome: "reef",
     maxHp: 44,
     pattern: [
       { kind: "attack", damage: 9 },
@@ -35,6 +37,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "byakhee",
     name: "翼ある飢え",
     ...clip("byakhee"),
+    biome: "reef",
     maxHp: 38,
     pattern: [
       { kind: "debuff", weak: 2 },
@@ -42,10 +45,23 @@ export const ENEMIES: Record<string, EnemyDef> = {
       { kind: "attack", damage: 8 },
     ],
   },
+  coral: {
+    id: "coral",
+    name: "礁の衛士",
+    ...clip("coral"),
+    biome: "reef",
+    maxHp: 48,
+    pattern: [
+      { kind: "defend", block: 10 },
+      { kind: "attack", damage: 10 },
+      { kind: "attack", damage: 6, hits: 2 },
+    ],
+  },
   starveling: {
     id: "starveling",
     name: "飢えし仔",
     ...clip("deepone"),
+    biome: "reef",
     maxHp: 86,
     pattern: [
       { kind: "buff", strength: 2 },
@@ -54,11 +70,38 @@ export const ENEMIES: Record<string, EnemyDef> = {
       { kind: "defend", block: 14 },
     ],
   },
+  serpent: {
+    id: "serpent",
+    name: "ムーの蛇人",
+    ...clip("serpent"),
+    biome: "mu",
+    maxHp: 54,
+    pattern: [
+      { kind: "debuff", weak: 2 },
+      { kind: "attack", damage: 12 },
+      { kind: "defend", block: 9 },
+      { kind: "attack", damage: 7, hits: 2 },
+    ],
+  },
+  spawn: {
+    id: "spawn",
+    name: "ガタノトアの落とし子",
+    ...clip("spawn"),
+    biome: "mu",
+    maxHp: 62,
+    pattern: [
+      { kind: "debuff", dread: 1 },
+      { kind: "attack", damage: 11 },
+      { kind: "buff", strength: 2 },
+      { kind: "attack", damage: 15 },
+    ],
+  },
   priest: {
     id: "priest",
     name: "尖塔の大司祭",
     art: asset("art/priest/idle.mp4"),
     poster: asset("art/priest/sprite_01.png"),
+    biome: "street",
     maxHp: 168,
     pattern: [
       { kind: "debuff", dread: 1 },
@@ -72,6 +115,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "choir",
     name: "塩の唱者",
     ...clip("acolyte"),
+    biome: "street",
     maxHp: 42,
     trait: "choir",
     pattern: [
@@ -85,6 +129,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "nurse",
     name: "深きものの乳母",
     ...clip("nurse"),
+    biome: "reef",
     maxHp: 112,
     trait: "nurse",
     pattern: [
@@ -99,6 +144,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "flock",
     name: "飢えた翼",
     ...clip("byakhee"),
+    biome: "reef",
     maxHp: 52,
     pattern: [
       { kind: "attack", damage: 5, hits: 3 },
@@ -111,6 +157,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "warden",
     name: "曲がる幾何の番",
     ...clip("warden"),
+    biome: "fold",
     maxHp: 108,
     trait: "liar",
     pattern: [
@@ -125,6 +172,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "bell",
     name: "溺れた街の鐘",
     ...clip("bell"),
+    biome: "street",
     maxHp: 118,
     trait: "bell",
     pattern: [
@@ -139,6 +187,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "nyar",
     name: "門番ナイアルラト",
     ...clip("nyar"),
+    biome: "throne",
     maxHp: 124,
     trait: "seal",
     pattern: [
@@ -153,6 +202,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "iha",
     name: "緑の腐肉、イハ",
     ...clip("iha"),
+    biome: "throne",
     maxHp: 96,
     trait: "split",
     pattern: [
@@ -167,6 +217,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "herald",
     name: "呼び声の使徒",
     ...clip("herald"),
+    biome: "throne",
     maxHp: 214,
     pattern: [
       { kind: "debuff", dread: 1, weak: 2 },
@@ -180,6 +231,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     id: "mouth",
     name: "口そのもの",
     ...clip("mouth"),
+    biome: "throne",
     maxHp: 268,
     pattern: [
       { kind: "debuff", dread: 2 },

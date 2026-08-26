@@ -27,7 +27,7 @@ const SAMPLE: Record<SampleId, string> = {
   attack: "sfx/attack.wav",
   block: "sfx/block.wav",
   hurt: "sfx/hurt.wav",
-  step: "sfx/step.wav",
+  step: "sfx/step.mp3",
   lose: "sfx/lose.mp3",
 };
 
@@ -256,7 +256,7 @@ export const sfx = {
   attack: () => playSample("attack", 0.78),
   block: () => playSample("block", 0.72),
   hurt: () => playSample("hurt", 0.82),
-  step: () => playSample("step", 0.7),
+  step: () => playSample("step", 0.9, true),
   select: () => blip(520, 0.06, "sine", 0.03),
   play: () => {
     blip(240, 0.08, "triangle", 0.035);

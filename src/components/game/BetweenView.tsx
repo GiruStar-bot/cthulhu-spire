@@ -1,5 +1,5 @@
 import { Vitals } from "@/components/game/Hud";
-import { asset } from "@/lib/asset";
+import { StageBack } from "@/components/game/StageBack";
 import { DEMO_MAX_FLOOR, layerLabel } from "@/game/floors";
 import { getCard } from "@/game/cards";
 import { useGame } from "@/game/store";
@@ -12,12 +12,7 @@ export function BetweenView() {
 
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
-      <img
-        src={asset("art/corridor.jpg")}
-        alt=""
-        className="absolute inset-0 size-full object-cover opacity-30"
-        crossOrigin="anonymous"
-      />
+      <StageBack opacity={0.32} />
       <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/75 to-ink/40" />
       <div className="relative z-10 mt-auto flex flex-col gap-5 px-6 pb-16 sm:px-12">
         <p className="font-mono text-[11px] tracking-widest text-accent">{layerLabel(floor)}まで沈んだ</p>

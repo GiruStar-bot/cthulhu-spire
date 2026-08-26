@@ -1,6 +1,6 @@
 import { Vitals } from "@/components/game/Hud";
+import { StageBack } from "@/components/game/StageBack";
 import { useGame } from "@/game/store";
-import { asset } from "@/lib/asset";
 
 export function EventView() {
   const event = useGame((s) => s.event);
@@ -11,13 +11,7 @@ export function EventView() {
 
   return (
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
-      <img
-        src={asset("art/corridor.jpg")}
-        alt=""
-        className="absolute inset-0 size-full object-cover opacity-25"
-        crossOrigin="anonymous"
-      />
-      <div className="absolute inset-0 bg-linear-to-b from-ink/60 via-ink/35 to-ink/80" />
+      <StageBack opacity={0.28} />
 
       <div className="relative z-10 shrink-0 px-6 pt-6 sm:px-10">
         <Vitals />

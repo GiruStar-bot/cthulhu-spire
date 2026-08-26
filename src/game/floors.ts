@@ -7,9 +7,11 @@ export const DEMO_MAX_FLOOR = 100;
 
 export function floorBand(floor: number): string {
   if (floor >= 100) return "最深";
-  if (floor >= 67) return "口の層";
-  if (floor >= 34) return "曲がる層";
-  return "表層";
+  if (floor >= 80) return "緑の広間";
+  if (floor >= 60) return "曲がる石";
+  if (floor >= 40) return "ムーの残骸";
+  if (floor >= 20) return "沈んだ街";
+  return "礁の層";
 }
 
 export function layerLabel(floor: number): string {

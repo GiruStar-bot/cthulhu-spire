@@ -454,14 +454,24 @@ export function encounterIds(
     return ["priest"];
   }
   if (kind === "elite") {
-    if (floor >= 70) return ["starveling", "byakhee"];
+    if (floor >= 70) return rand() < 0.5 ? ["spawn", "serpent"] : ["starveling", "byakhee"];
+    if (floor >= 40) return rand() < 0.5 ? ["spawn"] : ["serpent"];
     if (floor >= 20) return ["starveling"];
-    return ["byakhee"];
+    return rand() < 0.5 ? ["coral"] : ["byakhee"];
   }
-  const pool = ["acolyte", "drowned", "byakhee"] as const;
+  const pool =
+    floor >= 80
+      ? (["spawn", "serpent", "starveling"] as const)
+      : floor >= 60
+        ? (["spawn", "serpent", "byakhee"] as const)
+        : floor >= 40
+          ? (["serpent", "spawn", "coral"] as const)
+          : floor >= 20
+            ? (["acolyte", "drowned", "coral", "byakhee"] as const)
+            : (["acolyte", "drowned", "coral"] as const);
   const double = floor >= 40 ? 0.5 : floor >= 12 ? 0.35 : 0.12;
   if (rand() < double) {
-    return [pick(pool, rand), pick(["acolyte", "drowned"] as const, rand)];
+    return [pick(pool, rand), pick(pool, rand)];
   }
   return [pick(pool, rand)];
 }
