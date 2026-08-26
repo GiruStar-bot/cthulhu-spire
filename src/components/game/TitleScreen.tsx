@@ -16,7 +16,7 @@ const ART_FILL: CSSProperties = {
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
   const profile = useGame((s) => s.profile);
-  const [settings, setSettings] = useState(false);
+  const [sheet, setSheet] = useState<"settings" | "credits" | null>(null);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -66,11 +66,20 @@ export function TitleScreen() {
               type="button"
               onClick={() => {
                 unlockAudio();
-                setSettings(true);
+                setSheet("settings");
               }}
               className="min-h-11 rounded-[var(--radius-md)] px-6 py-3 font-display text-base text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_28%,transparent)] transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.96]"
             >
               設定
+            </button>
+          </span>
+          <span className="title-float-c">
+            <button
+              type="button"
+              onClick={() => setSheet("credits")}
+              className="min-h-11 rounded-[var(--radius-md)] px-6 py-3 font-display text-base text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_28%,transparent)] transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.96]"
+            >
+              クレジット
             </button>
           </span>
         </div>
@@ -79,7 +88,8 @@ export function TitleScreen() {
           {profile.collection.length}
         </p>
       </div>
-      {settings ? <SettingsPanel onClose={() => setSettings(false)} /> : null}
+      {sheet === "settings" ? <SettingsPanel onClose={() => setSheet(null)} /> : null}
+      {sheet === "credits" ? <CreditsPanel onClose={() => setSheet(null)} /> : null}
     </section>
   );
 }
@@ -239,6 +249,50 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
           <p className="mt-2 text-xs text-muted">ESCで解除。</p>
         )}
 
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-8 min-h-11 w-full rounded-[var(--radius-md)] bg-parchment px-5 py-3 font-display text-ink"
+        >
+          閉じる
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CreditsPanel({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="absolute inset-0 z-20 flex items-end justify-center bg-ink/70 px-4 py-8 sm:items-center">
+      <button type="button" className="absolute inset-0" aria-label="閉じる" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-labelledby="credits-title"
+        className="settings-sheet relative w-full max-w-md rounded-[var(--radius-xl)] bg-surface px-5 py-6 shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)] sm:px-6"
+      >
+        <p className="font-mono text-xs tracking-widest text-accent">表記</p>
+        <h2 id="credits-title" className="font-display mt-1 text-2xl text-parchment">
+          クレジット
+        </h2>
+        <p className="mt-6 font-mono text-xs tracking-widest text-muted">音響素材</p>
+        <p className="mt-3 font-display text-lg text-parchment">効果音：魔王魂</p>
+        <a
+          href="https://maou.audio/"
+          target="_blank"
+          rel="noreferrer"
+          className="mt-1 inline-block min-h-11 py-2 font-mono text-sm text-accent underline-offset-4 hover:underline"
+        >
+          maou.audio
+        </a>
+        <p className="mt-4 text-sm text-muted">死亡時のガーンなど、今後追加する効果音・BGMも魔王魂の素材を使用します。</p>
         <button
           type="button"
           onClick={onClose}

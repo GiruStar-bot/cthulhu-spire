@@ -171,6 +171,12 @@
   filter: drop-shadow(0 12px 18px color-mix(in oklab, var(--color-ink) 62%, transparent));
 }
 
+.title-float-c {
+  animation: drift 5.8s ease-in-out infinite;
+  animation-delay: -2.4s;
+  filter: drop-shadow(0 12px 18px color-mix(in oklab, var(--color-ink) 62%, transparent));
+}
+
 .rot-paper::before,
 .rot-paper::after,
 .card-rot::after {
@@ -625,7 +631,8 @@
   .fx-vertigo.is-on,
   .title-float,
   .title-float-a,
-  .title-float-b {
+  .title-float-b,
+  .title-float-c {
     animation: none;
   }
 
