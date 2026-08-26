@@ -37,7 +37,7 @@ export function makeEnemy(defId: string, floor: number, rand: () => number): Com
   const d = getEnemy(defId);
   const maxHp = scaleHp(d.maxHp, floor);
   const patternIndex = Math.floor(rand() * d.pattern.length);
-  return {
+  const e: CombatEnemy = {
     uid: uid("e"),
     defId,
     hp: maxHp,
@@ -49,6 +49,15 @@ export function makeEnemy(defId: string, floor: number, rand: () => number): Com
     patternIndex,
     intent: d.pattern[patternIndex]!,
   };
+  if (d.trait === "liar") lieIntent(e, rand);
+  return e;
+}
+
+function lieIntent(e: CombatEnemy, rand: () => number) {
+  const d = getEnemy(e.defId);
+  const others = d.pattern.filter((_, i) => i !== e.patternIndex);
+  const fake = others.length ? pick(others, rand) : d.pattern[0]!;
+  e.shownIntent = fake;
 }
 
 export function living(c: CombatState) {
@@ -65,13 +74,30 @@ function dmgTaken(raw: number, vulnerable: number) {
   return vulnerable > 0 ? Math.floor(raw * 1.5) : raw;
 }
 
-function applyToEnemy(e: CombatEnemy, raw: number, c: CombatState) {
-  const n = dmgTaken(raw, e.vulnerable);
+function applyToEnemy(e: CombatEnemy, raw: number, c: CombatState, rand?: () => number) {
+  let n = dmgTaken(raw, e.vulnerable);
+  if (getEnemy(e.defId).trait === "nurse" && e.block > 0) n = Math.floor(n * 0.5);
   const blocked = Math.min(e.block, n);
   e.block -= blocked;
   const hp = n - blocked;
   e.hp = Math.max(0, e.hp - hp);
   c.floaters.push(floater(`-${n}`, "dmg", e.uid));
+  maybeSplit(e, c, rand);
+}
+
+function maybeSplit(e: CombatEnemy, c: CombatState, rand?: () => number) {
+  if (getEnemy(e.defId).trait !== "split") return;
+  if (e.splitDone || e.hp <= 0 || e.hp > e.maxHp / 2) return;
+  e.splitDone = true;
+  const roll = rand ?? (() => 0.5);
+  const clone = makeEnemy(e.defId, c.floor, roll);
+  clone.hp = e.hp;
+  clone.maxHp = e.maxHp;
+  clone.splitDone = true;
+  clone.strength = e.strength;
+  c.enemies.push(clone);
+  c.log.push(`${getEnemy(e.defId).name}が分かれた。`);
+  c.floaters.push(floater("分裂", "info", e.uid));
 }
 
 export function drawCards(c: CombatState, n: number, rand: () => number) {
@@ -107,6 +133,7 @@ export function startCombat(
   const strBonus = powerOf(player.relics, "strength");
   const drawBonus = powerOf(player.relics, "draw");
   const c: CombatState = {
+    floor,
     enemies,
     draw,
     discard: [],
@@ -121,6 +148,7 @@ export function startCombat(
     vulnerable: 0,
     powers: [],
     cardsPlayed: 0,
+    sealed: null,
     phase: "player",
     result: "ongoing",
     log: ["空気が、厚くなる。"],
@@ -150,12 +178,12 @@ function runEffects(
         if (!tgt) break;
         let n = dmgDealt(e.n, c.strength, c.weak);
         if (card?.defId === "laststand" && player.hp <= player.maxHp * 0.5) n += card.upgraded ? 12 : 9;
-        applyToEnemy(tgt, n, c);
+        applyToEnemy(tgt, n, c, rand);
         break;
       }
       case "damageAll": {
         const n = dmgDealt(e.n, c.strength, c.weak);
-        for (const tgt of living(c)) applyToEnemy(tgt, n, c);
+        for (const tgt of living(c)) applyToEnemy(tgt, n, c, rand);
         break;
       }
       case "block": {
@@ -255,6 +283,7 @@ export function canPlay(c: CombatState, card: CardInst) {
   const d = getCard(card.defId);
   if (c.phase !== "player" || c.result !== "ongoing") return false;
   if (d.unplayable) return false;
+  if (c.sealed && d.type === c.sealed) return false;
   return cardCost(card) <= c.energy;
 }
 
@@ -272,6 +301,7 @@ export function playCard(
   const card = c.hand[idx]!;
   const d = getCard(card.defId);
   if (d.unplayable) return { error: "プレイできない。", sfx: empty };
+  if (c.sealed && d.type === c.sealed) return { error: `${c.sealed === "attack" ? "攻撃" : "技能"}は封じられている。`, sfx: empty };
   const cost = cardCost(card);
   if (cost > c.energy) return { error: "エネルギーが足りない。", sfx: empty };
   if (d.target === "enemy" && living(c).length > 1 && !targetId) return { error: "対象を選んでください。", sfx: empty };
@@ -303,10 +333,12 @@ function checkOver(c: CombatState, player: PlayerHook) {
   }
 }
 
-function advanceIntent(e: CombatEnemy) {
+function advanceIntent(e: CombatEnemy, rand: () => number) {
   const d = getEnemy(e.defId);
   e.patternIndex = (e.patternIndex + 1) % d.pattern.length;
   e.intent = d.pattern[e.patternIndex]!;
+  if (d.trait === "liar") lieIntent(e, rand);
+  else e.shownIntent = undefined;
 }
 
 function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () => number, sfx: CombatSfx[]) {
@@ -338,7 +370,10 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
     for (let i = 0; i < intent.dread; i++) addToDiscard(c, makeCard("dread"));
     c.log.push(`${getEnemy(e.defId).name}が恐怖を注ぎ込む。`);
   }
-  void rand;
+  if (intent.seal) {
+    c.sealed = intent.seal;
+    c.log.push(`${getEnemy(e.defId).name}が${intent.seal === "attack" ? "攻撃" : "技能"}を封じた。`);
+  }
 }
 
 export function endTurn(c: CombatState, player: PlayerHook, rand: () => number): CombatSfx[] {
@@ -356,13 +391,21 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
 
   if (c.weak > 0) c.weak -= 1;
   if (c.vulnerable > 0) c.vulnerable -= 1;
+  c.sealed = null;
+
+  if (living(c).some((e) => getEnemy(e.defId).trait === "bell") && c.block > 0) {
+    c.log.push("鐘がブロックを砕いた。");
+    c.floaters.push(floater("破", "info", "player"));
+    c.block = 0;
+  }
 
   for (const e of living(c)) {
     enemyAct(e, c, player, rand, sfx);
     if (e.weak > 0) e.weak -= 1;
     if (e.vulnerable > 0) e.vulnerable -= 1;
-    advanceIntent(e);
+    advanceIntent(e, rand);
   }
+  maybeChoir(c, rand);
   checkOver(c, player);
   if (c.result !== "ongoing") return sfx;
 
@@ -373,7 +416,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
     const tgt = pick(living(c), rand);
     if (tgt) {
       const n = dmgDealt(4, c.strength, c.weak);
-      applyToEnemy(tgt, n, c);
+      applyToEnemy(tgt, n, c, rand);
     }
   }
   drawCards(c, 5, rand);
@@ -385,6 +428,14 @@ export function clearFloaters(c: CombatState) {
   c.floaters = [];
 }
 
+function maybeChoir(c: CombatState, rand: () => number) {
+  const live = living(c).filter((e) => getEnemy(e.defId).trait === "choir");
+  if (live.length !== 1) return;
+  c.enemies.push(makeEnemy("choir", c.floor, rand));
+  c.log.push("塩の唱者が応える。");
+  c.floaters.push(floater("合唱", "info", "player"));
+}
+
 export function encounterIds(
   kind: "combat" | "elite" | "boss",
   floor: number,
@@ -392,7 +443,15 @@ export function encounterIds(
 ): string[] {
   if (kind === "boss") {
     if (floor >= 100) return ["mouth"];
-    return ["herald"];
+    if (floor >= 90) return ["iha"];
+    if (floor >= 80) return ["nyar"];
+    if (floor >= 70) return ["bell"];
+    if (floor >= 60) return ["warden"];
+    if (floor >= 50) return ["herald"];
+    if (floor >= 40) return ["flock", "flock"];
+    if (floor >= 30) return ["nurse"];
+    if (floor >= 20) return ["choir", "choir"];
+    return ["priest"];
   }
   if (kind === "elite") {
     if (floor >= 70) return ["starveling", "byakhee"];

@@ -96,6 +96,11 @@ export function CombatView() {
               {combat.weak ? (
                 <span className="font-mono text-xs text-blood">弱体 {combat.weak}</span>
               ) : null}
+              {combat.sealed ? (
+                <span className="font-mono text-xs text-blood">
+                  {combat.sealed === "attack" ? "攻撃封印" : "技能封印"}
+                </span>
+              ) : null}
             </div>
           </div>
 
@@ -394,7 +399,7 @@ function PlayerFloaters({ floaters }: { floaters: Floater[] }) {
 }
 
 function intentLabel(e: CombatEnemy) {
-  const i = e.intent;
+  const i = e.shownIntent ?? e.intent;
   if (i.kind === "attack") {
     const hits = i.hits ?? 1;
     const d = (i.damage ?? 0) + e.strength;
@@ -402,7 +407,10 @@ function intentLabel(e: CombatEnemy) {
   }
   if (i.kind === "defend") return `防御 ${i.block ?? 0}`;
   if (i.kind === "buff") return `強化 筋+${i.strength ?? 0}`;
-  if (i.kind === "debuff") return i.dread ? "侵食" : "弱体化";
+  if (i.kind === "debuff") {
+    if (i.seal) return i.seal === "attack" ? "封印・攻撃" : "封印・技能";
+    return i.dread ? "侵食" : "弱体化";
+  }
   return "不明";
 }
 

@@ -88,7 +88,10 @@ export interface EnemyDef {
   idleFps?: number;
   maxHp: number;
   pattern: Intent[];
+  trait?: EnemyTrait;
 }
+
+export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split";
 
 export interface Intent {
   kind: IntentKind;
@@ -98,6 +101,7 @@ export interface Intent {
   strength?: number;
   weak?: number;
   dread?: number;
+  seal?: "attack" | "skill";
 }
 
 export interface CombatEnemy {
@@ -111,6 +115,8 @@ export interface CombatEnemy {
   vulnerable: number;
   patternIndex: number;
   intent: Intent;
+  shownIntent?: Intent;
+  splitDone?: boolean;
 }
 
 export interface CharacterDef {
@@ -165,6 +171,7 @@ export interface MapNode {
 }
 
 export interface CombatState {
+  floor: number;
   enemies: CombatEnemy[];
   draw: CardInst[];
   discard: CardInst[];
@@ -179,6 +186,7 @@ export interface CombatState {
   vulnerable: number;
   powers: PowerId[];
   cardsPlayed: number;
+  sealed: "attack" | "skill" | null;
   phase: "player" | "enemy" | "over";
   result: "ongoing" | "win" | "lose";
   log: string[];
