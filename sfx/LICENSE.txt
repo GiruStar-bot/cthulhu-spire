@@ -8,4 +8,4 @@ step.wav    — Impact Sounds / footstep_concrete_000
 
 lose.mp3    — 魔王魂 / MaouDamashii  https://maou.audio/
 
-music/maoudamashii-title.mp3 — 魔王魂 / MaouDamashii  https://maou.audio/
+music/dunkle-herrlichkeit.mp3 — provided title theme
