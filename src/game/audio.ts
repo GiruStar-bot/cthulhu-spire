@@ -16,7 +16,7 @@ let sfxVolume = 1;
 export type BgmId = "combat" | "rest" | "event" | "boss" | "reward" | "none";
 export type SfxCue = "attack" | "skill" | "block" | "hurt" | "step";
 
-type SampleId = "attack" | "block" | "hurt" | "step";
+type SampleId = "attack" | "block" | "hurt" | "step" | "lose";
 
 type BgmHandle = {
   id: BgmId;
@@ -28,6 +28,7 @@ const SAMPLE: Record<SampleId, string> = {
   block: "sfx/block.wav",
   hurt: "sfx/hurt.wav",
   step: "sfx/step.wav",
+  lose: "sfx/lose.mp3",
 };
 
 const buffers = new Map<SampleId, AudioBuffer>();
@@ -209,9 +210,10 @@ const synth: Record<SampleId, () => void> = {
     noiseBurst(0.12, 0.035);
   },
   step: () => blip(180, 0.08, "triangle", 0.025, 0.7),
+  lose: () => blip(48, 0.45, "sine", 0.06, 0.6),
 };
 
-function playSample(id: SampleId, gain = 0.7) {
+function playSample(id: SampleId, gain = 0.7, vary = true) {
   const buf = buffers.get(id);
   if (!buf) {
     synth[id]();
@@ -221,7 +223,7 @@ function playSample(id: SampleId, gain = 0.7) {
     const { c, sfx } = buses();
     const src = c.createBufferSource();
     src.buffer = buf;
-    src.playbackRate.value = 0.94 + Math.random() * 0.12;
+    src.playbackRate.value = vary ? 0.94 + Math.random() * 0.12 : 1;
     const g = c.createGain();
     g.gain.value = gain;
     src.connect(g);
@@ -249,7 +251,7 @@ export const sfx = {
     setTimeout(() => blip(440, 0.16, "triangle", 0.04), 100);
     setTimeout(() => blip(554, 0.2, "triangle", 0.035), 200);
   },
-  lose: () => blip(48, 0.45, "sine", 0.06, 0.6),
+  lose: () => playSample("lose", 0.88, false),
   hover: () => blip(640, 0.03, "sine", 0.01),
   reward: () => {
     blip(392, 0.1, "triangle", 0.03);
