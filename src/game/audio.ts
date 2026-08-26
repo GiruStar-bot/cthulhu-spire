@@ -13,7 +13,7 @@ let musicBus: GainNode | null = null;
 let preloadStarted = false;
 let sfxVolume = 1;
 
-export type BgmId = "combat" | "rest" | "event" | "boss" | "reward" | "none";
+export type BgmId = "title" | "combat" | "rest" | "event" | "boss" | "reward" | "none";
 export type SfxCue = "attack" | "skill" | "block" | "hurt" | "step";
 
 type SampleId = "attack" | "block" | "hurt" | "step" | "lose";
@@ -32,6 +32,10 @@ const SAMPLE: Record<SampleId, string> = {
 };
 
 const buffers = new Map<SampleId, AudioBuffer>();
+const loopBuffers = new Map<string, AudioBuffer>();
+const LOOP_SRC: Partial<Record<BgmId, string>> = {
+  title: "music/maoudamashii-title.mp3",
+};
 
 function ac() {
   if (!ctx) {
@@ -142,6 +146,20 @@ export function preloadSfx() {
         })
         .catch(() => {
           /* synth fallback */
+        });
+    }
+    for (const [id, path] of Object.entries(LOOP_SRC)) {
+      void fetch(asset(path))
+        .then((r) => {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.arrayBuffer();
+        })
+        .then((ab) => c.decodeAudioData(ab.slice(0)))
+        .then((buf) => {
+          loopBuffers.set(id, buf);
+        })
+        .catch(() => {
+          /* ignore */
         });
     }
   } catch {
@@ -402,6 +420,71 @@ export function stopBgm() {
   stopBgmInternal();
 }
 
+function startLoop(id: BgmId, path: string): BgmHandle {
+  const { c, music } = buses();
+  let stopped = false;
+  const local = c.createGain();
+  local.gain.value = 0;
+  local.connect(music);
+  let src: AudioBufferSourceNode | null = null;
+
+  const startBuf = (buf: AudioBuffer) => {
+    if (stopped) return;
+    src = c.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    src.connect(local);
+    const t = c.currentTime;
+    local.gain.setValueAtTime(0, t);
+    local.gain.linearRampToValueAtTime(0.55, t + 1.2);
+    src.start();
+  };
+
+  const cached = loopBuffers.get(id);
+  if (cached) startBuf(cached);
+  else {
+    void fetch(asset(path))
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.arrayBuffer();
+      })
+      .then((ab) => c.decodeAudioData(ab.slice(0)))
+      .then((buf) => {
+        loopBuffers.set(id, buf);
+        startBuf(buf);
+      })
+      .catch(() => {});
+  }
+
+  return {
+    id,
+    stop: () => {
+      stopped = true;
+      try {
+        const t = c.currentTime;
+        local.gain.cancelScheduledValues(t);
+        local.gain.setValueAtTime(local.gain.value, t);
+        local.gain.linearRampToValueAtTime(0, t + 0.35);
+      } catch {
+        /* ignore */
+      }
+      window.setTimeout(() => {
+        try {
+          src?.stop();
+          src?.disconnect();
+        } catch {
+          /* ignore */
+        }
+        try {
+          local.disconnect();
+        } catch {
+          /* ignore */
+        }
+      }, 400);
+    },
+  };
+}
+
 export function playBgm(id: BgmId) {
   if (id === "none") {
     stopBgmInternal();
@@ -410,7 +493,8 @@ export function playBgm(id: BgmId) {
   if (currentBgm === id && bgmHandle) return;
   stopBgmInternal();
   try {
-    bgmHandle = startTheme(id);
+    const loop = LOOP_SRC[id];
+    bgmHandle = loop ? startLoop(id, loop) : startTheme(id);
     currentBgm = id;
   } catch {
     bgmHandle = null;

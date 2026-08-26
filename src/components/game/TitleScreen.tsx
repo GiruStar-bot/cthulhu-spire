@@ -1,4 +1,4 @@
-import { getSfxVolume, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
+import { getSfxVolume, playBgm, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
@@ -25,9 +25,16 @@ export function TitleScreen() {
     const prevBody = body.style.overflow;
     html.style.overflow = "hidden";
     body.style.overflow = "hidden";
+    const kick = () => {
+      unlockAudio();
+      playBgm("title");
+    };
+    kick();
+    window.addEventListener("pointerdown", kick, { once: true });
     return () => {
       html.style.overflow = prevHtml;
       body.style.overflow = prevBody;
+      window.removeEventListener("pointerdown", kick);
     };
   }, []);
 
@@ -282,17 +289,7 @@ function CreditsPanel({ onClose }: { onClose: () => void }) {
         <h2 id="credits-title" className="font-display mt-1 text-2xl text-parchment">
           クレジット
         </h2>
-        <p className="mt-6 font-mono text-xs tracking-widest text-muted">音響素材</p>
-        <p className="mt-3 font-display text-lg text-parchment">効果音：魔王魂</p>
-        <a
-          href="https://maou.audio/"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-1 inline-block min-h-11 py-2 font-mono text-sm text-accent underline-offset-4 hover:underline"
-        >
-          maou.audio
-        </a>
-        <p className="mt-4 text-sm text-muted">死亡時のガーンなど、今後追加する効果音・BGMも魔王魂の素材を使用します。</p>
+        <p className="mt-6 font-display text-xl text-parchment">魔王魂</p>
         <button
           type="button"
           onClick={onClose}
