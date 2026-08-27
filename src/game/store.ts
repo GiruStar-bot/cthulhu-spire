@@ -116,6 +116,7 @@ export interface GameStore {
   finishPrologue: () => void;
   turnGrimoirePage: () => void;
   acceptShatter: () => void;
+  engraveRelic: (uid: string) => void;
 }
 
 function weightedCard(owner: CharacterId, rand: () => number): CardInst {
@@ -129,6 +130,17 @@ function weightedCard(owner: CharacterId, rand: () => number): CardInst {
 
 function starterPath(stats: PlayerStats): CharacterId {
   return stats.body >= stats.mind ? "investigator" : "cultist";
+}
+
+function keepRunRelics(profile: PlayerProfile, relics: RelicInstance[]): PlayerProfile {
+  const have = new Set(profile.collection.map((r) => r.uid));
+  const extra = relics.filter((r) => !have.has(r.uid));
+  if (!extra.length) return profile;
+  const loadoutIds = profile.loadoutIds.slice();
+  for (const r of extra) {
+    if (loadoutIds.length < MAX_LOADOUT && !loadoutIds.includes(r.uid)) loadoutIds.push(r.uid);
+  }
+  return { ...profile, collection: [...profile.collection, ...extra], loadoutIds };
 }
 
 function markDefeat(s: GameStore): PlayerProfile {
@@ -205,7 +217,10 @@ export const useGame = create<GameStore>((set, get) => {
   function enterFloor(floor: number, carry?: Partial<GameStore>) {
     const s = { ...get(), ...carry };
     if (floor > (s.runFloors.length || DEMO_MAX_FLOOR)) {
-      const profile = { ...s.profile, bestFloor: Math.max(s.profile.bestFloor, s.floor), wins: s.profile.wins + 1, sanity: s.sanity };
+      const profile = keepRunRelics(
+        { ...s.profile, bestFloor: Math.max(s.profile.bestFloor, s.floor), wins: s.profile.wins + 1, sanity: s.sanity },
+        s.relics,
+      );
       persist(profile);
       stopBgm();
       set({
@@ -276,12 +291,15 @@ export const useGame = create<GameStore>((set, get) => {
       return;
     }
     if (s.floor >= DEMO_MAX_FLOOR) {
-      const profile = {
-        ...s.profile,
-        bestFloor: Math.max(s.profile.bestFloor, s.floor),
-        wins: s.profile.wins + 1,
-        sanity: s.sanity,
-      };
+      const profile = keepRunRelics(
+        {
+          ...s.profile,
+          bestFloor: Math.max(s.profile.bestFloor, s.floor),
+          wins: s.profile.wins + 1,
+          sanity: s.sanity,
+        },
+        s.relics,
+      );
       persist(profile);
       stopBgm();
       set({
@@ -518,15 +536,7 @@ export const useGame = create<GameStore>((set, get) => {
 
       if (s.reward?.relic) {
         const inst = s.reward.relic;
-        if (!profile.collection.some((r) => r.uid === inst.uid)) {
-          profile.collection.push(inst);
-        }
-        if (relics.length < MAX_LOADOUT && !relics.some((r) => r.uid === inst.uid)) {
-          relics.push(inst);
-          if (profile.loadoutIds.length < MAX_LOADOUT && !profile.loadoutIds.includes(inst.uid)) {
-            profile.loadoutIds = [...profile.loadoutIds, inst.uid];
-          }
-        }
+        if (!relics.some((r) => r.uid === inst.uid)) relics.push(inst);
         const hpGain = powerOf([inst], "maxHp");
         if (hpGain) {
           maxHp += hpGain;
@@ -541,7 +551,7 @@ export const useGame = create<GameStore>((set, get) => {
       }
 
       persist(profile);
-      const relicToast = s.reward?.relic ? `${relicLabel(s.reward.relic)} を記録した。` : null;
+      const relicToast = s.reward?.relic ? `${relicLabel(s.reward.relic)} を得た。` : null;
       afterGain({
         deck,
         relics,
@@ -631,7 +641,6 @@ export const useGame = create<GameStore>((set, get) => {
           const ownedDefs = profile.collection.map((r) => r.defId);
           const defId = pickRelicTemplate(ownedDefs, s.rand);
           const inst = rollRelic(defId, s.floor, s.rand, "event");
-          profile.collection.push(inst);
           if (relics.length < MAX_LOADOUT) {
             relics.push(inst);
             const hpGain = powerOf([inst], "maxHp");
@@ -640,7 +649,7 @@ export const useGame = create<GameStore>((set, get) => {
               hp += hpGain;
             }
           }
-          toast = `${relicLabel(inst)}を渡された。正気-10。`;
+          toast = `${relicLabel(inst)}を渡された。正気-10。この沈降のあいだ持つ。`;
         } else {
           hp = Math.max(1, hp - 8);
           sanity = Math.min(s.maxSanity, sanity + 6);
@@ -737,6 +746,27 @@ export const useGame = create<GameStore>((set, get) => {
         relics: [],
         playerName: "",
       });
+    },
+    engraveRelic: (uid) => {
+      const s = get();
+      const inst = s.relics.find((r) => r.uid === uid);
+      if (!inst) return;
+      if (s.profile.collection.some((r) => r.uid === uid)) {
+        get().giveUp();
+        return;
+      }
+      const loadoutIds = s.profile.loadoutIds.slice();
+      if (loadoutIds.length < MAX_LOADOUT && !loadoutIds.includes(inst.uid)) loadoutIds.push(inst.uid);
+      const profile = {
+        ...s.profile,
+        collection: [...s.profile.collection, inst],
+        loadoutIds,
+        sanity: s.sanity,
+      };
+      persist(profile);
+      set({ profile });
+      sfx.reward();
+      get().giveUp();
     },
   };
 });

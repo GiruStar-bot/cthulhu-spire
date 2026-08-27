@@ -60,6 +60,7 @@ export function CombatView() {
               floaters={combat.floaters.filter((f) => f.who === e.uid)}
               targeting={!!targeting}
               striking={fx.playerHit && e.hp > 0}
+              onTarget={() => targeting && play(targeting, e.uid)}
             />
           ))}
         </div>
@@ -101,11 +102,6 @@ export function CombatView() {
           <div className="min-h-0 flex-1" />
 
           <div className="relative z-10 shrink-0 px-3 sm:px-6">
-            <div className="mb-2 flex flex-wrap items-end justify-center gap-8">
-              {combat.enemies.map((e) => (
-                <EnemyPlate key={e.uid} enemy={e} targeting={!!targeting} onTarget={() => targeting && play(targeting, e.uid)} />
-              ))}
-            </div>
             <div className="flex flex-wrap gap-2">
               {combat.powers.map((p) => (
                 <span
@@ -194,17 +190,21 @@ function EnemyStage({
   floaters,
   targeting,
   striking,
+  onTarget,
 }: {
   enemy: CombatEnemy;
   floaters: Floater[];
   targeting: boolean;
   striking: boolean;
+  onTarget: () => void;
 }) {
   const dead = enemy.hp <= 0;
+  const gone = useCorpseGone(dead);
   const def = getEnemy(enemy.defId);
   const pose = useEnemyPose(enemy.hp, striking);
   const cutout = isVideoSrc(def.art) || Boolean(def.idleFrames?.length);
   const boss = enemy.maxHp >= 150;
+  if (gone) return null;
 
   return (
     <div
@@ -226,21 +226,37 @@ function EnemyStage({
         <div className="enemy-impact" />
       </div>
       <div className="enemy-shadow" />
-      <div className="pointer-events-none absolute top-[18%] left-1/2 -translate-x-1/2">
+      <div className="pointer-events-none absolute top-[12%] left-1/2 z-10 -translate-x-1/2">
         {floaters.map((f) => (
           <span
             key={f.id}
             className={cn(
-              "block animate-floater font-display text-2xl",
-              f.kind === "dmg" ? "text-blood" : "text-accent",
+              "block animate-floater font-display tabular-nums leading-none",
+              f.kind === "dmg" ? "text-[2.75rem] font-semibold text-blood sm:text-6xl" : "text-2xl text-accent",
             )}
           >
             {f.text}
           </span>
         ))}
       </div>
+      <div className="relative z-10 mt-1">
+        <EnemyPlate enemy={enemy} targeting={targeting} onTarget={onTarget} />
+      </div>
     </div>
   );
+}
+
+function useCorpseGone(dead: boolean) {
+  const [gone, setGone] = useState(false);
+  useEffect(() => {
+    if (!dead) {
+      setGone(false);
+      return;
+    }
+    const t = window.setTimeout(() => setGone(true), 1000);
+    return () => window.clearTimeout(t);
+  }, [dead]);
+  return gone;
 }
 
 function useAimAtFoe(targeting: string | null, play: (cardUid: string, targetId?: string | null) => void) {

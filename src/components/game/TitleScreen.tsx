@@ -1,4 +1,4 @@
-import { getSfxVolume, playBgm, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
+import { getMusicVolume, getSfxVolume, playBgm, setMusicVolume, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
 import { GrimoirePanel } from "@/components/game/GrimoireView";
 import { grimoireOpen } from "@/game/profile";
 import { useGame } from "@/game/store";
@@ -68,7 +68,7 @@ export function TitleScreen() {
               onClick={begin}
               className="min-h-11 rounded-[var(--radius-md)] bg-parchment px-6 py-3 font-display text-base text-ink transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.96]"
             >
-              {profile.playerName ? `${profile.playerName}の日誌` : "潜航前点検"}
+              探索
             </button>
           </span>
           <span className="title-float-b">
@@ -189,6 +189,7 @@ function TitleReel() {
 
 export function SettingsPanel({ onClose }: { onClose: () => void }) {
   const [vol, setVol] = useState(() => getSfxVolume());
+  const [bgm, setBgm] = useState(() => getMusicVolume());
   const [full, setFull] = useState(() => isFullscreen());
   const canFull = fullscreenAvailable();
 
@@ -245,6 +246,25 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
             onPointerUp={() => {
               unlockAudio();
               sfx.ui();
+            }}
+            className="mt-3 min-h-11"
+          />
+        </label>
+        <label className="mt-5 block">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="font-display text-parchment">BGM</span>
+            <span className="font-mono text-xs tabular-nums text-muted">{Math.round(bgm * 100)}</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={Math.round(bgm * 100)}
+            onChange={(e) => {
+              const next = Number(e.target.value) / 100;
+              setBgm(next);
+              setMusicVolume(next);
             }}
             className="mt-3 min-h-11"
           />

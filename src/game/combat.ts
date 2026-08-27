@@ -546,6 +546,19 @@ export function encounterIds(
     if (floor >= 20) return ["choir", "choir"];
     return ["priest"];
   }
+
+  const VOID = ["migo", "shan", "starvamp", "colour"] as const;
+  const voidChance = floor >= 50 ? 0.38 : floor >= 16 ? 0.28 : floor >= 8 ? 0.18 : 0;
+  if (voidChance && rand() < voidChance) {
+    if (kind === "elite") {
+      return rand() < 0.5 ? ["starvamp"] : [pick(VOID, rand), pick(["migo", "shan"] as const, rand)];
+    }
+    if (rand() < (floor >= 40 ? 0.45 : 0.22)) {
+      return [pick(VOID, rand), pick(VOID, rand)];
+    }
+    return [pick(VOID, rand)];
+  }
+
   if (kind === "elite") {
     if (floor >= 70) return rand() < 0.5 ? ["spawn", "serpent"] : ["starveling", "byakhee"];
     if (floor >= 40) return rand() < 0.5 ? ["spawn"] : ["serpent"];

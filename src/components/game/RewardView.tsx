@@ -28,11 +28,12 @@ export function RewardView() {
               : "取った瞬間、次の層へ沈む。"}
         </p>
         {reward.relic ? (
-          <p className="mt-3 max-w-lg text-sm text-muted">
-            遺物を記録する：
-            <span className="text-parchment"> {relicLabel(reward.relic)}</span> — {relicDesc(reward.relic)}
-            <span className="mt-1 block font-mono text-xs text-accent">永久コレクションに追加。持込は最大6。</span>
-          </p>
+          <div className="mt-5 rounded-[var(--radius-md)] bg-ink/40 px-4 py-3">
+            <p className="font-mono text-[11px] tracking-widest text-accent">遺物</p>
+            <p className="font-display mt-1 text-xl text-parchment">{relicLabel(reward.relic)}</p>
+            <p className="mt-1 text-sm text-muted">{relicDesc(reward.relic)}</p>
+            <p className="mt-2 font-mono text-xs text-muted">この沈降のあいだ持つ。死んだとき、一つだけ魂に刻める。</p>
+          </div>
         ) : null}
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           {reward.cards.map((c) => (

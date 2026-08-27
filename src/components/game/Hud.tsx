@@ -1,5 +1,6 @@
 import { CHARACTERS } from "@/game/characters";
 import { floorBand, layerLabel } from "@/game/floors";
+import { GRIMOIRE_ENABLED } from "@/game/profile";
 import { relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,7 @@ export function Vitals() {
         <img
           src={ch.art}
           alt=""
-          className="size-11 rounded-[var(--radius-sm)] object-cover border border-border"
+          className="size-16 rounded-[var(--radius-sm)] object-cover border border-border"
           crossOrigin="anonymous"
         />
       ) : null}
@@ -33,7 +34,7 @@ export function Vitals() {
       </div>
       <span className="font-mono text-[10px] tracking-wider text-muted">
         {floorBand(floor)} · <span className="tabular-nums text-parchment">{layerLabel(floor)}</span>
-        {madness ? (
+        {GRIMOIRE_ENABLED && madness ? (
           <span className="text-blood"> · 狂気 {madness}</span>
         ) : null}
       </span>
@@ -65,14 +66,14 @@ function Bar({
 }) {
   const pct = max <= 0 ? 0 : Math.max(0, Math.min(100, (value / max) * 100));
   return (
-    <div className="min-w-28 flex-1">
-      <div className="mb-0.5 flex justify-between font-mono text-[10px] tracking-wider text-muted">
+    <div className="min-w-40 flex-1">
+      <div className="mb-0.5 flex justify-between font-mono text-xs tracking-wider text-muted">
         <span>{label}</span>
         <span className="tabular-nums text-parchment">
           {value}/{max}
         </span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-ink-2">
+      <div className="h-2.5 overflow-hidden rounded-full bg-ink-2">
         <div
           className={cn("h-full rounded-full", tone === "hp" ? "bg-blood" : "bg-accent")}
           style={{ width: `${pct}%` }}

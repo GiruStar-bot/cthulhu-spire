@@ -92,7 +92,7 @@ export interface CardInst {
   upgraded: boolean;
 }
 
-export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne";
+export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour";
 
 export interface EnemyDef {
   id: string;

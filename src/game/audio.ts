@@ -12,6 +12,7 @@ let sfxBus: GainNode | null = null;
 let musicBus: GainNode | null = null;
 let preloadStarted = false;
 let sfxVolume = 1;
+let musicVolume = 0.9;
 
 export type BgmId = "title" | "combat" | "rest" | "event" | "boss" | "reward" | "none";
 export type SfxCue = "attack" | "skill" | "block" | "hurt" | "step";
@@ -67,9 +68,10 @@ function buses() {
     sfxBus = c.createGain();
     sfxBus.connect(master);
     musicBus = c.createGain();
-    musicBus.gain.value = 0.9;
+    musicBus.gain.value = musicVolume;
     musicBus.connect(master);
     applySfxGain();
+    applyMusicGain();
   }
   return { c, sfx: sfxBus!, music: musicBus! };
 }
@@ -80,14 +82,22 @@ function applySfxGain() {
   sfxBus.gain.setTargetAtTime(g, ctx.currentTime, 0.02);
 }
 
+function applyMusicGain() {
+  if (!musicBus || !ctx) return;
+  musicBus.gain.setTargetAtTime(musicVolume, ctx.currentTime, 0.04);
+}
+
 function loadAudioSettings() {
   if (typeof localStorage === "undefined") return;
   try {
     const raw = localStorage.getItem(AUDIO_KEY);
     if (!raw) return;
-    const d = JSON.parse(raw) as { sfx?: number };
+    const d = JSON.parse(raw) as { sfx?: number; music?: number };
     if (typeof d.sfx === "number" && Number.isFinite(d.sfx)) {
       sfxVolume = Math.max(0, Math.min(1, d.sfx));
+    }
+    if (typeof d.music === "number" && Number.isFinite(d.music)) {
+      musicVolume = Math.max(0, Math.min(1, d.music));
     }
   } catch {
     /* ignore */
@@ -97,7 +107,7 @@ function loadAudioSettings() {
 function persistAudio() {
   if (typeof localStorage === "undefined") return;
   try {
-    localStorage.setItem(AUDIO_KEY, JSON.stringify({ sfx: sfxVolume }));
+    localStorage.setItem(AUDIO_KEY, JSON.stringify({ sfx: sfxVolume, music: musicVolume }));
   } catch {
     /* ignore */
   }
@@ -115,6 +125,21 @@ export function setSfxVolume(value: number) {
   try {
     buses();
     applySfxGain();
+  } catch {
+    /* ignore */
+  }
+}
+
+export function getMusicVolume() {
+  return musicVolume;
+}
+
+export function setMusicVolume(value: number) {
+  musicVolume = Math.max(0, Math.min(1, value));
+  persistAudio();
+  try {
+    buses();
+    applyMusicGain();
   } catch {
     /* ignore */
   }

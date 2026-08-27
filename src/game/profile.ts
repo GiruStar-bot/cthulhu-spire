@@ -62,8 +62,10 @@ export function derivedVitals(stats: PlayerStats, madness = 0) {
   };
 }
 
+export const GRIMOIRE_ENABLED = false;
+
 export function grimoireOpen(profile: PlayerProfile) {
-  return profile.stats.mind >= GRIMOIRE_MIND;
+  return GRIMOIRE_ENABLED && profile.stats.mind >= GRIMOIRE_MIND;
 }
 
 export function wipeProfile() {
