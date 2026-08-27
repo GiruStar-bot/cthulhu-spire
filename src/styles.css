@@ -723,14 +723,10 @@ ruby rt {
 
 .hub-seek {
   font-family: var(--font-ruin);
-  font-size: 2rem;
-  letter-spacing: 0.42em;
-  color: color-mix(in oklab, var(--color-parchment) 82%, #6a5a40);
-  text-shadow:
-    0 1px 0 #1a140c,
-    0 14px 32px #000,
-    0 0 22px color-mix(in oklab, #c45a32 35%, transparent);
-  animation: drift 5.4s ease-in-out infinite;
+  font-size: 1.75rem;
+  letter-spacing: 0.32em;
+  color: color-mix(in oklab, var(--color-parchment) 88%, transparent);
+  text-shadow: 0 1px 12px #000;
 }
 
 .hub-seek:hover {
@@ -739,15 +735,16 @@ ruby rt {
 
 .hub-tome {
   position: absolute;
-  left: 4%;
-  bottom: 18%;
+  left: 1.25rem;
+  bottom: 2.5rem;
   z-index: 10;
-  width: min(28vw, 14rem);
-  height: min(34vw, 16rem);
-  border-radius: 18% 28% 22% 16%;
-  background: transparent;
+  font-family: var(--font-ruin);
+  font-size: 0.95rem;
+  letter-spacing: 0.18em;
+  color: color-mix(in oklab, var(--color-parchment) 55%, transparent);
+  text-shadow: 0 1px 8px #000;
 }
 
 .hub-tome:hover {
-  box-shadow: 0 0 28px color-mix(in oklab, #c45a32 28%, transparent);
+  color: var(--color-parchment);
 }

@@ -42,14 +42,16 @@ export function HubView() {
         playsInline
         preload="auto"
       />
-      <div className="absolute inset-0 bg-linear-to-t from-ink/70 via-transparent to-ink/25" />
+      <div className="absolute inset-0 bg-linear-to-t from-ink/50 via-transparent to-ink/15" />
 
       <button
         type="button"
         className="hub-tome"
-        aria-label="閉じられた本『全』"
+        aria-label="閉じた本"
         onClick={() => setSheet("tome")}
-      />
+      >
+        閉じた本
+      </button>
 
       <div className="absolute inset-x-0 bottom-10 z-10 flex flex-col items-center gap-4 px-4">
         <button type="button" className="hub-seek" onClick={seek}>
