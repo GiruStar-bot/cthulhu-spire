@@ -239,7 +239,7 @@ function EnemyStage({
           </span>
         ))}
       </div>
-      <div className="relative z-10 mt-1">
+      <div className="enemy-vitals">
         <EnemyPlate enemy={enemy} targeting={targeting} onTarget={onTarget} />
       </div>
     </div>
@@ -336,7 +336,7 @@ function EnemyPlate({
       disabled={dead}
       onClick={onTarget}
       className={cn(
-        "pointer-events-auto min-w-40 text-left",
+        "pointer-events-auto w-full text-left",
         targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-md)] px-2 py-1" : "",
       )}
     >

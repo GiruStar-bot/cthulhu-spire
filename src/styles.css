@@ -357,7 +357,7 @@
   align-items: flex-end;
   justify-content: center;
   gap: 1.5rem;
-  padding-bottom: 7.5rem;
+  padding-bottom: 2.25rem;
   overflow: visible;
 }
 
@@ -377,6 +377,23 @@
 
 .enemy-stage {
   transform-origin: 50% 100%;
+}
+
+.enemy-vitals {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: 12;
+  transform: translate(3.4rem, -50%);
+  pointer-events: auto;
+  min-width: 9.25rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--color-ink) 74%, transparent);
+}
+
+.combat-foe:has(.enemy-stage:nth-child(2)) .enemy-vitals {
+  transform: translate(1.85rem, -50%);
 }
 
 .enemy-figure {
