@@ -1,5 +1,6 @@
 export type Scene =
   | "title"
+  | "hub"
   | "prepare"
   | "map"
   | "combat"

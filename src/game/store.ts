@@ -31,7 +31,7 @@ import {
   clampStats,
   derivedVitals,
   equippedRelics,
-  grimoireOpen,
+  homeScene,
   loadProfile,
   MADNESS_STEP,
   MAX_LOADOUT,
@@ -114,6 +114,7 @@ export interface GameStore {
   giveUp: () => void;
   spendRite: (key: keyof PlayerStats) => void;
   finishPrologue: () => void;
+  seek: () => void;
   openGrimoire: () => void;
   closeGrimoire: () => void;
   turnGrimoirePage: () => void;
@@ -316,7 +317,7 @@ export const useGame = create<GameStore>((set, get) => {
   }
 
   return {
-    scene: "title",
+    scene: homeScene(loadProfile()),
     profile: loadProfile(),
     seed: 1,
     rand: () => Math.random(),
@@ -694,7 +695,7 @@ export const useGame = create<GameStore>((set, get) => {
       const s = get();
       const profile = { ...s.profile, sanity: s.sanity };
       persist(profile);
-      set({ scene: "title", combat: null, runFloors: [], profile, floor: 0 });
+      set({ scene: homeScene(profile), combat: null, runFloors: [], profile, floor: 0 });
     },
     finishPrologue: () => {
       const s = get();
@@ -705,15 +706,23 @@ export const useGame = create<GameStore>((set, get) => {
       set({ profile, runFloors });
       enterFloor(1, { profile, runFloors });
     },
+    seek: () => {
+      const s = get();
+      const profile = { ...s.profile, stats: clampStats(s.profile.stats) };
+      if (!profile.playerName || statSum(profile.stats) !== statBudget(profile)) {
+        get().begin();
+        return;
+      }
+      set({ profile, playerName: profile.playerName });
+      get().startRun();
+    },
     openGrimoire: () => {
-      if (!grimoireOpen(get().profile)) return;
-      stopBgm();
-      set({ scene: "grimoire" });
+      set({ scene: "hub" });
       sfx.ui();
     },
     closeGrimoire: () => {
       playBgm("title");
-      set({ scene: "title" });
+      set({ scene: "hub" });
     },
     turnGrimoirePage: () => {
       const s = get();
