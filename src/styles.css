@@ -14,6 +14,7 @@
   --font-sans: "Noto Sans JP", "Hiragino Sans", sans-serif;
   --font-mono: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
   --font-title: "Cinzel", "Noto Serif JP", serif;
+  --font-ruin: "Hina Mincho", "Noto Serif JP", serif;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -683,4 +684,39 @@ ruby rt {
   font-size: 0.42em;
   color: var(--color-accent);
   letter-spacing: 0.08em;
+}
+
+.prologue-line {
+  font-family: var(--font-ruin);
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  line-height: 1.7;
+  color: color-mix(in oklab, var(--color-parchment) 78%, #6a5a40);
+  text-shadow:
+    0 0 1px color-mix(in oklab, var(--color-ink) 90%, transparent),
+    1px 2px 0 color-mix(in oklab, var(--color-ink) 70%, transparent),
+    0 16px 42px #000,
+    0 0 28px color-mix(in oklab, var(--color-parchment) 18%, transparent);
+  filter: contrast(1.2) saturate(0.65);
+  animation: ruin-in 0.9s ease-out;
+}
+
+@keyframes ruin-in {
+  from {
+    opacity: 0;
+    letter-spacing: 0.42em;
+    filter: blur(2px) contrast(1.2) saturate(0.65);
+  }
+}
+
+.prologue-line rt {
+  font-family: var(--font-ruin);
+  letter-spacing: 0.35em;
+  color: color-mix(in oklab, var(--color-parchment) 55%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prologue-line {
+    filter: none;
+  }
 }

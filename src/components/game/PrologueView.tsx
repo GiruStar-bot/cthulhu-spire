@@ -1,40 +1,37 @@
 import { useGame } from "@/game/store";
+import { asset } from "@/lib/asset";
 import { useState } from "react";
 
 const BEATS = [
-  {
-    kicker: "夢",
-    html: 'ここは<ruby>どこだ<rt>ルルイエ</rt></ruby>？',
-  },
-  {
-    kicker: "声",
-    html: "善き力か悪しき力、もしくは……",
-  },
-  {
-    kicker: "第一層",
-    html: "仇……",
-  },
+  'ここは<ruby>どこだ<rt>ルルイエ</rt></ruby>？',
+  "善き力か悪しき力、もしくは……",
+  "仇……",
 ] as const;
 
 export function PrologueView() {
   const finish = useGame((s) => s.finishPrologue);
   const [i, setI] = useState(0);
-  const beat = BEATS[i]!;
 
   return (
     <section
-      className="flex h-dvh cursor-pointer flex-col justify-end bg-ink px-8 pb-16 sm:px-16"
+      className="relative flex h-dvh cursor-pointer flex-col justify-end overflow-hidden bg-ink"
       onClick={() => {
         if (i >= BEATS.length - 1) finish();
         else setI((n) => n + 1);
       }}
     >
-      <p className="font-mono text-[11px] tracking-widest text-accent">{beat.kicker}</p>
-      <p
-        className="font-display mt-4 text-3xl text-parchment sm:text-5xl"
-        dangerouslySetInnerHTML={{ __html: beat.html }}
+      <img
+        src={asset("art/rlyeh-overlook.jpg")}
+        alt=""
+        className="absolute inset-0 size-full object-cover"
+        crossOrigin="anonymous"
       />
-      <p className="mt-8 font-mono text-[11px] text-muted">触れて進む</p>
+      <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/45 to-ink/20" />
+      <p
+        key={i}
+        className="prologue-line relative z-10 px-8 pb-24 text-3xl sm:px-16 sm:text-5xl"
+        dangerouslySetInnerHTML={{ __html: BEATS[i] }}
+      />
     </section>
   );
 }
