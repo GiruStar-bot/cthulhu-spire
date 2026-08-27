@@ -333,6 +333,7 @@ function EnemyPlate({
         {enemy.hp}/{enemy.maxHp}
         {enemy.block ? ` · 防 ${enemy.block}` : ""}
         {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
+        {enemy.poison ? ` · 毒 ${enemy.poison}` : ""}
       </p>
     </button>
   );

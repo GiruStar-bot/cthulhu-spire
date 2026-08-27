@@ -16,6 +16,10 @@ export function emptyProfile(): PlayerProfile {
     runs: 0,
     earnedPoints: 0,
     unspentPoints: 0,
+    madness: 0,
+    sanity: null,
+    seenRlyeh: false,
+    grimoireRead: [],
   };
 }
 
@@ -39,11 +43,32 @@ export function clampStats(stats: PlayerStats): PlayerStats {
   };
 }
 
-export function derivedVitals(stats: PlayerStats) {
+export const MADNESS_STEP = 30;
+export const SANITY_PENALTY_PER_TIER = 40;
+export const GRIMOIRE_MIND = 11;
+
+export function madnessTiers(madness: number) {
+  return Math.floor(Math.max(0, madness | 0) / MADNESS_STEP);
+}
+
+export function madnessPenalty(madness: number) {
+  return madnessTiers(madness) * SANITY_PENALTY_PER_TIER;
+}
+
+export function derivedVitals(stats: PlayerStats, madness = 0) {
   return {
     maxHp: 50 + stats.body * 2,
-    maxSanity: 40 + stats.mind * 2,
+    maxSanity: Math.max(0, 40 + stats.mind * 2 - madnessPenalty(madness)),
   };
+}
+
+export function grimoireOpen(profile: PlayerProfile) {
+  return profile.stats.mind >= GRIMOIRE_MIND;
+}
+
+export function wipeProfile() {
+  if (typeof localStorage !== "undefined") localStorage.removeItem(KEY);
+  return emptyProfile();
 }
 
 export function unlockedFeatures(stats: PlayerStats): string[] {
@@ -69,6 +94,10 @@ export function loadProfile(): PlayerProfile {
       loadoutIds: Array.isArray(p.loadoutIds) ? p.loadoutIds.slice(0, MAX_LOADOUT) : [],
       earnedPoints: Math.max(0, p.earnedPoints | 0),
       unspentPoints: Math.max(0, p.unspentPoints | 0),
+      madness: Math.max(0, p.madness | 0),
+      sanity: typeof p.sanity === "number" ? Math.max(0, p.sanity) : null,
+      seenRlyeh: !!p.seenRlyeh,
+      grimoireRead: Array.isArray(p.grimoireRead) ? p.grimoireRead.filter((id) => typeof id === "string") : [],
     };
   } catch {
     return emptyProfile();

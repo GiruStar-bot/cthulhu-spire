@@ -46,6 +46,7 @@ export function makeEnemy(defId: string, floor: number, rand: () => number): Com
     strength: 0,
     weak: 0,
     vulnerable: 0,
+    poison: 0,
     patternIndex,
     intent: d.pattern[patternIndex]!,
   };
@@ -100,7 +101,11 @@ function maybeSplit(e: CombatEnemy, c: CombatState, rand?: () => number) {
   c.floaters.push(floater("分裂", "info", e.uid));
 }
 
-export function drawCards(c: CombatState, n: number, rand: () => number) {
+function incoming(raw: number, c: CombatState) {
+  return c.intangible > 0 ? Math.min(1, Math.max(0, raw)) : raw;
+}
+
+export function drawCards(c: CombatState, n: number, rand: () => number, player?: PlayerHook) {
   for (let i = 0; i < n; i++) {
     if (c.hand.length >= 10) break;
     if (c.draw.length === 0) {
@@ -109,7 +114,15 @@ export function drawCards(c: CombatState, n: number, rand: () => number) {
       c.discard = [];
     }
     const card = c.draw.pop();
-    if (card) c.hand.push(card);
+    if (!card) break;
+    const d = getCard(card.defId);
+    if (d.onDraw && player) {
+      runEffects(d.onDraw, c, player, null, rand, card);
+      c.exhaust.push(card);
+      c.floaters.push(floater(d.name, "info", "player"));
+      continue;
+    }
+    c.hand.push(card);
   }
 }
 
@@ -149,13 +162,18 @@ export function startCombat(
     powers: [],
     cardsPlayed: 0,
     sealed: null,
+    intangible: 0,
+    nextAttackMul: 1,
+    blockLost: 0,
+    pendingPhase: 0,
+    attackSelfHurt: 0,
     phase: "player",
     result: "ongoing",
     log: ["空気が、厚くなる。"],
     floaters: [],
   };
   c.strength += player.extraStrength;
-  drawCards(c, 5 + drawBonus, rand);
+  drawCards(c, 5 + drawBonus, rand, player);
   if (player.sanity <= 0) {
     addToDiscard(c, makeCard("dread"));
     c.log.push("恐怖がデッキに沈む。");
@@ -178,12 +196,28 @@ function runEffects(
         if (!tgt) break;
         let n = dmgDealt(e.n, c.strength, c.weak);
         if (card?.defId === "laststand" && player.hp <= player.maxHp * 0.5) n += card.upgraded ? 12 : 9;
+        if (c.nextAttackMul !== 1) {
+          n = Math.floor(n * c.nextAttackMul);
+          c.nextAttackMul = 1;
+        }
         applyToEnemy(tgt, n, c, rand);
+        if (c.attackSelfHurt > 0) {
+          player.hp = Math.max(1, player.hp - c.attackSelfHurt);
+          c.floaters.push(floater(`-${c.attackSelfHurt}`, "dmg", "player"));
+        }
         break;
       }
       case "damageAll": {
-        const n = dmgDealt(e.n, c.strength, c.weak);
+        let n = dmgDealt(e.n, c.strength, c.weak);
+        if (c.nextAttackMul !== 1) {
+          n = Math.floor(n * c.nextAttackMul);
+          c.nextAttackMul = 1;
+        }
         for (const tgt of living(c)) applyToEnemy(tgt, n, c, rand);
+        if (c.attackSelfHurt > 0) {
+          player.hp = Math.max(1, player.hp - c.attackSelfHurt);
+          c.floaters.push(floater(`-${c.attackSelfHurt}`, "dmg", "player"));
+        }
         break;
       }
       case "block": {
@@ -244,6 +278,40 @@ function runEffects(
       case "ifSanityBelow":
         if (player.sanity < e.threshold) runEffects(e.then, c, player, targetId, rand, card);
         break;
+      case "poison": {
+        const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
+        if (tgt) tgt.poison += e.n;
+        break;
+      }
+      case "intangible":
+        c.intangible += e.n;
+        c.floaters.push(floater("無形", "info", "player"));
+        break;
+      case "loseMaxHp":
+        player.maxHp = Math.max(1, player.maxHp - e.n);
+        player.hp = Math.min(player.hp, player.maxHp);
+        c.floaters.push(floater(`最大-${e.n}`, "dmg", "player"));
+        break;
+      case "addCurse":
+        addToDiscard(c, makeCard(e.id));
+        break;
+      case "nextAttackMul":
+        c.nextAttackMul *= e.n;
+        break;
+      case "phaseDelay":
+        c.pendingPhase = 1;
+        break;
+      case "attackSelfHurt":
+        c.attackSelfHurt += e.n;
+        break;
+      case "blockPerEnemy": {
+        const n = living(c).length * e.n;
+        if (n > 0) {
+          c.block += n;
+          c.floaters.push(floater(`+${n}`, "block", "player"));
+        }
+        break;
+      }
     }
   }
 }
@@ -326,6 +394,12 @@ function checkOver(c: CombatState, player: PlayerHook) {
     c.log.push("肉体が、折れた。");
     return;
   }
+  if (player.sanity <= 0) {
+    c.result = "lose";
+    c.phase = "over";
+    c.log.push("正気が、0になった。器がひび割れる。");
+    return;
+  }
   if (living(c).length === 0) {
     c.result = "win";
     c.phase = "over";
@@ -352,8 +426,10 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
       let n = dmgDealt(base, e.strength, e.weak);
       n = dmgTaken(n, c.vulnerable);
       if (player.sanity <= 0) n += 2;
+      n = incoming(n, c);
       const blocked = Math.min(c.block, n);
       c.block -= blocked;
+      if (blocked > 0) c.blockLost += blocked;
       const hp = n - blocked;
       player.hp = Math.max(0, player.hp - hp);
       c.floaters.push(floater(`-${n}`, "dmg", "player"));
@@ -400,6 +476,10 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   }
 
   for (const e of living(c)) {
+    if (e.poison > 0) {
+      e.hp = Math.max(0, e.hp - e.poison);
+      c.floaters.push(floater(`毒${e.poison}`, "dmg", e.uid));
+    }
     enemyAct(e, c, player, rand, sfx);
     if (e.weak > 0) e.weak -= 1;
     if (e.vulnerable > 0) e.vulnerable -= 1;
@@ -408,6 +488,12 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   maybeChoir(c, rand);
   checkOver(c, player);
   if (c.result !== "ongoing") return sfx;
+
+  if (c.intangible > 0) c.intangible -= 1;
+  const reflect = c.pendingPhase ? c.blockLost : 0;
+  c.pendingPhase = 0;
+  c.blockLost = 0;
+  c.attackSelfHurt = 0;
 
   c.phase = "player";
   c.block = 0;
@@ -419,7 +505,14 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
       applyToEnemy(tgt, n, c, rand);
     }
   }
-  drawCards(c, 5, rand);
+  if (reflect > 0) {
+    const tgt = pick(living(c), rand);
+    if (tgt) {
+      applyToEnemy(tgt, reflect, c, rand);
+      c.log.push("遅延した力が還る。");
+    }
+  }
+  drawCards(c, 5, rand, player);
   checkOver(c, player);
   return sfx;
 }

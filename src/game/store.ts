@@ -31,14 +31,18 @@ import {
   clampStats,
   derivedVitals,
   equippedRelics,
+  grimoireOpen,
   loadProfile,
+  MADNESS_STEP,
   MAX_LOADOUT,
   riteGain,
   saveProfile,
   STAT_MIN,
   statBudget,
   statSum,
+  wipeProfile,
 } from "./profile";
+import { nextUnread } from "./grimoire";
 
 function hookFrom(s: GameStore): PlayerHook {
   return {
@@ -54,6 +58,7 @@ function hookFrom(s: GameStore): PlayerHook {
 
 function applyHook(s: GameStore, h: PlayerHook) {
   s.hp = h.hp;
+  s.maxHp = h.maxHp;
   s.sanity = h.sanity;
 }
 
@@ -107,6 +112,11 @@ export interface GameStore {
   continueClimb: () => void;
   giveUp: () => void;
   spendRite: (key: keyof PlayerStats) => void;
+  finishPrologue: () => void;
+  openGrimoire: () => void;
+  closeGrimoire: () => void;
+  turnGrimoirePage: () => void;
+  acceptShatter: () => void;
 }
 
 function weightedCard(owner: CharacterId, rand: () => number): CardInst {
@@ -129,6 +139,7 @@ function markDefeat(s: GameStore): PlayerProfile {
     bestFloor: Math.max(s.profile.bestFloor, s.floor),
     earnedPoints: Math.max(0, (s.profile.earnedPoints | 0) + gain),
     unspentPoints: Math.max(0, (s.profile.unspentPoints | 0) + gain),
+    sanity: s.sanity,
   };
   persist(profile);
   return profile;
@@ -143,6 +154,7 @@ function presentCombat(
   set({
     combat,
     hp: hook.hp,
+    maxHp: hook.maxHp,
     sanity: hook.sanity,
     targeting: null,
   });
@@ -165,7 +177,20 @@ function presentCombat(
       const cur = get();
       if (cur.combat?.result !== "lose") return;
       stopBgm();
-      set({ scene: "defeat", profile: markDefeat(cur) });
+      const profile = markDefeat(cur);
+      if (cur.sanity <= 0 || cur.maxSanity <= 0) {
+        set({
+          scene: "shatter",
+          profile: wipeProfile(),
+          combat: null,
+          runFloors: [],
+          floor: 0,
+          deck: [],
+          relics: [],
+        });
+        return;
+      }
+      set({ scene: "defeat", profile });
     }, 560);
   }
   window.setTimeout(() => {
@@ -181,7 +206,7 @@ export const useGame = create<GameStore>((set, get) => {
   function enterFloor(floor: number, carry?: Partial<GameStore>) {
     const s = { ...get(), ...carry };
     if (floor > (s.runFloors.length || DEMO_MAX_FLOOR)) {
-      const profile = { ...s.profile, bestFloor: Math.max(s.profile.bestFloor, s.floor), wins: s.profile.wins + 1 };
+      const profile = { ...s.profile, bestFloor: Math.max(s.profile.bestFloor, s.floor), wins: s.profile.wins + 1, sanity: s.sanity };
       persist(profile);
       stopBgm();
       set({
@@ -334,10 +359,19 @@ export const useGame = create<GameStore>((set, get) => {
 
       const path = starterPath(profile.stats);
       const ch = CHARACTERS[path]!;
-      const vitals = derivedVitals(profile.stats);
+      const vitals = derivedVitals(profile.stats, profile.madness);
       const loadout = equippedRelics(profile);
       const maxHp = vitals.maxHp + powerOf(loadout, "maxHp");
       const maxSanity = vitals.maxSanity + powerOf(loadout, "maxSanity");
+      if (maxSanity <= 0) {
+        set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [], floor: 0 });
+        return;
+      }
+      const sanity = profile.sanity == null ? maxSanity : Math.min(profile.sanity, maxSanity);
+      if (sanity <= 0) {
+        set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [], floor: 0 });
+        return;
+      }
 
       let seed = s.seed;
       let rand = s.rand;
@@ -351,6 +385,8 @@ export const useGame = create<GameStore>((set, get) => {
       unlockAudio();
       sfx.reward();
 
+      const tome = (profile.grimoireRead ?? []).map((id) => makeCard(id));
+
       set({
         profile,
         playerName: name,
@@ -360,9 +396,9 @@ export const useGame = create<GameStore>((set, get) => {
         character: path,
         hp: maxHp,
         maxHp,
-        sanity: maxSanity,
+        sanity,
         maxSanity,
-        deck: ch.starter.map((cid) => makeCard(cid)),
+        deck: [...ch.starter.map((cid) => makeCard(cid)), ...tome],
         relics: loadout.map((r) => ({ ...r })),
         runStrength: Math.floor(profile.stats.will / 4),
         extraEnergyNext: 0,
@@ -374,6 +410,10 @@ export const useGame = create<GameStore>((set, get) => {
         targeting: null,
         toast: null,
       });
+      if (!profile.seenRlyeh) {
+        set({ scene: "prologue", floor: 0 });
+        return;
+      }
       enterFloor(1);
     },
 
@@ -627,7 +667,64 @@ export const useGame = create<GameStore>((set, get) => {
     },
     giveUp: () => {
       stopBgm();
-      set({ scene: "title", combat: null, runFloors: [], profile: loadProfile() });
+      const s = get();
+      const profile = { ...s.profile, sanity: s.sanity };
+      persist(profile);
+      set({ scene: "title", combat: null, runFloors: [], profile, floor: 0 });
+    },
+    finishPrologue: () => {
+      const s = get();
+      const profile = { ...s.profile, seenRlyeh: true };
+      persist(profile);
+      const runFloors = s.runFloors.slice();
+      if (runFloors[0]) runFloors[0] = { floor: 1, type: "combat", enemyIds: ["drowned"] };
+      set({ profile, runFloors });
+      enterFloor(1, { profile, runFloors });
+    },
+    openGrimoire: () => {
+      if (!grimoireOpen(get().profile)) return;
+      stopBgm();
+      set({ scene: "grimoire" });
+      sfx.ui();
+    },
+    closeGrimoire: () => {
+      playBgm("title");
+      set({ scene: "title" });
+    },
+    turnGrimoirePage: () => {
+      const s = get();
+      const next = nextUnread(s.profile.grimoireRead);
+      if (!next?.cardId) return;
+      const madness = (s.profile.madness | 0) + MADNESS_STEP;
+      const grimoireRead = [...s.profile.grimoireRead, next.cardId];
+      const vitals = derivedVitals(s.profile.stats, madness);
+      const maxSanity = vitals.maxSanity;
+      const prevMax = derivedVitals(s.profile.stats, madness - MADNESS_STEP).maxSanity;
+      const cur = s.profile.sanity == null ? prevMax : s.profile.sanity;
+      const sanity = Math.max(0, Math.min(cur, maxSanity));
+      if (maxSanity <= 0 || sanity <= 0) {
+        set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [] });
+        sfx.lose();
+        return;
+      }
+      const profile = { ...s.profile, madness, grimoireRead, sanity };
+      persist(profile);
+      set({ profile });
+      sfx.reward();
+    },
+    acceptShatter: () => {
+      stopBgm();
+      playBgm("title");
+      set({
+        scene: "title",
+        profile: loadProfile(),
+        combat: null,
+        runFloors: [],
+        floor: 0,
+        deck: [],
+        relics: [],
+        playerName: "",
+      });
     },
   };
 });

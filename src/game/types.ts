@@ -8,7 +8,10 @@ export type Scene =
   | "event"
   | "between"
   | "victory"
-  | "defeat";
+  | "defeat"
+  | "prologue"
+  | "grimoire"
+  | "shatter";
 
 export type CharacterId = "investigator" | "cultist";
 export type CardType = "attack" | "skill" | "power" | "status";
@@ -49,7 +52,15 @@ export type Effect =
   | { t: "gainPower"; id: PowerId }
   | { t: "addDread"; n: number }
   | { t: "ifIntentAttack"; then: Effect[] }
-  | { t: "ifSanityBelow"; threshold: number; then: Effect[] };
+  | { t: "ifSanityBelow"; threshold: number; then: Effect[] }
+  | { t: "poison"; n: number }
+  | { t: "intangible"; n: number }
+  | { t: "loseMaxHp"; n: number }
+  | { t: "addCurse"; id: string }
+  | { t: "nextAttackMul"; n: number }
+  | { t: "phaseDelay" }
+  | { t: "attackSelfHurt"; n: number }
+  | { t: "blockPerEnemy"; n: number };
 
 export type PowerId = "resolve" | "echo" | "bloodOath";
 
@@ -69,6 +80,8 @@ export interface CardDef {
   exhaust?: boolean;
   unplayable?: boolean;
   ethereal?: boolean;
+  grimoire?: boolean;
+  onDraw?: Effect[];
   effects: Effect[];
   upgradedEffects: Effect[];
 }
@@ -116,6 +129,7 @@ export interface CombatEnemy {
   strength: number;
   weak: number;
   vulnerable: number;
+  poison: number;
   patternIndex: number;
   intent: Intent;
   shownIntent?: Intent;
@@ -165,6 +179,10 @@ export interface PlayerProfile {
   runs: number;
   earnedPoints: number;
   unspentPoints: number;
+  madness: number;
+  sanity: number | null;
+  seenRlyeh: boolean;
+  grimoireRead: string[];
 }
 
 export interface MapNode {
@@ -192,6 +210,11 @@ export interface CombatState {
   powers: PowerId[];
   cardsPlayed: number;
   sealed: "attack" | "skill" | null;
+  intangible: number;
+  nextAttackMul: number;
+  blockLost: number;
+  pendingPhase: number;
+  attackSelfHurt: number;
   phase: "player" | "enemy" | "over";
   result: "ongoing" | "win" | "lose";
   log: string[];

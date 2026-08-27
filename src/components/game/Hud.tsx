@@ -12,6 +12,7 @@ export function Vitals() {
   const character = useGame((s) => s.character);
   const relics = useGame((s) => s.relics);
   const floor = useGame((s) => s.floor);
+  const madness = useGame((s) => s.profile.madness);
   const playerName = useGame((s) => s.playerName);
   const ch = character ? CHARACTERS[character] : null;
 
@@ -32,6 +33,9 @@ export function Vitals() {
       </div>
       <span className="font-mono text-[10px] tracking-wider text-muted">
         {floorBand(floor)} · <span className="tabular-nums text-parchment">{layerLabel(floor)}</span>
+        {madness ? (
+          <span className="text-blood"> · 狂気 {madness}</span>
+        ) : null}
       </span>
       <div className="flex flex-wrap gap-1">
         {relics.map((r) => (
