@@ -2,6 +2,8 @@ import type { CardDef, CardInst, CharacterId } from "./types";
 import { asset } from "@/lib/asset";
 import { uid } from "./rng";
 
+export const DECK_LIMIT = 20;
+
 export const CARDS: Record<string, CardDef> = {
   strike: {
     id: "strike",

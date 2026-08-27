@@ -4,6 +4,7 @@ export type Scene =
   | "map"
   | "combat"
   | "reward"
+  | "cull"
   | "rest"
   | "event"
   | "between"

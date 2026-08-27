@@ -12,7 +12,7 @@ import type {
   Scene,
 } from "./types";
 import { CHARACTERS } from "./characters";
-import { cardText, getCard, makeCard, rewardPool } from "./cards";
+import { cardText, DECK_LIMIT, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
 import { DEMO_MAX_FLOOR, generateRunTable } from "./floors";
 import { pickRelicTemplate, powerOf, relicLabel, rollRelic } from "./relics";
@@ -105,6 +105,7 @@ export interface GameStore {
   endPlayerTurn: () => void;
   pickReward: (card: CardInst | null) => void;
   skipReward: () => void;
+  discardFromDeck: (uid: string) => void;
   restHeal: () => void;
   restUpgrade: (uid: string) => void;
   resolveEvent: (choiceId: string) => void;
@@ -257,6 +258,61 @@ export const useGame = create<GameStore>((set, get) => {
     playBgm("event");
     const ev = EVENTS.find((e) => e.id === spec.eventId) ?? pick(EVENTS, s.rand);
     set({ ...base, scene: "event", event: ev });
+  }
+
+  function finishAdvance(carry: Partial<GameStore>) {
+    const s = { ...get(), ...carry };
+    const spec = specAt(s);
+    if (spec?.type === "boss" && s.floor === 50) {
+      const profile = { ...s.profile, bestFloor: Math.max(s.profile.bestFloor, s.floor) };
+      persist(profile);
+      playBgm("rest");
+      set({
+        ...carry,
+        scene: "between",
+        profile,
+        reward: null,
+        combat: null,
+        event: null,
+      });
+      return;
+    }
+    if (s.floor >= DEMO_MAX_FLOOR) {
+      const profile = {
+        ...s.profile,
+        bestFloor: Math.max(s.profile.bestFloor, s.floor),
+        wins: s.profile.wins + 1,
+        sanity: s.sanity,
+      };
+      persist(profile);
+      stopBgm();
+      set({
+        ...carry,
+        scene: "victory",
+        profile,
+        reward: null,
+        combat: null,
+        event: null,
+      });
+      return;
+    }
+    enterFloor(s.floor + 1, { ...carry, reward: null, event: null, combat: null });
+  }
+
+  function afterGain(carry: Partial<GameStore>) {
+    const deck = (carry.deck ?? get().deck) as CardInst[];
+    if (deck.length > DECK_LIMIT) {
+      sfx.ui();
+      set({
+        ...carry,
+        scene: "cull",
+        reward: null,
+        event: null,
+        combat: null,
+      });
+      return;
+    }
+    finishAdvance(carry);
   }
 
   return {
@@ -487,53 +543,8 @@ export const useGame = create<GameStore>((set, get) => {
       }
 
       persist(profile);
-      const spec = specAt(s);
       const relicToast = s.reward?.relic ? `${relicLabel(s.reward.relic)} を記録した。` : null;
-
-      if (spec?.type === "boss" && s.floor === 50) {
-        profile = { ...profile, bestFloor: Math.max(profile.bestFloor, s.floor) };
-        persist(profile);
-        playBgm("rest");
-        set({
-          scene: "between",
-          deck,
-          relics,
-          hp,
-          maxHp,
-          maxSanity,
-          sanity,
-          profile,
-          reward: null,
-          combat: null,
-          toast: relicToast,
-        });
-        return;
-      }
-
-      if (s.floor >= DEMO_MAX_FLOOR) {
-        profile = {
-          ...profile,
-          bestFloor: Math.max(profile.bestFloor, s.floor),
-          wins: profile.wins + 1,
-        };
-        persist(profile);
-        stopBgm();
-        set({
-          scene: "victory",
-          deck,
-          relics,
-          hp,
-          maxHp,
-          maxSanity,
-          sanity,
-          profile,
-          reward: null,
-          combat: null,
-        });
-        return;
-      }
-
-      enterFloor(s.floor + 1, {
+      afterGain({
         deck,
         relics,
         hp,
@@ -546,6 +557,19 @@ export const useGame = create<GameStore>((set, get) => {
     },
 
     skipReward: () => get().pickReward(null),
+
+    discardFromDeck: (uid) => {
+      const s = get();
+      if (s.scene !== "cull") return;
+      if (!s.deck.some((c) => c.uid === uid)) return;
+      const deck = s.deck.filter((c) => c.uid !== uid);
+      sfx.select();
+      if (deck.length > DECK_LIMIT) {
+        set({ deck });
+        return;
+      }
+      finishAdvance({ deck, toast: `${getCard(s.deck.find((c) => c.uid === uid)!.defId).name}を捨てた。` });
+    },
 
     restHeal: () => {
       const s = get();
@@ -637,7 +661,7 @@ export const useGame = create<GameStore>((set, get) => {
 
       persist(profile);
       sfx.ui();
-      enterFloor(s.floor + 1, {
+      afterGain({
         hp,
         maxHp,
         sanity,
