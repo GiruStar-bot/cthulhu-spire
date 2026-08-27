@@ -721,7 +721,7 @@ export const useGame = create<GameStore>((set, get) => {
       sfx.ui();
     },
     closeGrimoire: () => {
-      playBgm("title");
+      stopBgm();
       set({ scene: "hub" });
     },
     turnGrimoirePage: () => {

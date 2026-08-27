@@ -1,6 +1,6 @@
 import { CreditsPanel, SettingsPanel } from "@/components/game/TitleScreen";
 import { GrimoirePanel } from "@/components/game/GrimoireView";
-import { playBgm, unlockAudio } from "@/game/audio";
+import { stopBgm, unlockAudio } from "@/game/audio";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { useEffect, useState } from "react";
@@ -19,7 +19,7 @@ export function HubView() {
     body.style.overflow = "hidden";
     const kick = () => {
       unlockAudio();
-      playBgm("title");
+      stopBgm();
     };
     kick();
     window.addEventListener("pointerdown", kick, { once: true });
