@@ -8,7 +8,7 @@ import type {
   PowerId,
   RelicInstance,
 } from "./types";
-import { cardCost, cardEffects, getCard, makeCard } from "./cards";
+import { cardCost, cardEffects, getCard, makeCard, scaleN } from "./cards";
 import { getEnemy } from "./enemies";
 import { powerOf } from "./relics";
 import { pick, shuffle, uid } from "./rng";
@@ -167,6 +167,14 @@ export function startCombat(
     blockLost: 0,
     pendingPhase: 0,
     attackSelfHurt: 0,
+    keepBlock: 0,
+    skipDraw: 0,
+    energyNext: 0,
+    cold: 0,
+    retainHand: 0,
+    thornsVulnerable: 0,
+    xSpent: 0,
+    forceEnd: false,
     phase: "player",
     result: "ongoing",
     log: ["空気が、厚くなる。"],
@@ -194,7 +202,7 @@ function runEffects(
       case "damage": {
         const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
         if (!tgt) break;
-        let n = dmgDealt(e.n, c.strength, c.weak);
+        let n = dmgDealt(scaleN(e.n, card), c.strength, c.weak);
         if (card?.defId === "laststand" && player.hp <= player.maxHp * 0.5) n += card.upgraded ? 12 : 9;
         if (c.nextAttackMul !== 1) {
           n = Math.floor(n * c.nextAttackMul);
@@ -208,7 +216,7 @@ function runEffects(
         break;
       }
       case "damageAll": {
-        let n = dmgDealt(e.n, c.strength, c.weak);
+        let n = dmgDealt(scaleN(e.n, card), c.strength, c.weak);
         if (c.nextAttackMul !== 1) {
           n = Math.floor(n * c.nextAttackMul);
           c.nextAttackMul = 1;
@@ -221,7 +229,7 @@ function runEffects(
         break;
       }
       case "block": {
-        const n = e.n + c.dexterity;
+        const n = scaleN(e.n, card) + c.dexterity;
         c.block += n;
         c.floaters.push(floater(`+${n}`, "block", "player"));
         break;
@@ -312,6 +320,84 @@ function runEffects(
         }
         break;
       }
+      case "damageX": {
+        const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
+        if (tgt) applyToEnemy(tgt, dmgDealt(e.n * Math.max(0, c.xSpent), c.strength, c.weak), c, rand);
+        break;
+      }
+      case "exhaustHand": {
+        for (const h of c.hand) c.exhaust.push(h);
+        c.hand = [];
+        break;
+      }
+      case "banish": {
+        for (let i = 0; i < e.n && c.hand.length; i++) {
+          const j = Math.floor(rand() * c.hand.length);
+          const gone = c.hand.splice(j, 1)[0];
+          if (gone) c.exhaust.push(gone);
+        }
+        break;
+      }
+      case "healOnKill": {
+        const tgt = living(c).find((x) => x.uid === targetId);
+        if (!tgt) {
+          player.hp = Math.min(player.maxHp, player.hp + e.n);
+          c.floaters.push(floater(`+${e.n}`, "heal", "player"));
+        }
+        break;
+      }
+      case "retainBlock":
+        c.keepBlock = 1;
+        break;
+      case "discardRandom": {
+        for (let i = 0; i < e.n && c.hand.length; i++) {
+          const j = Math.floor(rand() * c.hand.length);
+          const gone = c.hand.splice(j, 1)[0];
+          if (gone) addToDiscard(c, gone);
+        }
+        break;
+      }
+      case "skipDraw":
+        c.skipDraw += e.n;
+        break;
+      case "energyNext":
+        c.energyNext += e.n;
+        break;
+      case "cancelIntent": {
+        const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
+        if (tgt) {
+          tgt.intent = { kind: "defend", block: 0 };
+          tgt.shownIntent = tgt.intent;
+        }
+        break;
+      }
+      case "endTurnMaybe":
+        if (rand() < e.p) c.forceEnd = true;
+        break;
+      case "cold":
+        c.cold += e.n;
+        break;
+      case "bind": {
+        const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
+        if (tgt) tgt.bound = 1;
+        break;
+      }
+      case "selfVulnerable":
+        c.vulnerable += e.n;
+        break;
+      case "retainCards":
+        c.retainHand = Math.max(c.retainHand, e.n);
+        break;
+      case "thornsVulnerable":
+        c.thornsVulnerable += e.n;
+        break;
+      case "loseMaxHpHalf": {
+        const lost = Math.floor(player.maxHp / 2);
+        player.maxHp = Math.max(1, player.maxHp - lost);
+        player.hp = Math.min(player.hp, player.maxHp);
+        c.floaters.push(floater(`最大-${lost}`, "dmg", "player"));
+        break;
+      }
     }
   }
 }
@@ -340,6 +426,15 @@ export function changeSanity(player: PlayerHook, c: CombatState, delta: number) 
 }
 
 function finishPlay(c: CombatState, card: CardInst, defExhaust: boolean) {
+  if (typeof card.charges === "number") {
+    card.charges -= 1;
+    if (card.charges > 0) {
+      addToDiscard(c, card);
+      return;
+    }
+    c.exhaust.push(card);
+    return;
+  }
   if (defExhaust || getCard(card.defId).type === "power") {
     c.exhaust.push(card);
   } else {
@@ -352,6 +447,7 @@ export function canPlay(c: CombatState, card: CardInst) {
   if (c.phase !== "player" || c.result !== "ongoing") return false;
   if (d.unplayable) return false;
   if (c.sealed && d.type === c.sealed) return false;
+  if (d.xCost) return true;
   return cardCost(card) <= c.energy;
 }
 
@@ -370,11 +466,12 @@ export function playCard(
   const d = getCard(card.defId);
   if (d.unplayable) return { error: "プレイできない。", sfx: empty };
   if (c.sealed && d.type === c.sealed) return { error: `${c.sealed === "attack" ? "攻撃" : "技能"}は封じられている。`, sfx: empty };
-  const cost = cardCost(card);
-  if (cost > c.energy) return { error: "エネルギーが足りない。", sfx: empty };
+  const cost = d.xCost ? c.energy : cardCost(card);
+  if (!d.xCost && cost > c.energy) return { error: "エネルギーが足りない。", sfx: empty };
   if (d.target === "enemy" && living(c).length > 1 && !targetId) return { error: "対象を選んでください。", sfx: empty };
 
   c.hand.splice(idx, 1);
+  c.xSpent = d.xCost ? cost : 0;
   c.energy -= cost;
   c.cardsPlayed += 1;
   runEffects(cardEffects(card), c, player, targetId, rand, card);
@@ -458,7 +555,15 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   c.phase = "enemy";
 
   const kept: CardInst[] = [];
-  for (const card of c.hand) {
+  const hand = c.hand.slice();
+  c.hand = [];
+  if (c.retainHand > 0) {
+    for (let i = 0; i < c.retainHand && hand.length; i++) {
+      kept.push(hand.pop()!);
+    }
+    c.retainHand = 0;
+  }
+  for (const card of hand) {
     const d = getCard(card.defId);
     if (d.ethereal) c.exhaust.push(card);
     else addToDiscard(c, card);
@@ -475,12 +580,23 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
     c.block = 0;
   }
 
+  if (c.cold > 0) {
+    player.hp = Math.max(1, player.hp - c.cold);
+    c.floaters.push(floater(`-${c.cold}`, "dmg", "player"));
+  }
+
   for (const e of living(c)) {
     if (e.poison > 0) {
       e.hp = Math.max(0, e.hp - e.poison);
       c.floaters.push(floater(`毒${e.poison}`, "dmg", e.uid));
     }
-    enemyAct(e, c, player, rand, sfx);
+    if (e.bound) {
+      e.bound = 0;
+      c.log.push(`${getEnemy(e.defId).name}は動けない。`);
+    } else {
+      enemyAct(e, c, player, rand, sfx);
+      if (c.thornsVulnerable > 0 && e.intent.kind === "attack") e.vulnerable += c.thornsVulnerable;
+    }
     if (e.weak > 0) e.weak -= 1;
     if (e.vulnerable > 0) e.vulnerable -= 1;
     advanceIntent(e, rand);
@@ -494,10 +610,15 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   c.pendingPhase = 0;
   c.blockLost = 0;
   c.attackSelfHurt = 0;
+  c.thornsVulnerable = 0;
 
   c.phase = "player";
-  c.block = 0;
-  c.energy = c.maxEnergy;
+  if (c.keepBlock > 0) c.keepBlock -= 1;
+  else c.block = 0;
+  c.energy = Math.max(0, c.maxEnergy + c.energyNext);
+  c.energyNext = 0;
+  const drawN = Math.max(0, 5 - c.skipDraw);
+  c.skipDraw = 0;
   if (c.powers.includes("echo")) {
     const tgt = pick(living(c), rand);
     if (tgt) {
@@ -512,7 +633,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
       c.log.push("遅延した力が還る。");
     }
   }
-  drawCards(c, 5, rand, player);
+  drawCards(c, drawN, rand, player);
   checkOver(c, player);
   return sfx;
 }

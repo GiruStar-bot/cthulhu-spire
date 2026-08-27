@@ -60,7 +60,23 @@ export type Effect =
   | { t: "nextAttackMul"; n: number }
   | { t: "phaseDelay" }
   | { t: "attackSelfHurt"; n: number }
-  | { t: "blockPerEnemy"; n: number };
+  | { t: "blockPerEnemy"; n: number }
+  | { t: "damageX"; n: number }
+  | { t: "exhaustHand" }
+  | { t: "banish"; n: number }
+  | { t: "healOnKill"; n: number }
+  | { t: "retainBlock" }
+  | { t: "discardRandom"; n: number }
+  | { t: "skipDraw"; n: number }
+  | { t: "energyNext"; n: number }
+  | { t: "cancelIntent" }
+  | { t: "endTurnMaybe"; p: number }
+  | { t: "cold"; n: number }
+  | { t: "bind" }
+  | { t: "selfVulnerable"; n: number }
+  | { t: "retainCards"; n: number }
+  | { t: "thornsVulnerable"; n: number }
+  | { t: "loseMaxHpHalf" };
 
 export type PowerId = "resolve" | "echo" | "bloodOath";
 
@@ -81,6 +97,9 @@ export interface CardDef {
   unplayable?: boolean;
   ethereal?: boolean;
   grimoire?: boolean;
+  shop?: boolean;
+  xCost?: boolean;
+  charges?: number;
   onDraw?: Effect[];
   effects: Effect[];
   upgradedEffects: Effect[];
@@ -90,6 +109,8 @@ export interface CardInst {
   uid: string;
   defId: string;
   upgraded: boolean;
+  charges?: number;
+  forge?: number;
 }
 
 export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour";
@@ -134,6 +155,7 @@ export interface CombatEnemy {
   intent: Intent;
   shownIntent?: Intent;
   splitDone?: boolean;
+  bound?: number;
 }
 
 export interface CharacterDef {
@@ -215,6 +237,14 @@ export interface CombatState {
   blockLost: number;
   pendingPhase: number;
   attackSelfHurt: number;
+  keepBlock: number;
+  skipDraw: number;
+  energyNext: number;
+  cold: number;
+  retainHand: number;
+  thornsVulnerable: number;
+  xSpent: number;
+  forceEnd: boolean;
   phase: "player" | "enemy" | "over";
   result: "ongoing" | "win" | "lose";
   log: string[];
@@ -244,4 +274,26 @@ export interface EventChoice {
   id: string;
   label: string;
   result: string;
+}
+
+export type ItemRank = "normal" | "mid" | "genius" | "god" | "taboo";
+export type ShopSub = "sword" | "bow" | "heavy" | "light";
+
+export interface ShopGood {
+  uid: string;
+  defId: string;
+  price: number;
+  sold: boolean;
+}
+
+export interface SmithShop {
+  rank: ItemRank;
+  kind: ShopSub;
+  taboo: boolean;
+  goods: ShopGood[];
+}
+
+export interface VillageState {
+  smith: SmithShop;
+  beerSold: boolean;
 }

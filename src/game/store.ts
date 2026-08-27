@@ -10,6 +10,7 @@ import type {
   RelicInstance,
   RewardOffer,
   Scene,
+  VillageState,
 } from "./types";
 import { CHARACTERS } from "./characters";
 import { cardText, DECK_LIMIT, getCard, makeCard, rewardPool } from "./cards";
@@ -43,6 +44,7 @@ import {
   wipeProfile,
 } from "./profile";
 import { nextUnread } from "./grimoire";
+import { forgeCard, makeSmith, SHOP_PRICE } from "./smith";
 
 function hookFrom(s: GameStore): PlayerHook {
   return {
@@ -92,8 +94,11 @@ export interface GameStore {
   targeting: string | null;
   reward: RewardOffer | null;
   event: GameEvent | null;
-  restMode: "choose" | "upgrade" | null;
+  restMode: "hub" | "inn" | "pub" | "smith" | "upgrade" | "choose" | null;
   toast: string | null;
+  shells: number;
+  village: VillageState | null;
+  inspectDeck: boolean;
 
   begin: () => void;
   setPlayerName: (name: string) => void;
@@ -108,6 +113,13 @@ export interface GameStore {
   discardFromDeck: (uid: string) => void;
   restHeal: () => void;
   restUpgrade: (uid: string) => void;
+  visitVillage: (room: GameStore["restMode"]) => void;
+  innStay: (tier: 10 | 20 | 30) => void;
+  buyBeer: () => void;
+  buyGood: (uid: string) => void;
+  forgeAtSmith: (uid: string) => void;
+  leaveVillage: () => void;
+  setInspectDeck: (on: boolean) => void;
   resolveEvent: (choiceId: string) => void;
   dismissToast: () => void;
   continueClimb: () => void;
@@ -156,6 +168,18 @@ function markDefeat(s: GameStore): PlayerProfile {
   return profile;
 }
 
+function rollShells(s: GameStore): number {
+  const spec = specAt(s);
+  if (spec?.type === "boss") {
+    if (s.floor % 50 === 0) return 40 + Math.floor(s.rand() * 21);
+    return 9 + Math.floor(s.rand() * 7);
+  }
+  const n = s.combat?.enemies.length ?? 1;
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += Math.floor(s.rand() * 3);
+  return sum;
+}
+
 function presentCombat(
   get: () => GameStore,
   set: (p: Partial<GameStore>) => void,
@@ -176,10 +200,13 @@ function presentCombat(
       if (cur.combat?.result !== "win") return;
       playBgm("reward");
       const heal = powerOf(cur.relics, "postHeal");
+      const gained = rollShells(cur);
       set({
         scene: "reward",
         reward: makeReward(cur),
         hp: heal > 0 ? Math.min(cur.maxHp, cur.hp + heal) : cur.hp,
+        shells: cur.shells + gained,
+        toast: gained ? `きれいな貝殻 +${gained}` : cur.toast,
       });
     }, 920);
   } else if (combat.result === "lose") {
@@ -265,7 +292,7 @@ export const useGame = create<GameStore>((set, get) => {
     }
     if (spec.type === "rest") {
       playBgm("rest");
-      set({ ...base, scene: "rest", restMode: "choose" });
+      set({ ...base, scene: "rest", restMode: "hub", village: { smith: makeSmith(s.rand), beerSold: false } });
       return;
     }
     playBgm("event");
@@ -355,6 +382,9 @@ export const useGame = create<GameStore>((set, get) => {
     event: null,
     restMode: null,
     toast: null,
+    shells: 0,
+    village: null,
+    inspectDeck: false,
 
     begin: () => {
       unlockAudio();
@@ -481,6 +511,9 @@ export const useGame = create<GameStore>((set, get) => {
         restMode: null,
         targeting: null,
         toast: null,
+        shells: 0,
+        village: null,
+        inspectDeck: false,
       });
       if (!profile.seenRlyeh) {
         set({ scene: "prologue", floor: 0 });
@@ -512,6 +545,10 @@ export const useGame = create<GameStore>((set, get) => {
       playCues(played.sfx);
       const combat = { ...s.combat, floaters: s.combat.floaters.slice() };
       presentCombat(get, set, combat, hook);
+      const after = get().combat;
+      if (after?.forceEnd && after.result === "ongoing") {
+        get().endPlayerTurn();
+      }
     },
 
     endPlayerTurn: () => {
@@ -576,32 +613,115 @@ export const useGame = create<GameStore>((set, get) => {
         set({ deck });
         return;
       }
+      if (s.village) {
+        set({
+          scene: "rest",
+          restMode: "hub",
+          deck,
+          toast: `${getCard(s.deck.find((c) => c.uid === uid)!.defId).name}を捨てた。`,
+        });
+        return;
+      }
       finishAdvance({ deck, toast: `${getCard(s.deck.find((c) => c.uid === uid)!.defId).name}を捨てた。` });
     },
 
-    restHeal: () => {
+    restHeal: () => get().innStay(10),
+    restUpgrade: (cardUid) => get().forgeAtSmith(cardUid),
+
+    visitVillage: (room) => set({ restMode: room, toast: null }),
+
+    innStay: (tier) => {
       const s = get();
-      const heal = Math.round(s.maxHp * 0.32);
+      if (s.shells < tier) {
+        set({ toast: "貝殻が足りない。" });
+        return;
+      }
+      const pct = tier === 10 ? 0.2 : tier === 20 ? 0.5 : 1;
+      const san = tier === 10 ? 10 : tier === 20 ? 20 : 30;
+      const heal = Math.round(s.maxHp * pct);
       sfx.ui();
-      enterFloor(s.floor + 1, {
+      set({
+        shells: s.shells - tier,
         hp: Math.min(s.maxHp, s.hp + heal),
-        sanity: Math.min(s.maxSanity, s.sanity + 6),
-        restMode: null,
-        toast: `${heal} 体力と正気6を回復した。`,
+        sanity: Math.min(s.maxSanity, s.sanity + san),
+        restMode: "hub",
+        toast: `体力+${heal}、正気+${san}。貝殻-${tier}。`,
       });
     },
 
-    restUpgrade: (cardUid) => {
+    buyBeer: () => {
       const s = get();
-      const deck = s.deck.map((c) => (c.uid === cardUid ? { ...c, upgraded: true } : c));
-      const card = deck.find((c) => c.uid === cardUid);
-      sfx.select();
-      enterFloor(s.floor + 1, {
+      const price = SHOP_PRICE.beer ?? 5;
+      if (!s.village || s.village.beerSold) return;
+      if (s.shells < price) {
+        set({ toast: "貝殻が足りない。" });
+        return;
+      }
+      const card = makeCard("beer");
+      const deck = [...s.deck, card];
+      sfx.reward();
+      const next = {
+        shells: s.shells - price,
         deck,
-        restMode: null,
-        toast: card ? `${getCard(card.defId).name}を強化した。` : null,
+        village: { ...s.village, beerSold: true },
+        toast: "ビール瓶を買った。",
+      };
+      if (deck.length > DECK_LIMIT) set({ ...next, scene: "cull" as const });
+      else set(next);
+    },
+
+    buyGood: (uid) => {
+      const s = get();
+      const shop = s.village?.smith;
+      const good = shop?.goods.find((g) => g.uid === uid);
+      if (!s.village || !shop || !good || good.sold) return;
+      if (s.shells < good.price) {
+        set({ toast: "貝殻が足りない。" });
+        return;
+      }
+      const goods = shop.goods.map((g) => (g.uid === uid ? { ...g, sold: true } : g));
+      const card = makeCard(good.defId);
+      sfx.reward();
+      const next = {
+        shells: s.shells - good.price,
+        deck: [...s.deck, card],
+        village: { ...s.village, smith: { ...shop, goods } },
+        toast: `${getCard(good.defId).name}を買った。`,
+      };
+      if (next.deck.length > DECK_LIMIT) set({ ...next, scene: "cull" as const });
+      else set(next);
+    },
+
+    forgeAtSmith: (cardUid) => {
+      const s = get();
+      const taboo = !!s.village?.smith.taboo;
+      const cost = taboo ? 0 : 5;
+      if (s.shells < cost) {
+        set({ toast: "貝殻が足りない。" });
+        return;
+      }
+      const card = s.deck.find((c) => c.uid === cardUid);
+      if (!card || card.forge) {
+        set({ toast: "それ以上は焼けない。" });
+        return;
+      }
+      const deck = s.deck.map((c) => (c.uid === cardUid ? forgeCard(c, taboo) : c));
+      sfx.select();
+      set({
+        deck,
+        shells: s.shells - cost,
+        restMode: "smith",
+        toast: `${getCard(card.defId).name}を焼いた。`,
       });
     },
+
+    leaveVillage: () => {
+      const s = get();
+      sfx.step();
+      enterFloor(s.floor + 1, { restMode: null, village: null, toast: null });
+    },
+
+    setInspectDeck: (on) => set({ inspectDeck: on }),
 
     resolveEvent: (choiceId) => {
       const s = get();

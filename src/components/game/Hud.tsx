@@ -3,6 +3,7 @@ import { floorBand, layerLabel } from "@/game/floors";
 import { GRIMOIRE_ENABLED } from "@/game/profile";
 import { relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
+import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
 
 export function Vitals() {
@@ -15,6 +16,7 @@ export function Vitals() {
   const floor = useGame((s) => s.floor);
   const madness = useGame((s) => s.profile.madness);
   const playerName = useGame((s) => s.playerName);
+  const shells = useGame((s) => s.shells);
   const ch = character ? CHARACTERS[character] : null;
 
   return (
@@ -37,6 +39,10 @@ export function Vitals() {
         {GRIMOIRE_ENABLED && madness ? (
           <span className="text-blood"> · 狂気 {madness}</span>
         ) : null}
+        <span className="ml-2 inline-flex items-center gap-1 text-parchment">
+          <img src={asset("art/shell.jpg")} alt="" className="size-3.5 rounded-full object-cover" />
+          {shells}
+        </span>
       </span>
       <div className="flex flex-wrap gap-1">
         {relics.map((r) => (

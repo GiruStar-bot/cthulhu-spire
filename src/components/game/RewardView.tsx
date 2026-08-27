@@ -1,4 +1,5 @@
 import { CardView } from "@/components/game/CardView";
+import { DeckInspect } from "@/components/game/DeckInspect";
 import { DEMO_MAX_FLOOR, floorKindLabel, layerLabel } from "@/game/floors";
 import { relicDesc, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
@@ -50,6 +51,7 @@ export function RewardView() {
           スキップして次の層へ
         </button>
       </div>
+      <DeckInspect />
     </section>
   );
 }

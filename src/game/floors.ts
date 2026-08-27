@@ -26,7 +26,7 @@ export function floorKindLabel(type: FloorKind, floor: number): string {
   }
   if (type === "elite") return "精鋭";
   if (type === "combat") return "守護";
-  if (type === "rest") return "休息";
+  if (type === "rest") return "村落";
   return "予兆";
 }
 

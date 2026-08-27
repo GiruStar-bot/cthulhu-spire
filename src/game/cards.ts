@@ -1,6 +1,7 @@
 import type { CardDef, CardInst, CharacterId } from "./types";
 import { asset } from "@/lib/asset";
 import { uid } from "./rng";
+import { SHOP_CARDS } from "./smith";
 
 export const DECK_LIMIT = 20;
 
@@ -566,6 +567,8 @@ export const CARDS: Record<string, CardDef> = {
   },
 };
 
+Object.assign(CARDS, SHOP_CARDS);
+
 export function getCard(id: string): CardDef {
   const c = CARDS[id];
   if (!c) throw new Error(`Unknown card ${id}`);
@@ -573,7 +576,8 @@ export function getCard(id: string): CardDef {
 }
 
 export function makeCard(defId: string, upgraded = false): CardInst {
-  return { uid: uid("c"), defId, upgraded };
+  const d = getCard(defId);
+  return { uid: uid("c"), defId, upgraded, charges: d.charges, forge: undefined };
 }
 
 export function cardText(card: CardInst): string {
@@ -583,6 +587,7 @@ export function cardText(card: CardInst): string {
 
 export function cardCost(card: CardInst): number {
   const d = getCard(card.defId);
+  if (d.xCost) return 0;
   if (card.upgraded && d.upgradedCost !== undefined) return d.upgradedCost;
   return d.cost;
 }
@@ -592,12 +597,18 @@ export function cardEffects(card: CardInst) {
   return card.upgraded ? d.upgradedEffects : d.effects;
 }
 
+export function scaleN(n: number, card?: CardInst) {
+  if (!card?.forge || card.forge === 1) return n;
+  return Math.max(1, Math.floor(n * card.forge));
+}
+
 export function rewardPool(owner: CharacterId): CardDef[] {
   return Object.values(CARDS).filter(
     (c) =>
       c.rarity !== "starter" &&
       c.rarity !== "status" &&
       !c.grimoire &&
+      !c.shop &&
       (c.owner === "shared" || c.owner === owner),
   );
 }

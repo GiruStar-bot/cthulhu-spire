@@ -1,4 +1,5 @@
 import { Vitals } from "@/components/game/Hud";
+import { DeckInspect } from "@/components/game/DeckInspect";
 import { StageBack } from "@/components/game/StageBack";
 import { DEMO_MAX_FLOOR, layerLabel } from "@/game/floors";
 import { getCard } from "@/game/cards";
@@ -44,6 +45,7 @@ export function BetweenView() {
           {layerLabel(floor + 1)}へ沈む
         </button>
       </div>
+      <DeckInspect />
     </section>
   );
 }

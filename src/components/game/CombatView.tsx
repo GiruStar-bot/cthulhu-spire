@@ -1,5 +1,6 @@
 import { CardView } from "@/components/game/CardView";
 import { CreatureMedia } from "@/components/game/CreatureMedia";
+import { DeckInspect } from "@/components/game/DeckInspect";
 import { Vitals } from "@/components/game/Hud";
 import { StageBack } from "@/components/game/StageBack";
 import { POWER_TEXT, canPlay } from "@/game/combat";
@@ -162,6 +163,7 @@ export function CombatView() {
 
           <PlayerFloaters floaters={combat.floaters.filter((f) => f.who === "player")} />
         </div>
+        <DeckInspect />
       </ShakeRoot>
     </section>
   );

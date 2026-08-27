@@ -738,4 +738,46 @@ ruby rt {
   }
 }
 
+.village-btn {
+  min-height: 2.75rem;
+  width: fit-content;
+  border-radius: var(--radius-md);
+  background: var(--color-parchment);
+  padding: 0.6rem 1.2rem;
+  font-family: var(--font-display);
+  color: var(--color-ink);
+}
+
+.village-btn.is-leave {
+  background: transparent;
+  color: var(--color-parchment);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-parchment) 28%, transparent);
+}
+
+.deck-fab {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.85rem;
+  z-index: 30;
+  min-height: 2.5rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--color-ink) 72%, transparent);
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  color: var(--color-parchment);
+}
+
+.smith-taboo .font-display {
+  animation: smith-glitch 180ms steps(2) infinite;
+}
+
+@keyframes smith-glitch {
+  50% {
+    transform: skewX(-4deg);
+  }
+}
+
+
 

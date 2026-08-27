@@ -56,7 +56,7 @@ export function CardView({
         />
         <div className="absolute inset-0 bg-linear-to-b from-transparent to-surface" />
         <span className="card-live absolute top-1.5 left-1.5 grid size-8 place-items-center rounded-full bg-ink font-display text-sm text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_40%,transparent)]">
-          {d.unplayable ? "—" : cost}
+          {d.xCost ? "X" : d.unplayable ? "—" : cost}
         </span>
         {card.upgraded ? (
           <span className="card-live absolute top-1.5 right-1.5 rounded-full bg-accent px-1.5 py-0.5 font-mono text-xs tracking-wider text-ink uppercase">
