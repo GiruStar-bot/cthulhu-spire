@@ -32,17 +32,13 @@ export function HubView() {
 
   return (
     <section className="relative h-dvh w-full overflow-hidden bg-ink">
-      <video
+      <img
+        src={asset("art/hub-camp.jpg")}
+        alt=""
         className="absolute inset-0 size-full object-cover"
-        src={asset("art/hub-fire.mp4")}
-        poster={asset("art/hub-fire.jpg")}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
+        crossOrigin="anonymous"
       />
-      <div className="absolute inset-0 bg-linear-to-t from-ink/50 via-transparent to-ink/15" />
+      <div className="absolute inset-0 bg-ink/20" />
 
       <button
         type="button"
