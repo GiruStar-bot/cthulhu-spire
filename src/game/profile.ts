@@ -116,10 +116,6 @@ export function equippedRelics(profile: PlayerProfile): RelicInstance[] {
     .slice(0, MAX_LOADOUT);
 }
 
-export function hasVessel(profile: PlayerProfile) {
-  return (profile.runs | 0) > 0 || !!profile.seenRlyeh;
-}
-
-export function homeScene(profile: PlayerProfile): "title" | "hub" {
-  return hasVessel(profile) ? "hub" : "title";
+export function homeScene(_profile?: PlayerProfile): "title" {
+  return "title";
 }

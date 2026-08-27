@@ -721,30 +721,4 @@ ruby rt {
   }
 }
 
-.hub-seek {
-  font-family: var(--font-ruin);
-  font-size: 1.75rem;
-  letter-spacing: 0.32em;
-  color: color-mix(in oklab, var(--color-parchment) 88%, transparent);
-  text-shadow: 0 1px 12px #000;
-}
 
-.hub-seek:hover {
-  color: var(--color-parchment);
-}
-
-.hub-tome {
-  position: absolute;
-  left: 1.25rem;
-  bottom: 2.5rem;
-  z-index: 10;
-  font-family: var(--font-ruin);
-  font-size: 0.95rem;
-  letter-spacing: 0.18em;
-  color: color-mix(in oklab, var(--color-parchment) 55%, transparent);
-  text-shadow: 0 1px 8px #000;
-}
-
-.hub-tome:hover {
-  color: var(--color-parchment);
-}

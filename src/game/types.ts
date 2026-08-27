@@ -1,6 +1,5 @@
 export type Scene =
   | "title"
-  | "hub"
   | "prepare"
   | "map"
   | "combat"
@@ -12,7 +11,6 @@ export type Scene =
   | "victory"
   | "defeat"
   | "prologue"
-  | "grimoire"
   | "shatter";
 
 export type CharacterId = "investigator" | "cultist";

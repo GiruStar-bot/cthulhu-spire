@@ -114,9 +114,6 @@ export interface GameStore {
   giveUp: () => void;
   spendRite: (key: keyof PlayerStats) => void;
   finishPrologue: () => void;
-  seek: () => void;
-  openGrimoire: () => void;
-  closeGrimoire: () => void;
   turnGrimoirePage: () => void;
   acceptShatter: () => void;
 }
@@ -695,7 +692,7 @@ export const useGame = create<GameStore>((set, get) => {
       const s = get();
       const profile = { ...s.profile, sanity: s.sanity };
       persist(profile);
-      set({ scene: homeScene(profile), combat: null, runFloors: [], profile, floor: 0 });
+      set({ scene: "title", combat: null, runFloors: [], profile, floor: 0 });
     },
     finishPrologue: () => {
       const s = get();
@@ -705,24 +702,6 @@ export const useGame = create<GameStore>((set, get) => {
       if (runFloors[0]) runFloors[0] = { floor: 1, type: "combat", enemyIds: ["drowned"] };
       set({ profile, runFloors });
       enterFloor(1, { profile, runFloors });
-    },
-    seek: () => {
-      const s = get();
-      const profile = { ...s.profile, stats: clampStats(s.profile.stats) };
-      if (!profile.playerName || statSum(profile.stats) !== statBudget(profile)) {
-        get().begin();
-        return;
-      }
-      set({ profile, playerName: profile.playerName });
-      get().startRun();
-    },
-    openGrimoire: () => {
-      set({ scene: "hub" });
-      sfx.ui();
-    },
-    closeGrimoire: () => {
-      stopBgm();
-      set({ scene: "hub" });
     },
     turnGrimoirePage: () => {
       const s = get();

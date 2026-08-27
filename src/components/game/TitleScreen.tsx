@@ -1,4 +1,6 @@
 import { getSfxVolume, playBgm, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
+import { GrimoirePanel } from "@/components/game/GrimoireView";
+import { grimoireOpen } from "@/game/profile";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
@@ -16,7 +18,8 @@ const ART_FILL: CSSProperties = {
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
   const profile = useGame((s) => s.profile);
-  const [sheet, setSheet] = useState<"settings" | "credits" | null>(null);
+  const [sheet, setSheet] = useState<"settings" | "credits" | "tome" | null>(null);
+  const showBook = grimoireOpen(profile);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -89,6 +92,17 @@ export function TitleScreen() {
               クレジット
             </button>
           </span>
+          {showBook ? (
+            <span className="title-float-a">
+              <button
+                type="button"
+                onClick={() => setSheet("tome")}
+                className="min-h-11 rounded-[var(--radius-md)] px-6 py-3 font-display text-base text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_28%,transparent)] transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.96]"
+              >
+                全
+              </button>
+            </span>
+          ) : null}
         </div>
         <p className="font-mono text-xs tracking-wider text-muted">
           回数 {profile.runs} · 最深 {profile.bestFloor ? `第${profile.bestFloor}層` : "未潜航"} · 遺物{" "}
@@ -97,6 +111,7 @@ export function TitleScreen() {
       </div>
       {sheet === "settings" ? <SettingsPanel onClose={() => setSheet(null)} /> : null}
       {sheet === "credits" ? <CreditsPanel onClose={() => setSheet(null)} /> : null}
+      {sheet === "tome" ? <GrimoirePanel onClose={() => setSheet(null)} /> : null}
     </section>
   );
 }
