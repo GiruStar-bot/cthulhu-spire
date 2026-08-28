@@ -1,13 +1,15 @@
 import { CardView } from "@/components/game/CardView";
-import { CreatureMedia } from "@/components/game/CreatureMedia";
+import { EnemyView } from "@/components/combat/EnemyView";
 import { DeckInspect } from "@/components/game/DeckInspect";
-import { Vitals } from "@/components/game/Hud";
 import { StageBack } from "@/components/game/StageBack";
+import { PixelButton } from "@/components/ui/PixelButton";
+import { PixelWindow } from "@/components/ui/PixelWindow";
 import { POWER_TEXT, canPlay } from "@/game/combat";
 import { getEnemy } from "@/game/enemies";
 import { cardCost, getCard } from "@/game/cards";
+import { floorBand, layerLabel } from "@/game/floors";
 import { useGame } from "@/game/store";
-import { isVideoSrc } from "@/lib/media";
+import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
 import type { CombatEnemy, Floater } from "@/game/types";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
@@ -46,9 +48,9 @@ export function CombatView() {
   const blood = ratio > 0.45 ? 0 : ratio > 0.22 ? 0.42 : 0.78;
 
   return (
-    <section className="relative h-dvh overflow-hidden bg-ink">
-      <ShakeRoot tick={fx.tick} traumaRef={fx.traumaRef} className="relative h-dvh overflow-hidden">
-        <StageBack opacity={0.42} />
+    <section className="relative h-dvh w-full overflow-hidden bg-ink">
+      <ShakeRoot tick={fx.tick} traumaRef={fx.traumaRef} className="relative h-dvh w-full overflow-hidden">
+        <StageBack />
 
         <div className="fx-blood" style={{ "--blood": blood } as CSSProperties} />
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
@@ -66,61 +68,49 @@ export function CombatView() {
           ))}
         </div>
 
-        <div className="pointer-events-none relative z-10 flex h-dvh flex-col">
-          <div className="pointer-events-auto shrink-0 px-3 pt-3 sm:px-6">
-            <Vitals />
+        <div className="pointer-events-none relative z-20 flex h-dvh flex-col">
+          <div className="pointer-events-auto flex shrink-0 items-start justify-between gap-3 px-3 pt-3 sm:px-5">
+            <CombatHud
+              hp={hp}
+              maxHp={maxHp}
+              sanity={sanity}
+              maxSanity={maxSanity}
+              energy={combat.energy}
+              maxEnergy={combat.maxEnergy}
+              block={combat.block}
+              strength={combat.strength}
+              weak={combat.weak}
+              sealed={combat.sealed}
+            />
             {toast ? (
               <button
                 type="button"
                 onClick={dismiss}
-                className="mt-2 rounded-[var(--radius-md)] bg-surface px-3 py-2 text-left text-sm text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-accent)_40%,transparent)]"
+                className="border-2 border-white bg-black/80 px-3 py-2 text-left font-pixel text-sm text-white"
               >
                 {toast}
               </button>
             ) : null}
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="rounded-[var(--radius-sm)] bg-surface px-2 py-1 font-mono text-xs text-parchment tabular-nums shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]">
-                エネルギー {combat.energy}/{combat.maxEnergy}
-              </span>
-              <Energy n={combat.energy} max={combat.maxEnergy} />
-              <span className="rounded-[var(--radius-sm)] bg-surface px-2 py-1 font-mono text-xs text-parchment tabular-nums shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]">
-                ブロック {combat.block}
-              </span>
-              {combat.strength ? (
-                <span className="font-mono text-xs text-accent">筋力 {combat.strength}</span>
-              ) : null}
-              {combat.weak ? (
-                <span className="font-mono text-xs text-blood">弱体 {combat.weak}</span>
-              ) : null}
-              {combat.sealed ? (
-                <span className="font-mono text-xs text-blood">
-                  {combat.sealed === "attack" ? "攻撃封印" : "技能封印"}
-                </span>
-              ) : null}
-            </div>
           </div>
 
           <div className="min-h-0 flex-1" />
 
-          <div className="relative z-10 shrink-0 px-3 sm:px-6">
+          <div className="relative z-10 shrink-0 px-3 sm:px-5">
             <div className="flex flex-wrap gap-2">
               {combat.powers.map((p) => (
-                <span
-                  key={p}
-                  className="rounded-full bg-surface px-2 py-1 font-mono text-xs text-muted shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]"
-                >
+                <span key={p} className="border-2 border-gray-200 bg-black/80 px-2 py-1 font-pixel text-xs text-muted">
                   {POWER_TEXT[p]}
                 </span>
               ))}
               {combat.log.slice(-1).map((l) => (
-                <span key={l} className="text-xs text-muted italic">
+                <span key={l} className="font-pixel text-xs text-muted italic">
                   {l}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="combat-hand pointer-events-auto relative z-20 flex shrink-0 items-end gap-2 px-3 pb-2 sm:px-6">
+          <div className="combat-hand pointer-events-auto relative z-20 flex shrink-0 items-end gap-2 px-3 pb-3 sm:px-5">
             <div className="flex max-h-[26dvh] flex-1 gap-2 overflow-x-auto overflow-y-hidden pt-2">
               {combat.hand.map((card) => {
                 const playable = canPlay(combat, card) && combat.phase === "player";
@@ -144,19 +134,18 @@ export function CombatView() {
                 );
               })}
             </div>
-            <button
-              type="button"
-              onClick={endTurn}
-              disabled={combat.phase !== "player"}
-              className="mb-2 min-h-14 shrink-0 rounded-[var(--radius-md)] bg-parchment px-4 py-3 font-display text-ink transition-transform duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40"
-            >
-              終了
-              <span className="block font-mono text-xs tracking-wider opacity-70">ターン</span>
-            </button>
+            <div className="mb-1 flex shrink-0 flex-col items-end gap-2">
+              <p className="font-pixel text-xs tabular-nums text-muted">
+                山札 {combat.draw.length} · 捨札 {combat.discard.length}
+              </p>
+              <PixelButton onClick={endTurn} disabled={combat.phase !== "player"} className="min-h-14 px-4">
+                ターン終了
+              </PixelButton>
+            </div>
           </div>
 
           {targeting ? (
-            <p className="pointer-events-none absolute bottom-[28dvh] left-0 right-0 z-20 text-center font-mono text-xs tracking-wider text-accent">
+            <p className="pointer-events-none absolute bottom-[28dvh] left-0 right-0 z-20 text-center font-pixel text-xs tracking-wider text-accent">
               敵を選択
             </p>
           ) : null}
@@ -169,6 +158,88 @@ export function CombatView() {
   );
 }
 
+function CombatHud({
+  hp,
+  maxHp,
+  sanity,
+  maxSanity,
+  energy,
+  maxEnergy,
+  block,
+  strength,
+  weak,
+  sealed,
+}: {
+  hp: number;
+  maxHp: number;
+  sanity: number;
+  maxSanity: number;
+  energy: number;
+  maxEnergy: number;
+  block: number;
+  strength: number;
+  weak: number;
+  sealed: "attack" | "skill" | null;
+}) {
+  const playerName = useGame((s) => s.playerName);
+  const floor = useGame((s) => s.floor);
+  const shells = useGame((s) => s.shells);
+
+  return (
+    <PixelWindow className="min-w-56 px-3 py-2">
+      <div className="flex items-baseline justify-between gap-4">
+        <p className="truncate text-sm text-white">{playerName || "無名"}</p>
+        <p className="shrink-0 text-xs tabular-nums text-muted">
+          {floorBand(floor)} · {layerLabel(floor)}
+        </p>
+      </div>
+      <HudBar label="HP" value={hp} max={maxHp} tone="hp" />
+      <HudBar label="SAN" value={sanity} max={maxSanity} tone="sanity" />
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-white">
+        <span className="tabular-nums">
+          NRG {energy}/{maxEnergy}
+        </span>
+        <Energy n={energy} max={maxEnergy} />
+        <span className="tabular-nums">防 {block}</span>
+        <span className="inline-flex items-center gap-1 tabular-nums">
+          <img src={asset("art/shell.jpg")} alt="" className="size-3 object-cover" />
+          {shells}
+        </span>
+        {strength ? <span className="text-accent">筋 {strength}</span> : null}
+        {weak ? <span className="text-blood">弱 {weak}</span> : null}
+        {sealed ? <span className="text-blood">{sealed === "attack" ? "攻撃封印" : "技能封印"}</span> : null}
+      </div>
+    </PixelWindow>
+  );
+}
+
+function HudBar({
+  label,
+  value,
+  max,
+  tone,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  tone: "hp" | "sanity";
+}) {
+  const pct = max <= 0 ? 0 : Math.max(0, Math.min(100, (value / max) * 100));
+  return (
+    <div className="mt-1">
+      <div className="mb-0.5 flex justify-between text-xs text-muted">
+        <span>{label}</span>
+        <span className="tabular-nums text-white">
+          {value}/{max}
+        </span>
+      </div>
+      <div className="h-2 w-40 max-w-full bg-black">
+        <div className={cn("h-full", tone === "hp" ? "bg-blood" : "bg-accent")} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function Energy({ n, max }: { n: number; max: number }) {
   return (
     <div className="flex items-center gap-1" aria-label={`エネルギー ${n}`}>
@@ -176,10 +247,8 @@ function Energy({ n, max }: { n: number; max: number }) {
         <span
           key={i}
           className={cn(
-            "size-3 rounded-full",
-            i < n
-              ? "bg-accent"
-              : "shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-parchment)_14%,transparent)]",
+            "size-3",
+            i < n ? "bg-accent" : "border border-gray-200",
           )}
         />
       ))}
@@ -202,9 +271,7 @@ function EnemyStage({
 }) {
   const dead = enemy.hp <= 0;
   const gone = useCorpseGone(dead);
-  const def = getEnemy(enemy.defId);
   const pose = useEnemyPose(enemy.hp, striking);
-  const cutout = isVideoSrc(def.art) || Boolean(def.idleFrames?.length);
   const boss = enemy.maxHp >= 150;
   if (gone) return null;
 
@@ -216,15 +283,21 @@ function EnemyStage({
         "enemy-stage relative text-left",
         boss ? "is-boss" : "",
         pose === "enter" && "enemy-enter",
-        pose === "idle" && !cutout && "enemy-idle",
+        pose === "idle" && "enemy-idle",
         pose === "hit" && "enemy-hit",
         pose === "strike" && "enemy-strike",
-        pose === "die" && "enemy-die",
         targeting && !dead ? "is-aim" : "",
       )}
     >
-      <div className={cn("enemy-figure", cutout && "is-cutout")}>
-        <CreatureMedia src={def.art} poster={def.poster} />
+      <div className="enemy-figure is-cutout">
+        <EnemyView
+          imageUrl={asset(`art/pixel/${enemy.defId}.jpg`)}
+          hp={enemy.hp}
+          maxHp={enemy.maxHp}
+          isDead={dead}
+          onClick={onTarget}
+          showHpBar={false}
+        />
         <div className="enemy-impact" />
       </div>
       <div className="enemy-shadow" />
@@ -233,7 +306,7 @@ function EnemyStage({
           <span
             key={f.id}
             className={cn(
-              "block animate-floater font-display tabular-nums leading-none",
+              "block animate-floater font-pixel tabular-nums leading-none",
               f.kind === "dmg" ? "text-[2.75rem] font-semibold text-blood sm:text-6xl" : "text-2xl text-accent",
             )}
           >
@@ -337,17 +410,14 @@ function EnemyPlate({
       data-enemy-plate=""
       disabled={dead}
       onClick={onTarget}
-      className={cn(
-        "pointer-events-auto w-full text-left",
-        targeting && !dead ? "ring-1 ring-accent rounded-[var(--radius-md)] px-2 py-1" : "",
-      )}
+      className={cn("pointer-events-auto w-full text-left", targeting && !dead ? "ring-1 ring-white px-1" : "")}
     >
-      <p className="font-display text-sm text-parchment">{def.name}</p>
-      <p className="font-mono text-xs text-accent">{intent}</p>
-      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink-2">
+      <p className="font-pixel text-sm text-white">{def.name}</p>
+      <p className="font-pixel text-xs text-accent">{intent}</p>
+      <div className="mt-1 h-1.5 overflow-hidden bg-black">
         <div className="h-full bg-blood" style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} />
       </div>
-      <p className="font-mono text-xs text-muted tabular-nums">
+      <p className="font-pixel text-xs text-muted tabular-nums">
         {enemy.hp}/{enemy.maxHp}
         {enemy.block ? ` · 防 ${enemy.block}` : ""}
         {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
@@ -400,7 +470,7 @@ function PlayerFloaters({ floaters }: { floaters: Floater[] }) {
         <span
           key={f.id}
           className={cn(
-            "block animate-floater text-center font-display text-2xl",
+            "block animate-floater text-center font-pixel text-2xl",
             f.kind === "dmg" ? "text-blood" : f.kind === "block" ? "text-parchment" : "text-accent",
           )}
         >

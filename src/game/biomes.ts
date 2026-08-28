@@ -10,13 +10,13 @@ export interface BiomeDef {
 }
 
 export const BIOMES: Record<BiomeId, BiomeDef> = {
-  reef: { id: "reef", name: "礁の層", art: asset("art/stage-reef.jpg") },
-  street: { id: "street", name: "沈んだ街", art: asset("art/stage-street.jpg") },
-  mu: { id: "mu", name: "ムーの残骸", art: asset("art/stage-mu.jpg") },
-  fold: { id: "fold", name: "曲がる石", art: asset("art/stage-fold.jpg") },
-  throne: { id: "throne", name: "緑の広間", art: asset("art/stage-throne.jpg") },
-  void: { id: "void", name: "外宇宙", art: asset("art/stage-void.jpg") },
-  colour: { id: "colour", name: "色の井戸", art: asset("art/stage-colour.jpg") },
+  reef: { id: "reef", name: "礁の層", art: asset("art/pixel/bg/reef.jpg") },
+  street: { id: "street", name: "沈んだ街", art: asset("art/pixel/bg/street.jpg") },
+  mu: { id: "mu", name: "ムーの残骸", art: asset("art/pixel/bg/mu.jpg") },
+  fold: { id: "fold", name: "曲がる石", art: asset("art/pixel/bg/fold.jpg") },
+  throne: { id: "throne", name: "緑の広間", art: asset("art/pixel/bg/throne.jpg") },
+  void: { id: "void", name: "外宇宙", art: asset("art/pixel/bg/void.jpg") },
+  colour: { id: "colour", name: "色の井戸", art: asset("art/pixel/bg/colour.jpg") },
 };
 
 const DEPTH: BiomeId[] = ["reef", "street", "mu", "fold", "throne"];

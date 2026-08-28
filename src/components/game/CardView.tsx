@@ -38,9 +38,8 @@ export function CardView({
       onClick={onClick}
       style={{ "--tilt": `${tiltOf(card.uid)}deg` } as CSSProperties}
       className={cn(
-        "card-rot relative flex shrink-0 flex-col overflow-hidden text-left transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
-        compact ? "h-44 w-28" : "h-60 w-36 sm:h-72 sm:w-40",
-        "bg-surface",
+        "relative flex shrink-0 flex-col overflow-hidden text-left transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
+        compact ? "h-40 w-28 border-2 border-white bg-black font-pixel" : "card-rot h-60 w-36 bg-surface sm:h-72 sm:w-40",
         selected ? "is-lift" : "",
         playable && onClick ? "is-playable" : "",
         !playable && onClick ? "opacity-55" : "",

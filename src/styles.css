@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=DotGothic16&display=swap");
 
 @theme {
   --color-ink: #0b0d10;
@@ -11,10 +12,11 @@
   --color-border: color-mix(in oklab, #e6dcc8 14%, transparent);
 
   --font-display: "Noto Serif JP", "Yu Mincho", serif;
-  --font-sans: "Noto Sans JP", "Hiragino Sans", sans-serif;
-  --font-mono: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
-  --font-title: "Cinzel", "Noto Serif JP", serif;
+  --font-sans: "DotGothic16", "Noto Sans JP", "Hiragino Sans", sans-serif;
+  --font-mono: "DotGothic16", "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+  --font-title: "DotGothic16", "Cinzel", "Noto Serif JP", serif;
   --font-ruin: "Hina Mincho", "Noto Serif JP", serif;
+  --font-pixel: "DotGothic16", sans-serif;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -38,9 +40,15 @@
     min-height: 100dvh;
     background: var(--color-ink);
     color: var(--color-parchment);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    font-family: var(--font-pixel);
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+  }
+
+  img,
+  canvas {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
   }
 
   input[type="range"] {
@@ -351,13 +359,15 @@
 .combat-foe {
   pointer-events: auto;
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 30%;
   z-index: 1;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: 1.5rem;
-  padding-bottom: 2.25rem;
+  width: 100%;
   overflow: visible;
 }
 
@@ -382,18 +392,18 @@
 .enemy-vitals {
   position: absolute;
   left: 50%;
-  top: 46%;
+  top: 18%;
   z-index: 12;
-  transform: translate(3.4rem, -50%);
+  transform: translate(3.4rem, 0);
   pointer-events: auto;
   min-width: 9.25rem;
   padding: 0.45rem 0.65rem;
-  border-radius: var(--radius-md);
-  background: color-mix(in oklab, var(--color-ink) 74%, transparent);
+  border: 2px solid #e5e7eb;
+  background: rgb(0 0 0 / 0.8);
 }
 
 .combat-foe:has(.enemy-stage:nth-child(2)) .enemy-vitals {
-  transform: translate(1.85rem, -50%);
+  transform: translate(1.85rem, 0);
 }
 
 .enemy-figure {
@@ -408,18 +418,18 @@
 }
 
 .enemy-figure.is-cutout {
-  width: min(80vw, 40rem);
-  height: min(78dvh, 44rem);
+  width: min(70vw, 32rem);
+  height: min(52dvh, 28rem);
 }
 
 .enemy-stage.is-boss .enemy-figure.is-cutout {
-  width: min(88vw, 46rem);
-  height: min(82dvh, 48rem);
+  width: min(78vw, 38rem);
+  height: min(58dvh, 32rem);
 }
 
 .combat-foe:has(.enemy-stage:nth-child(2)) .enemy-figure.is-cutout {
-  width: min(44vw, 22rem);
-  height: min(68dvh, 34rem);
+  width: min(42vw, 20rem);
+  height: min(48dvh, 24rem);
 }
 
 .enemy-figure img {
