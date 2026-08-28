@@ -23,6 +23,7 @@ export interface PlayerHook {
   relics: RelicInstance[];
   extraStrength: number;
   extraEnergyNext: number;
+  baseEnergy?: number;
 }
 
 function floater(text: string, kind: Floater["kind"], who: Floater["who"]): Floater {
@@ -145,6 +146,7 @@ export function startCombat(
   const energyBonus = powerOf(player.relics, "energy") > 0 ? 1 : 0;
   const strBonus = powerOf(player.relics, "strength");
   const drawBonus = powerOf(player.relics, "draw");
+  const baseEnergy = player.baseEnergy ?? 3;
   const c: CombatState = {
     floor,
     enemies,
@@ -152,8 +154,8 @@ export function startCombat(
     discard: [],
     exhaust: [],
     hand: [],
-    energy: 3 + energyBonus + (player.extraEnergyNext || 0),
-    maxEnergy: 3 + energyBonus,
+    energy: baseEnergy + energyBonus + (player.extraEnergyNext || 0),
+    maxEnergy: baseEnergy + energyBonus,
     block: 0,
     strength: strBonus,
     dexterity: 0,

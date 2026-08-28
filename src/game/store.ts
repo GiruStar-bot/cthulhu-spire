@@ -36,17 +36,17 @@ import {
   loadProfile,
   MADNESS_STEP,
   MAX_LOADOUT,
-  riteGain,
   saveProfile,
   STAT_MIN,
-  statBudget,
   statSum,
+  totalPoints,
   wipeProfile,
 } from "./profile";
 import { nextUnread } from "./grimoire";
 import { forgeCard, makeSmith, SHOP_PRICE } from "./smith";
 
 function hookFrom(s: GameStore): PlayerHook {
+  const vitals = derivedVitals(s.profile.stats, s.profile.madness);
   return {
     hp: s.hp,
     maxHp: s.maxHp,
@@ -55,6 +55,7 @@ function hookFrom(s: GameStore): PlayerHook {
     relics: s.relics,
     extraStrength: s.runStrength,
     extraEnergyNext: s.extraEnergyNext,
+    baseEnergy: vitals.energy,
   };
 }
 
@@ -141,7 +142,7 @@ function weightedCard(owner: CharacterId, rand: () => number): CardInst {
 }
 
 function starterPath(stats: PlayerStats): CharacterId {
-  return stats.body >= stats.mind ? "investigator" : "cultist";
+  return stats.hp >= stats.san ? "investigator" : "cultist";
 }
 
 function keepRunRelics(profile: PlayerProfile, relics: RelicInstance[]): PlayerProfile {
@@ -156,12 +157,13 @@ function keepRunRelics(profile: PlayerProfile, relics: RelicInstance[]): PlayerP
 }
 
 function markDefeat(s: GameStore): PlayerProfile {
-  const gain = riteGain(s.floor);
+  const bestFloor = Math.max(s.profile.bestFloor, s.floor);
+  const budget = totalPoints({ bestFloor });
   const profile = {
     ...s.profile,
-    bestFloor: Math.max(s.profile.bestFloor, s.floor),
-    earnedPoints: Math.max(0, (s.profile.earnedPoints | 0) + gain),
-    unspentPoints: Math.max(0, (s.profile.unspentPoints | 0) + gain),
+    bestFloor,
+    earnedPoints: budget,
+    unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
     sanity: s.sanity,
   };
   persist(profile);
@@ -244,8 +246,17 @@ export const useGame = create<GameStore>((set, get) => {
   function enterFloor(floor: number, carry?: Partial<GameStore>) {
     const s = { ...get(), ...carry };
     if (floor > (s.runFloors.length || DEMO_MAX_FLOOR)) {
+      const bestFloor = Math.max(s.profile.bestFloor, s.floor);
+      const budget = totalPoints({ bestFloor });
       const profile = keepRunRelics(
-        { ...s.profile, bestFloor: Math.max(s.profile.bestFloor, s.floor), wins: s.profile.wins + 1, sanity: s.sanity },
+        {
+          ...s.profile,
+          bestFloor,
+          earnedPoints: budget,
+          unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
+          wins: s.profile.wins + 1,
+          sanity: s.sanity,
+        },
         s.relics,
       );
       persist(profile);
@@ -416,10 +427,12 @@ export const useGame = create<GameStore>((set, get) => {
       const profile = { ...get().profile, stats: { ...get().profile.stats } };
       const next = Math.max(STAT_MIN, value | 0);
       const others = statSum(profile.stats) - profile.stats[key];
-      if (others + next > statBudget(profile)) return;
+      const budget = totalPoints(profile);
+      if (others + next > budget) return;
       profile.stats[key] = next;
       profile.stats = clampStats(profile.stats);
-      profile.unspentPoints = Math.max(0, statBudget(profile) - statSum(profile.stats));
+      profile.earnedPoints = budget;
+      profile.unspentPoints = Math.max(0, budget - statSum(profile.stats));
       persist(profile);
       set({ profile });
       sfx.select();
@@ -448,12 +461,16 @@ export const useGame = create<GameStore>((set, get) => {
     startRun: () => {
       const s = get();
       const profile = { ...s.profile };
-      const name = (s.playerName || profile.playerName || "無名の潜航者").trim().slice(0, 16);
+      const name = (s.playerName || profile.playerName || "").trim().slice(0, 16);
       profile.playerName = name;
       profile.stats = clampStats(profile.stats);
-      const sum = statSum(profile.stats);
-      if (sum !== statBudget(profile)) {
-        set({ toast: `ステータス合計を${statBudget(profile)}にしてください。` });
+      const budget = totalPoints(profile);
+      if (statSum(profile.stats) > budget) {
+        set({ toast: "割り振りが所持ポイントを超えています。" });
+        return;
+      }
+      if (!name) {
+        set({ toast: "名前を入れてください。" });
         return;
       }
       profile.runs += 1;
@@ -502,7 +519,7 @@ export const useGame = create<GameStore>((set, get) => {
         maxSanity,
         deck: [...ch.starter.map((cid) => makeCard(cid)), ...tome],
         relics: loadout.map((r) => ({ ...r })),
-        runStrength: Math.floor(profile.stats.will / 4),
+        runStrength: vitals.strength,
         extraEnergyNext: 0,
         act: 1,
         combat: null,
@@ -806,11 +823,13 @@ export const useGame = create<GameStore>((set, get) => {
     continueClimb: () => enterFloor(get().floor + 1),
     spendRite: (key) => {
       const s = get();
-      if ((s.profile.unspentPoints | 0) <= 0) return;
+      const budget = totalPoints(s.profile);
+      if (statSum(s.profile.stats) >= budget) return;
       const profile = {
         ...s.profile,
         stats: { ...s.profile.stats, [key]: s.profile.stats[key] + 1 },
-        unspentPoints: s.profile.unspentPoints - 1,
+        earnedPoints: budget,
+        unspentPoints: Math.max(0, budget - statSum(s.profile.stats) - 1),
       };
       persist(profile);
       set({ profile });

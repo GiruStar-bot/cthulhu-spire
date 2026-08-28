@@ -186,10 +186,15 @@ export interface RelicInstance {
 }
 
 export interface PlayerStats {
-  body: number;
-  mind: number;
-  will: number;
+  hp: number;
+  san: number;
+  intelligent: number;
+  strength: number;
+  energy: number;
 }
+
+export type StatKey = keyof PlayerStats;
+
 
 export interface PlayerProfile {
   playerName: string;
