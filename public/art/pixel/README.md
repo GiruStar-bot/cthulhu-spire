@@ -12,3 +12,6 @@ File names match `src/game/enemies.ts` ids.
 | spawn.jpg | spawn | ガタノトアの落とし子 |
 | shan.jpg | shan | シャガイの昆虫 |
 | migo.jpg | migo | ミーゴ |
+| choir.jpg | choir | 塩の唱者 |
+| flock.jpg | flock | 飢えた翼 |
+| warden.jpg | warden | 曲がる幾何の番 |
