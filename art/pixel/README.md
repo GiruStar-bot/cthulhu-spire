@@ -15,3 +15,6 @@ File names match `src/game/enemies.ts` ids.
 | choir.jpg | choir | 塩の唱者 |
 | flock.jpg | flock | 飢えた翼 |
 | warden.jpg | warden | 曲がる幾何の番 |
+| herald.jpg | herald | 呼び声の使徒 |
+| mouth.jpg | mouth | 口そのもの |
+| coral.jpg | coral | 礁の衛士 |
