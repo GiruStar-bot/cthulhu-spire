@@ -9,3 +9,6 @@ File names match `src/game/enemies.ts` ids.
 | acolyte.jpg | acolyte | 侍祭 |
 | serpent.jpg | serpent | ムーの蛇人 |
 | priest.jpg | priest | 尖塔の大司祭 |
+| spawn.jpg | spawn | ガタノトアの落とし子 |
+| shan.jpg | shan | シャガイの昆虫 |
+| migo.jpg | migo | ミーゴ |
