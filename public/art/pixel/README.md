@@ -18,3 +18,6 @@ File names match `src/game/enemies.ts` ids.
 | herald.jpg | herald | 呼び声の使徒 |
 | mouth.jpg | mouth | 口そのもの |
 | coral.jpg | coral | 礁の衛士 |
+| starveling.jpg | starveling | 飢えし仔 |
+| nurse.jpg | nurse | 深きものの乳母 |
+| colour.jpg | colour | 星から来た色 |
