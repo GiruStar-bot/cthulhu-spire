@@ -21,3 +21,6 @@ File names match `src/game/enemies.ts` ids.
 | starveling.jpg | starveling | 飢えし仔 |
 | nurse.jpg | nurse | 深きものの乳母 |
 | colour.jpg | colour | 星から来た色 |
+| starvamp.jpg | starvamp | 星の吸血獣 |
+| bell.jpg | bell | 溺れた街の鐘 |
+| drowned.jpg | drowned | 溺れた眷属 |
