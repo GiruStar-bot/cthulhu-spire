@@ -10,3 +10,7 @@ Scene stills. The live app still uses the photoreal `public/art/*.jpg` until a l
 | mu.jpg | mu | ムーの残骸 |
 | void.jpg | void | 外宇宙 |
 | fold.jpg | fold | 曲がる石 |
+| reef.jpg | reef | 礁 |
+| colour.jpg | colour | 色彩 |
+| throne.jpg | throne | 深層 |
+| street.jpg | street | 沈んだ街 |
