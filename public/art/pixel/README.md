@@ -2,7 +2,7 @@
 
 Magenta-key standees. Combat still uses the old `poster.jpg` / video until a later pass.
 
-File names match `src/game/enemies.ts` ids.
+File names match `src/game/enemies.ts` ids. Roster complete.
 
 | file | id | ja |
 |---|---|---|
@@ -24,3 +24,6 @@ File names match `src/game/enemies.ts` ids.
 | starvamp.jpg | starvamp | 星の吸血獣 |
 | bell.jpg | bell | 溺れた街の鐘 |
 | drowned.jpg | drowned | 溺れた眷属 |
+| nyar.jpg | nyar | 門番ナイアルラト |
+| byakhee.jpg | byakhee | 翼ある飢え |
+| iha.jpg | iha | 緑の腐肉、イハ |
