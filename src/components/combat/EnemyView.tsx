@@ -1,9 +1,11 @@
+import { PixelFrames } from "@/components/ui/PixelFrames";
 import { PixelSprite } from "@/components/ui/PixelSprite";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 type EnemyViewProps = {
   imageUrl: string;
+  frames?: string[];
   hp: number;
   maxHp: number;
   isDead: boolean;
@@ -14,6 +16,7 @@ type EnemyViewProps = {
 
 export function EnemyView({
   imageUrl,
+  frames,
   hp,
   maxHp,
   isDead,
@@ -35,6 +38,7 @@ export function EnemyView({
   if (gone) return null;
 
   const ratio = Math.max(0, Math.min(1, hp / Math.max(1, maxHp)));
+  const spriteClass = "h-full w-full object-contain object-bottom";
 
   return (
     <div
@@ -47,7 +51,11 @@ export function EnemyView({
           isDead && "scale-y-0",
         )}
       >
-        <PixelSprite src={imageUrl} className="h-full w-full object-contain object-bottom" />
+        {frames && frames.length > 1 && !isDead ? (
+          <PixelFrames srcs={frames} className={spriteClass} />
+        ) : (
+          <PixelSprite src={imageUrl} className={spriteClass} />
+        )}
       </div>
       {showHpBar ? (
         <div className="relative mt-1 h-2 w-4/5 min-w-16 bg-black/80">

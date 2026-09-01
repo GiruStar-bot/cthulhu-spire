@@ -1,6 +1,5 @@
 import { CardView } from "@/components/game/CardView";
 import { EnemyView } from "@/components/combat/EnemyView";
-import { DeckInspect } from "@/components/game/DeckInspect";
 import { StageBack } from "@/components/game/StageBack";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
@@ -9,9 +8,10 @@ import { getEnemy } from "@/game/enemies";
 import { cardCost, getCard } from "@/game/cards";
 import { floorBand, layerLabel } from "@/game/floors";
 import { useGame } from "@/game/store";
+import { IDLE_FRAMES } from "@/game/idleFrames";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
-import type { CombatEnemy, Floater } from "@/game/types";
+import type { CardInst, CombatEnemy, Floater } from "@/game/types";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 
 export function CombatView() {
@@ -27,6 +27,7 @@ export function CombatView() {
   const toast = useGame((s) => s.toast);
   const dismiss = useGame((s) => s.dismissToast);
   const fx = useCombatFx(hp, maxHp, sanity, maxSanity);
+  const [pile, setPile] = useState<"draw" | "discard" | null>(null);
   useAimAtFoe(targeting, play);
 
   useEffect(() => {
@@ -70,18 +71,28 @@ export function CombatView() {
 
         <div className="pointer-events-none relative z-20 flex h-dvh flex-col">
           <div className="pointer-events-auto flex shrink-0 items-start justify-between gap-3 px-3 pt-3 sm:px-5">
-            <CombatHud
-              hp={hp}
-              maxHp={maxHp}
-              sanity={sanity}
-              maxSanity={maxSanity}
-              energy={combat.energy}
-              maxEnergy={combat.maxEnergy}
-              block={combat.block}
-              strength={combat.strength}
-              weak={combat.weak}
-              sealed={combat.sealed}
-            />
+            <div className="flex flex-col">
+              <CombatHud
+                hp={hp}
+                maxHp={maxHp}
+                sanity={sanity}
+                maxSanity={maxSanity}
+                energy={combat.energy}
+                maxEnergy={combat.maxEnergy}
+                block={combat.block}
+                strength={combat.strength}
+                weak={combat.weak}
+                sealed={combat.sealed}
+              />
+              <div className="mt-2 flex flex-row gap-2">
+                <PixelButton onClick={() => setPile("draw")} className="font-pixel">
+                  山札: {combat.draw.length}
+                </PixelButton>
+                <PixelButton onClick={() => setPile("discard")} className="font-pixel">
+                  捨て札: {combat.discard.length}
+                </PixelButton>
+              </div>
+            </div>
             {toast ? (
               <button
                 type="button"
@@ -135,9 +146,6 @@ export function CombatView() {
               })}
             </div>
             <div className="mb-1 flex shrink-0 flex-col items-end gap-2">
-              <p className="font-pixel text-xs tabular-nums text-muted">
-                山札 {combat.draw.length} · 捨札 {combat.discard.length}
-              </p>
               <PixelButton onClick={endTurn} disabled={combat.phase !== "player"} className="min-h-14 px-4">
                 ターン終了
               </PixelButton>
@@ -152,9 +160,43 @@ export function CombatView() {
 
           <PlayerFloaters floaters={combat.floaters.filter((f) => f.who === "player")} />
         </div>
-        <DeckInspect />
+        {pile ? (
+          <PileInspect
+            title={pile === "draw" ? `山札 ${combat.draw.length}枚` : `捨て札 ${combat.discard.length}枚`}
+            cards={pile === "draw" ? combat.draw : combat.discard}
+            onClose={() => setPile(null)}
+          />
+        ) : null}
       </ShakeRoot>
     </section>
+  );
+}
+
+function PileInspect({
+  title,
+  cards,
+  onClose,
+}: {
+  title: string;
+  cards: CardInst[];
+  onClose: () => void;
+}) {
+  return (
+    <div className="absolute inset-0 z-40 flex flex-col bg-ink/85 px-4 py-8">
+      <p className="font-pixel text-sm tracking-widest text-white">{title}</p>
+      {cards.length === 0 ? (
+        <p className="mt-4 font-pixel text-sm text-muted">カードはない。</p>
+      ) : (
+        <div className="mt-4 flex min-h-0 flex-1 flex-wrap content-start gap-2 overflow-y-auto">
+          {cards.map((c) => (
+            <CardView key={c.uid} card={c} compact />
+          ))}
+        </div>
+      )}
+      <PixelButton onClick={onClose} className="mt-4 self-start">
+        閉じる
+      </PixelButton>
+    </div>
   );
 }
 
@@ -283,7 +325,6 @@ function EnemyStage({
         "enemy-stage relative text-left",
         boss ? "is-boss" : "",
         pose === "enter" && "enemy-enter",
-        pose === "idle" && "enemy-idle",
         pose === "hit" && "enemy-hit",
         pose === "strike" && "enemy-strike",
         targeting && !dead ? "is-aim" : "",
@@ -292,6 +333,7 @@ function EnemyStage({
       <div className="enemy-figure is-cutout">
         <EnemyView
           imageUrl={asset(`art/pixel/${enemy.defId}.jpg`)}
+          frames={IDLE_FRAMES[enemy.defId]}
           hp={enemy.hp}
           maxHp={enemy.maxHp}
           isDead={dead}

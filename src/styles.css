@@ -504,7 +504,6 @@
 }
 
 .enemy-idle {
-  animation: enemy-breathe 3.8s ease-in-out infinite;
 }
 
 .enemy-hit {
