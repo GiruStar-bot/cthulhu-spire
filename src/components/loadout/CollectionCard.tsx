@@ -12,6 +12,7 @@ export function CollectionCard({
   size = "sm",
   dim,
   stackCount,
+  copiesMax,
   onClick,
 }: {
   instance: CardInstance;
@@ -21,6 +22,7 @@ export function CollectionCard({
   size?: "sm" | "md" | "lg";
   dim?: boolean;
   stackCount?: number;
+  copiesMax?: number;
   onClick?: () => void;
 }) {
   const card = instFromLoadout(instance);
@@ -48,10 +50,10 @@ export function CollectionCard({
         <span
           className={cn(
             "pointer-events-none absolute top-0 right-0 z-10 border-2 border-white bg-black px-1 font-pixel text-[10px] text-white shadow-[2px_2px_0_0_#000]",
-            copies >= COPY_LIMIT && "bg-white text-black",
+            copies >= (copiesMax ?? COPY_LIMIT) && "bg-white text-black",
           )}
         >
-          {copies}/{COPY_LIMIT}
+          {copies}/{copiesMax ?? COPY_LIMIT}
         </span>
       ) : null}
       {inDeck ? (

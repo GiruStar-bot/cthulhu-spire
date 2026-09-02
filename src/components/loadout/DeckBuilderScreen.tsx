@@ -26,6 +26,10 @@ type Flight = {
   instanceId: string;
 };
 
+function ownedCountOf(cards: CardInstance[], baseCardId: string): number {
+  return cards.filter((c) => c.baseCardId === baseCardId).length;
+}
+
 function groupInventory(cards: CardInstance[]): CardGroup[] {
   const groups = new Map<string, CardGroup>();
   for (const card of cards) {
@@ -144,6 +148,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
                   <CollectionCard
                     instance={group.representative}
                     copies={copies}
+                    copiesMax={ownedCountOf(inventory.cards, group.baseCardId)}
                     stackCount={remaining > 1 ? remaining : undefined}
                     dim={blocked}
                     onClick={blocked ? undefined : () => handleGroupClick(group)}
@@ -219,6 +224,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
                       key={card.instanceId}
                       instance={card}
                       copies={copiesOfBase(deck, inventory.cards, card.baseCardId)}
+                      copiesMax={ownedCountOf(inventory.cards, card.baseCardId)}
                       onClick={() => removeFromDeck(card.instanceId)}
                     />
                   ))}
