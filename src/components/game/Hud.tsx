@@ -41,7 +41,7 @@ export function Vitals() {
           <span className="text-blood"> · 狂気 {madness}</span>
         ) : null}
         <span className="ml-2 inline-flex items-center gap-1 text-parchment">
-          <img src={asset("art/shell.jpg")} alt="" className="size-3.5 rounded-full object-cover" />
+          <img src={asset("art/shell.jpg")} alt="" className="size-3.5 object-cover" />
           {shells}
         </span>
       </span>
@@ -81,9 +81,9 @@ function Bar({
           {value}/{max}
         </span>
       </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-ink-2">
+      <div className="h-2.5 overflow-hidden border-2 border-white bg-ink-2">
         <div
-          className={cn("h-full rounded-full", tone === "hp" ? "bg-blood" : "bg-accent")}
+          className={cn("h-full", tone === "hp" ? "bg-blood" : "bg-accent")}
           style={{ width: `${pct}%` }}
         />
       </div>
