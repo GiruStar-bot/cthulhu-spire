@@ -1,8 +1,11 @@
 import type { EnemyDef } from "./types";
 import { asset } from "@/lib/asset";
 
+const PIXEL_PNG = new Set(["priest", "choir", "nurse", "flock", "herald"]);
+
 function still(id: string): Pick<EnemyDef, "art" | "poster"> {
-  const src = asset(`art/pixel/${id}.jpg`);
+  const ext = PIXEL_PNG.has(id) ? "png" : "jpg";
+  const src = asset(`art/pixel/${id}.${ext}`);
   return { art: src, poster: src };
 }
 

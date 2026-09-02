@@ -449,7 +449,7 @@ function EnemyStage({
           )}
         />
         <EnemyView
-          imageUrl={asset(`art/pixel/${enemy.defId}.jpg`)}
+          imageUrl={getEnemy(enemy.defId).art}
           frames={IDLE_FRAMES[enemy.defId]}
           hp={enemy.hp}
           maxHp={enemy.maxHp}

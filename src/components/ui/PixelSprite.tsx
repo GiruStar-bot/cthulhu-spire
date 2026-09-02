@@ -31,7 +31,8 @@ export function PixelSprite({ src, className, tolerance = 104, feather = 72 }: P
 
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(img, 0, 0);
-      chromaKeyCanvas(ctx, w, h, { tolerance, feather, sampleCorners: true });
+      const keyed = !/\.png(\?|$)/i.test(src);
+      if (keyed) chromaKeyCanvas(ctx, w, h, { tolerance, feather, sampleCorners: true });
     };
     img.src = src;
 
