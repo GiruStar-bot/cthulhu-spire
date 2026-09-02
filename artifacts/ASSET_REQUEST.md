@@ -21,7 +21,7 @@
 
 | id | 日本語 | 今の流用元 |
 |---|---|---|
-| strike | 打撃 | card-strike |
+| strike | 打撃 | **受領済み** pixel/cards/strike.jpg |
 | ward | 結界 | card-ward |
 | study | 精読 | card-study |
 | lash | 鞭撃 | card-lash |

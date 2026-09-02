@@ -16,7 +16,7 @@ export const CARDS: Record<string, CardDef> = {
     text: "6ダメージ。",
     upgradedText: "9ダメージ。",
     flavor: "肉体は、まだ拳を信じている。",
-    art: asset("art/card-strike.jpg"),
+    art: asset("art/pixel/cards/strike.jpg"),
     target: "enemy",
     effects: [{ t: "damage", n: 6 }],
     upgradedEffects: [{ t: "damage", n: 9 }],
