@@ -6,7 +6,7 @@ import { getCard } from "@/game/cards";
 import { runeArt } from "@/game/runes";
 import { cn } from "@/lib/utils";
 import { peekRune, useCollectionStore, type Rune } from "@/store/useCollectionStore";
-import { useEffect, useRef, useState, type DragEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
 type Flight = {
   rune: Rune;
@@ -21,9 +21,11 @@ const GHOST = 96;
 
 export function CardForgeScreen({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean }) {
   const inventory = useCollectionStore((s) => s.inventory);
+  const deck = useCollectionStore((s) => s.deck);
   const socketRune = useCollectionStore((s) => s.socketRune);
   const unsocketRune = useCollectionStore((s) => s.unsocketRune);
-  const [activeId, setActiveId] = useState(inventory.cards[0]?.instanceId ?? null);
+  const [showAll, setShowAll] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [heldRune, setHeldRune] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [flight, setFlight] = useState<Flight | null>(null);
@@ -31,7 +33,17 @@ export function CardForgeScreen({ onClose, embedded = false }: { onClose?: () =>
   const socketRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const runeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const ghostRef = useRef<HTMLImageElement>(null);
+
+  const visibleCards = useMemo(
+    () => (showAll ? inventory.cards : inventory.cards.filter((c) => deck.includes(c.instanceId))),
+    [showAll, inventory.cards, deck],
+  );
   const card = inventory.cards.find((c) => c.instanceId === activeId) ?? null;
+
+  useEffect(() => {
+    if (activeId && visibleCards.some((c) => c.instanceId === activeId)) return;
+    setActiveId(visibleCards[0]?.instanceId ?? null);
+  }, [activeId, visibleCards]);
 
   useEffect(() => {
     if (embedded) return;
@@ -131,17 +143,34 @@ export function CardForgeScreen({ onClose, embedded = false }: { onClose?: () =>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-6">
         <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 md:col-span-2 md:border-r-2 md:border-b-0">
-          <p className="mb-2 text-xs tracking-widest text-muted">カード</p>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-2">
-            {inventory.cards.map((c) => (
-              <CollectionCard
-                key={c.instanceId}
-                instance={c}
-                selected={c.instanceId === activeId}
-                onClick={() => setActiveId(c.instanceId)}
-              />
-            ))}
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs tracking-widest text-muted">カード</p>
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="border-2 border-white bg-black px-2 py-0.5 font-pixel text-[10px] text-white"
+            >
+              {showAll ? "デッキのみ表示" : "全て表示"}
+            </button>
           </div>
+          {visibleCards.length === 0 ? (
+            <p className="text-xs text-muted">
+              {showAll
+                ? "所持カードがない。"
+                : "デッキにカードが入っていない。デッキ編成タブでカードを組んでください。"}
+            </p>
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-2">
+              {visibleCards.map((c) => (
+                <CollectionCard
+                  key={c.instanceId}
+                  instance={c}
+                  selected={c.instanceId === activeId}
+                  onClick={() => setActiveId(c.instanceId)}
+                />
+              ))}
+            </div>
+          )}
         </aside>
 
         <div className="flex min-h-0 flex-col items-center justify-center gap-4 p-4 md:col-span-2">
