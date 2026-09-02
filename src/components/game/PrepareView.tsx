@@ -9,6 +9,7 @@ import {
   totalPoints,
   unlockedFeatures,
 } from "@/game/profile";
+import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { RELICS, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -129,7 +130,10 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
                         onClick={() => toggleLoadout(inst.uid)}
                         className="flex min-h-11 w-full items-center justify-between gap-3 py-1.5 text-left"
                       >
-                        <span className="min-w-0 truncate text-sm text-white">{relicLabel(inst)}</span>
+                        <span className="flex min-w-0 items-center gap-2">
+                          <PixelRelic defId={inst.defId} className="size-7 shrink-0" />
+                          <span className="min-w-0 truncate text-sm text-white">{relicLabel(inst)}</span>
+                        </span>
                         <span className="shrink-0 text-xs text-muted">
                           {on ? "持込中" : "保管"}
                           {def ? ` · ${layerLabel(inst.obtainedFloor)}` : ""}

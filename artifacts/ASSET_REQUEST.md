@@ -60,20 +60,17 @@
 最低ライン: まず **スターター6**（strike, ward, study, lash, sigil, whisper）と **レア顔**（tome, rite, thecall, eldersign）。残りは後続で可。
 
 ### 3. 遺物アイコン ×7
-現状: ハブの6スロットが文字だけ。
+現状: 7種すべて **受領済み** `public/art/pixel/relics/{id}.png`
 
-配置: `public/art/pixel/relics/{id}.png`  
-サイズ: **64×64**
-
-| id | 日本語 |
-|---|---|
-| lens | ひび割れたレンズ |
-| coral | 乾いた珊瑚 |
-| idol | 青白い偶像 |
-| candle | 黒い蝋燭 |
-| coin | 塩のコイン |
-| notebook | 野帳 |
-| veil | 薄いヴェール |
+| id | 日本語 | 状態 |
+|---|---|---|
+| lens | ひび割れたレンズ | 受領済み |
+| coral | 乾いた珊瑚 | 受領済み |
+| idol | 青白い偶像 | 受領済み |
+| candle | 黒い蝋燭 | 受領済み |
+| coin | 塩のコイン | 受領済み |
+| notebook | 野帳 | 受領済み |
+| veil | 薄いヴェール | 受領済み |
 
 ---
 

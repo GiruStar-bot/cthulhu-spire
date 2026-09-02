@@ -1,4 +1,5 @@
 import { CollectionCard } from "@/components/loadout/CollectionCard";
+import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DECK_LIMIT } from "@/game/cards";
@@ -113,7 +114,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
                       relic ? "border-white text-white" : "border-gray-200/40 text-muted",
                     )}
                   >
-                    <span>{i + 1}</span>
+                    {relic ? <PixelRelic defId={relic.id} className="size-8" /> : <span>{i + 1}</span>}
                     <span className="mt-0.5 line-clamp-2 text-center">{relic?.name ?? "空"}</span>
                   </button>
                 );
@@ -133,11 +134,12 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
                     onClick={() => setHeldRelic(relic.id === heldRelic ? null : relic.id)}
                     title={RELICS[relic.id]?.text}
                     className={cn(
-                      "min-h-8 px-2 py-1 text-[9px]",
+                      "flex min-h-8 items-center gap-1 px-2 py-1 text-[9px]",
                       heldRelic === relic.id && "bg-white text-black",
                       on && "opacity-40",
                     )}
                   >
+                    <PixelRelic defId={relic.id} className="size-5" />
                     {relic.name}
                   </PixelButton>
                 );

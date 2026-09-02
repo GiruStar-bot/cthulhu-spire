@@ -1,5 +1,6 @@
 import { useGame } from "@/game/store";
 import { layerLabel } from "@/game/floors";
+import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { relicDesc, relicLabel } from "@/game/relics";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
@@ -107,7 +108,10 @@ function DeathScreen({
                           : "border-gray-200 bg-transparent text-white",
                       )}
                     >
-                      <span className="block">{relicLabel(r)}</span>
+                      <span className="flex items-center gap-2">
+                        <PixelRelic defId={r.defId} className="size-8 shrink-0" />
+                        <span className="block">{relicLabel(r)}</span>
+                      </span>
                       <span className={cn("mt-1 block text-sm", picked === r.uid ? "text-black/70" : "text-muted")}>
                         {relicDesc(r)}
                       </span>

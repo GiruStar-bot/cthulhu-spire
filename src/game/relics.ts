@@ -1,5 +1,6 @@
 import type { RelicDef, RelicInstance, RelicKind } from "./types";
 import { uid } from "./rng";
+import { asset } from "@/lib/asset";
 
 export const RELICS: Record<string, RelicDef> = {
   lens: {
@@ -47,6 +48,10 @@ export const RELICS: Record<string, RelicDef> = {
 };
 
 export const RELIC_IDS = Object.keys(RELICS);
+
+export function relicArt(defId: string): string | null {
+  return RELICS[defId] ? asset(`art/pixel/relics/${defId}.png`) : null;
+}
 
 export function tierFromFloor(floor: number): number {
   return Math.max(1, Math.floor(floor / 10) + 1);

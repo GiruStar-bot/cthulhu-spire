@@ -1,6 +1,7 @@
 import { CardView } from "@/components/game/CardView";
 import { DeckInspect } from "@/components/game/DeckInspect";
 import { DEMO_MAX_FLOOR, floorKindLabel, layerLabel } from "@/game/floors";
+import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { relicDesc, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 
@@ -29,11 +30,14 @@ export function RewardView() {
               : "取った瞬間、次の層へ沈む。"}
         </p>
         {reward.relic ? (
-          <div className="mt-5 rounded-[var(--radius-md)] bg-ink/40 px-4 py-3">
+          <div className="mt-5 flex items-center gap-3 border-2 border-gray-200 bg-ink/40 px-4 py-3">
+            <PixelRelic defId={reward.relic.defId} className="size-12 shrink-0" />
+            <div>
             <p className="font-mono text-[11px] tracking-widest text-accent">遺物</p>
             <p className="font-display mt-1 text-xl text-parchment">{relicLabel(reward.relic)}</p>
             <p className="mt-1 text-sm text-muted">{relicDesc(reward.relic)}</p>
             <p className="mt-2 font-mono text-xs text-muted">この沈降のあいだ持つ。死んだとき、一つだけ魂に刻める。</p>
+            </div>
           </div>
         ) : null}
         <div className="mt-8 flex flex-wrap justify-center gap-4">

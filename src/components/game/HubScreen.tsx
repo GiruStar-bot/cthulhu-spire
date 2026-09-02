@@ -1,6 +1,7 @@
 import { PrepareView } from "@/components/game/PrepareView";
 import { CardForgeScreen } from "@/components/loadout/CardForgeScreen";
 import { CollectionCard } from "@/components/loadout/CollectionCard";
+import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelRune } from "@/components/loadout/PixelRune";
 import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -102,7 +103,8 @@ function StashPanel() {
           {profile.collection.map((inst) => (
             <li key={inst.uid}>
               <PixelWindow className="rounded-none p-2">
-                <p className="text-sm text-white">{relicLabel(inst)}</p>
+                <PixelRelic defId={inst.defId} className="mx-auto h-12 w-full" />
+                <p className="mt-1 text-sm text-white">{relicLabel(inst)}</p>
                 <p className="mt-1 text-[10px] text-muted">{layerLabel(inst.obtainedFloor)}</p>
               </PixelWindow>
             </li>

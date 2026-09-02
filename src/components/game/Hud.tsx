@@ -1,6 +1,7 @@
 import { CHARACTERS } from "@/game/characters";
 import { floorBand, layerLabel } from "@/game/floors";
 import { GRIMOIRE_ENABLED } from "@/game/profile";
+import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
@@ -49,8 +50,9 @@ export function Vitals() {
           <span
             key={r.uid}
             title={relicLabel(r)}
-            className="rounded-full border border-border bg-surface px-2 py-1 font-mono text-[10px] text-parchment"
+            className="inline-flex items-center gap-1 border-2 border-gray-200 bg-black px-1 py-0.5 font-pixel text-[10px] text-parchment"
           >
+            <PixelRelic defId={r.defId} className="size-4" />
             {relicLabel(r)}
           </span>
         ))}
