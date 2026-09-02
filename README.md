@@ -81,6 +81,17 @@ title → hub（探索開始 / デッキ編成 / 魔改造 / 戦利品）
 - 新規 DnD も「画像単体が動く」方式を踏襲する
 - 立ち絵・待機動画はマゼンタ `#FF00FF` クロマキー。`src/lib/imageUtils.ts` の `chromaKeyImageData`（tolerance / feather）を再利用
 - キャラ絵の方針: 不気味可愛い（Eerie Chibi）、完全正面・全身・武器なし
+- 生成済み画像は `incoming/` に id 名で置き、パス書き換えまで一括する:
+
+```
+npm run apply-art -- --kind cards
+# incoming/cards/ の画像を public/art/pixel/cards/ へ反映し cards.ts を書き換え
+
+npm run apply-art -- --kind enemies
+# incoming/enemies/ の画像を public/art/pixel/ へ反映し enemies.ts を書き換え
+```
+
+`incoming/` は受け皿のため git 管理外。
 
 不足リスト: [`artifacts/ASSET_REQUEST.md`](artifacts/ASSET_REQUEST.md)
 
