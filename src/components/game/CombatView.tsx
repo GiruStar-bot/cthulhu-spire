@@ -8,7 +8,7 @@ import { getEnemy } from "@/game/enemies";
 import { cardCost, getCard } from "@/game/cards";
 import { floorBand, layerLabel } from "@/game/floors";
 import { useGame } from "@/game/store";
-import { IDLE_FRAMES, IDLE_VIDEO } from "@/game/idleFrames";
+import { IDLE_FRAMES } from "@/game/idleFrames";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
 import type { CardInst, CombatEnemy, Floater } from "@/game/types";
@@ -333,7 +333,6 @@ function EnemyStage({
       <div className="enemy-figure is-cutout">
         <EnemyView
           imageUrl={asset(`art/pixel/${enemy.defId}.jpg`)}
-          videoUrl={IDLE_VIDEO[enemy.defId]}
           frames={IDLE_FRAMES[enemy.defId]}
           hp={enemy.hp}
           maxHp={enemy.maxHp}

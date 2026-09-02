@@ -1,6 +1,6 @@
-# Pixel enemy stills (not wired)
+# Pixel enemy stills
 
-Magenta-key standees. Combat still uses the old `poster.jpg` / video until a later pass.
+Magenta-key standees. Combat uses `art/pixel/{id}.jpg` via `PixelSprite` chroma key. Idle videos are unused.
 
 File names match `src/game/enemies.ts` ids. Roster complete.
 

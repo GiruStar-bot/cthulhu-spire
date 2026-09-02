@@ -1,18 +1,16 @@
 import type { EnemyDef } from "./types";
 import { asset } from "@/lib/asset";
 
-function clip(dir: string): Pick<EnemyDef, "art" | "poster"> {
-  return {
-    art: asset(`art/${dir}/idle.mp4`),
-    poster: asset(`art/${dir}/poster.jpg`),
-  };
+function still(id: string): Pick<EnemyDef, "art" | "poster"> {
+  const src = asset(`art/pixel/${id}.jpg`);
+  return { art: src, poster: src };
 }
 
 export const ENEMIES: Record<string, EnemyDef> = {
   acolyte: {
     id: "acolyte",
     name: "侍祭",
-    ...clip("acolyte"),
+    ...still("acolyte"),
     biome: "street",
     maxHp: 32,
     pattern: [
@@ -24,7 +22,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   drowned: {
     id: "drowned",
     name: "溺れた眷属",
-    ...clip("deepone"),
+    ...still("drowned"),
     biome: "reef",
     maxHp: 44,
     pattern: [
@@ -36,7 +34,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   byakhee: {
     id: "byakhee",
     name: "翼ある飢え",
-    ...clip("byakhee"),
+    ...still("byakhee"),
     biome: "reef",
     maxHp: 38,
     pattern: [
@@ -48,7 +46,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   coral: {
     id: "coral",
     name: "礁の衛士",
-    ...clip("coral"),
+    ...still("coral"),
     biome: "reef",
     maxHp: 48,
     pattern: [
@@ -60,7 +58,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   starveling: {
     id: "starveling",
     name: "飢えし仔",
-    ...clip("deepone"),
+    ...still("starveling"),
     biome: "reef",
     maxHp: 86,
     pattern: [
@@ -73,7 +71,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   serpent: {
     id: "serpent",
     name: "ムーの蛇人",
-    ...clip("serpent"),
+    ...still("serpent"),
     biome: "mu",
     maxHp: 54,
     pattern: [
@@ -86,7 +84,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   spawn: {
     id: "spawn",
     name: "ガタノトアの落とし子",
-    ...clip("spawn"),
+    ...still("spawn"),
     biome: "mu",
     maxHp: 62,
     pattern: [
@@ -99,7 +97,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   migo: {
     id: "migo",
     name: "ミーゴ",
-    ...clip("migo"),
+    ...still("migo"),
     biome: "void",
     maxHp: 40,
     pattern: [
@@ -111,7 +109,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   colour: {
     id: "colour",
     name: "星から来た色",
-    ...clip("colour"),
+    ...still("colour"),
     biome: "colour",
     maxHp: 48,
     pattern: [
@@ -124,7 +122,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   starvamp: {
     id: "starvamp",
     name: "星の吸血獣",
-    ...clip("starvamp"),
+    ...still("starvamp"),
     biome: "void",
     maxHp: 56,
     pattern: [
@@ -136,7 +134,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   shan: {
     id: "shan",
     name: "シャガイの昆虫",
-    ...clip("shan"),
+    ...still("shan"),
     biome: "void",
     maxHp: 36,
     pattern: [
@@ -148,8 +146,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   priest: {
     id: "priest",
     name: "尖塔の大司祭",
-    art: asset("art/priest/idle.mp4"),
-    poster: asset("art/priest/sprite_01.png"),
+    ...still("priest"),
     biome: "street",
     maxHp: 168,
     pattern: [
@@ -163,7 +160,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   choir: {
     id: "choir",
     name: "塩の唱者",
-    ...clip("acolyte"),
+    ...still("choir"),
     biome: "street",
     maxHp: 42,
     trait: "choir",
@@ -177,7 +174,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   nurse: {
     id: "nurse",
     name: "深きものの乳母",
-    ...clip("nurse"),
+    ...still("nurse"),
     biome: "reef",
     maxHp: 112,
     trait: "nurse",
@@ -192,7 +189,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   flock: {
     id: "flock",
     name: "飢えた翼",
-    ...clip("byakhee"),
+    ...still("flock"),
     biome: "reef",
     maxHp: 52,
     pattern: [
@@ -205,7 +202,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   warden: {
     id: "warden",
     name: "曲がる幾何の番",
-    ...clip("warden"),
+    ...still("warden"),
     biome: "fold",
     maxHp: 108,
     trait: "liar",
@@ -220,7 +217,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   bell: {
     id: "bell",
     name: "溺れた街の鐘",
-    ...clip("bell"),
+    ...still("bell"),
     biome: "street",
     maxHp: 118,
     trait: "bell",
@@ -235,7 +232,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   nyar: {
     id: "nyar",
     name: "門番ナイアルラト",
-    ...clip("nyar"),
+    ...still("nyar"),
     biome: "throne",
     maxHp: 124,
     trait: "seal",
@@ -250,7 +247,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   iha: {
     id: "iha",
     name: "緑の腐肉、イハ",
-    ...clip("iha"),
+    ...still("iha"),
     biome: "throne",
     maxHp: 96,
     trait: "split",
@@ -265,7 +262,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   herald: {
     id: "herald",
     name: "呼び声の使徒",
-    ...clip("herald"),
+    ...still("herald"),
     biome: "throne",
     maxHp: 214,
     pattern: [
@@ -279,7 +276,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   mouth: {
     id: "mouth",
     name: "口そのもの",
-    ...clip("mouth"),
+    ...still("mouth"),
     biome: "throne",
     maxHp: 268,
     pattern: [
