@@ -1,14 +1,14 @@
 import { asset } from "@/lib/asset";
 
 const FILES: Record<string, string> = {
-  "ATK+": "atk.jpg",
+  "ATK+": "atk.png",
   "BLK+": "blk.png",
-  DRAW: "draw.jpg",
-  "COST-": "cost.jpg",
-  "SAN+": "san.jpg",
-  "STR+": "str.jpg",
-  POISON: "poison.jpg",
-  HEAL: "heal.jpg",
+  DRAW: "draw.png",
+  "COST-": "cost.png",
+  "SAN+": "san.png",
+  "STR+": "str.png",
+  POISON: "poison.png",
+  HEAL: "heal.png",
 };
 
 export function runeArt(effect: string): string | null {
