@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { CARDS, DECK_LIMIT } from "@/game/cards";
 import { uid } from "@/game/rng";
 
@@ -36,14 +37,13 @@ type Inventory = {
 type CollectionState = {
   inventory: Inventory;
   deck: string[];
+  runeRegistry: Record<string, Rune>;
   addToDeck: (instanceId: string) => boolean;
   removeFromDeck: (instanceId: string) => void;
   addLootCard: (baseCardId: string) => void;
   socketRune: (cardInstanceId: string, runeId: string, socketIndex: number) => boolean;
   unsocketRune: (cardInstanceId: string, socketIndex: number) => boolean;
 };
-
-const runeVault = new Map<string, Rune>();
 
 const STARTER_CARDS: { id: string; count: number }[] = [
   { id: "strike", count: 4 },
@@ -56,7 +56,7 @@ const STARTER_CARDS: { id: string; count: number }[] = [
   { id: "sweep", count: 2 },
 ];
 
-function seedInventory(): Inventory {
+function seedInventory(): { cards: CardInstance[]; runes: Rune[]; runeRegistry: Record<string, Rune> } {
   const cards: CardInstance[] = [];
   let i = 0;
   for (const { id, count } of STARTER_CARDS) {
@@ -72,14 +72,15 @@ function seedInventory(): Inventory {
       i++;
     }
   }
+  const runeRegistry: Record<string, Rune> = {};
   const runes: Rune[] = RUNE_CATALOG.flatMap((spec) =>
     [0, 1].map(() => {
       const rune: Rune = { id: uid("rn"), effect: spec.effect, value: spec.value };
-      runeVault.set(rune.id, rune);
+      runeRegistry[rune.id] = rune;
       return rune;
     }),
   );
-  return { cards, runes };
+  return { cards, runes, runeRegistry };
 }
 
 function cardById(cards: CardInstance[], instanceId: string) {
@@ -94,7 +95,7 @@ function copiesInDeck(state: Pick<CollectionState, "inventory" | "deck">, baseCa
 }
 
 export function peekRune(id: string): Rune | undefined {
-  return runeVault.get(id);
+  return useCollectionStore.getState().runeRegistry[id];
 }
 
 export function copiesOfBase(deck: string[], cards: CardInstance[], baseCardId: string) {
@@ -104,81 +105,107 @@ export function copiesOfBase(deck: string[], cards: CardInstance[], baseCardId: 
   }, 0);
 }
 
-export const useCollectionStore = create<CollectionState>((set, get) => ({
-  inventory: seedInventory(),
-  deck: [],
+const seeded = seedInventory();
 
-  addToDeck: (instanceId) => {
-    const s = get();
-    const card = cardById(s.inventory.cards, instanceId);
-    if (!card) return false;
-    if (s.deck.includes(instanceId)) return false;
-    if (s.deck.length >= DECK_LIMIT) return false;
-    if (copiesInDeck(s, card.baseCardId) >= COPY_LIMIT) return false;
-    set({ deck: [...s.deck, instanceId] });
-    return true;
-  },
+export const useCollectionStore = create<CollectionState>()(
+  persist(
+    (set, get) => ({
+      inventory: { cards: seeded.cards, runes: seeded.runes },
+      deck: [],
+      runeRegistry: seeded.runeRegistry,
 
-  removeFromDeck: (instanceId) => {
-    set((s) => ({ deck: s.deck.filter((id) => id !== instanceId) }));
-  },
-
-  addLootCard: (baseCardId) => {
-    if (!CARDS[baseCardId]) return;
-    set((s) => {
-      const sockets = 1 + (s.inventory.cards.length % 3);
-      const card: CardInstance = {
-        instanceId: uid("ci"),
-        baseCardId,
-        sockets,
-        socketedRunes: Array.from({ length: sockets }, () => ""),
-      };
-      return { inventory: { ...s.inventory, cards: [...s.inventory.cards, card] } };
-    });
-  },
-
-  socketRune: (cardInstanceId, runeId, socketIndex) => {
-    const s = get();
-    const card = cardById(s.inventory.cards, cardInstanceId);
-    const rune = s.inventory.runes.find((r) => r.id === runeId);
-    if (!card || !rune) return false;
-    if (socketIndex < 0 || socketIndex >= card.sockets) return false;
-    const filled = card.socketedRunes.slice();
-    while (filled.length < card.sockets) filled.push("");
-    if (filled[socketIndex]) return false;
-    filled[socketIndex] = runeId;
-    runeVault.set(rune.id, rune);
-    set({
-      inventory: {
-        ...s.inventory,
-        cards: s.inventory.cards.map((c) =>
-          c.instanceId === cardInstanceId ? { ...c, socketedRunes: filled } : c,
-        ),
-        runes: s.inventory.runes.filter((r) => r.id !== runeId),
+      addToDeck: (instanceId) => {
+        const s = get();
+        const card = cardById(s.inventory.cards, instanceId);
+        if (!card) return false;
+        if (s.deck.includes(instanceId)) return false;
+        if (s.deck.length >= DECK_LIMIT) return false;
+        if (copiesInDeck(s, card.baseCardId) >= COPY_LIMIT) return false;
+        set({ deck: [...s.deck, instanceId] });
+        return true;
       },
-    });
-    return true;
-  },
 
-  unsocketRune: (cardInstanceId, socketIndex) => {
-    const s = get();
-    const card = cardById(s.inventory.cards, cardInstanceId);
-    if (!card) return false;
-    if (socketIndex < 0 || socketIndex >= card.sockets) return false;
-    const filled = card.socketedRunes.slice();
-    const runeId = filled[socketIndex];
-    if (!runeId) return false;
-    filled[socketIndex] = "";
-    const restored = runeVault.get(runeId) ?? { id: runeId, effect: "ATK+", value: 2 };
-    set({
-      inventory: {
-        ...s.inventory,
-        cards: s.inventory.cards.map((c) =>
-          c.instanceId === cardInstanceId ? { ...c, socketedRunes: filled } : c,
-        ),
-        runes: [...s.inventory.runes, restored],
+      removeFromDeck: (instanceId) => {
+        set((s) => ({ deck: s.deck.filter((id) => id !== instanceId) }));
       },
-    });
-    return true;
-  },
-}));
+
+      addLootCard: (baseCardId) => {
+        if (!CARDS[baseCardId]) return;
+        set((s) => {
+          const sockets = 1 + (s.inventory.cards.length % 3);
+          const card: CardInstance = {
+            instanceId: uid("ci"),
+            baseCardId,
+            sockets,
+            socketedRunes: Array.from({ length: sockets }, () => ""),
+          };
+          return { inventory: { ...s.inventory, cards: [...s.inventory.cards, card] } };
+        });
+      },
+
+      socketRune: (cardInstanceId, runeId, socketIndex) => {
+        const s = get();
+        const card = cardById(s.inventory.cards, cardInstanceId);
+        const rune = s.inventory.runes.find((r) => r.id === runeId);
+        if (!card || !rune) return false;
+        if (socketIndex < 0 || socketIndex >= card.sockets) return false;
+        const filled = card.socketedRunes.slice();
+        while (filled.length < card.sockets) filled.push("");
+        if (filled[socketIndex]) return false;
+        filled[socketIndex] = runeId;
+        set({
+          inventory: {
+            ...s.inventory,
+            cards: s.inventory.cards.map((c) =>
+              c.instanceId === cardInstanceId ? { ...c, socketedRunes: filled } : c,
+            ),
+            runes: s.inventory.runes.filter((r) => r.id !== runeId),
+          },
+          runeRegistry: { ...s.runeRegistry, [rune.id]: rune },
+        });
+        return true;
+      },
+
+      unsocketRune: (cardInstanceId, socketIndex) => {
+        const s = get();
+        const card = cardById(s.inventory.cards, cardInstanceId);
+        if (!card) return false;
+        if (socketIndex < 0 || socketIndex >= card.sockets) return false;
+        const filled = card.socketedRunes.slice();
+        const runeId = filled[socketIndex];
+        if (!runeId) return false;
+        filled[socketIndex] = "";
+        const restored = s.runeRegistry[runeId] ?? { id: runeId, effect: "ATK+", value: 2 };
+        set({
+          inventory: {
+            ...s.inventory,
+            cards: s.inventory.cards.map((c) =>
+              c.instanceId === cardInstanceId ? { ...c, socketedRunes: filled } : c,
+            ),
+            runes: [...s.inventory.runes, restored],
+          },
+          runeRegistry: { ...s.runeRegistry, [restored.id]: restored },
+        });
+        return true;
+      },
+    }),
+    {
+      name: "cthulhu-spire-collection-v1",
+      version: 1,
+      storage: createJSONStorage(() =>
+        typeof window === "undefined"
+          ? {
+              getItem: () => null,
+              setItem: () => {},
+              removeItem: () => {},
+            }
+          : localStorage,
+      ),
+      partialize: (s) => ({
+        inventory: s.inventory,
+        deck: s.deck,
+        runeRegistry: s.runeRegistry,
+      }),
+    },
+  ),
+);
