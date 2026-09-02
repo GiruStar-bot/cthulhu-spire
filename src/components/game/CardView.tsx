@@ -29,7 +29,7 @@ export function CardView({
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={cn(
-        "relative shrink-0 overflow-hidden border-2 border-white bg-black text-left font-pixel",
+        "relative flex shrink-0 flex-col overflow-hidden border-2 border-white bg-black text-left font-pixel",
         "transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
         compact ? "h-48 w-32" : "h-64 w-40 sm:h-72 sm:w-48",
         selected ? "-translate-y-2" : "",
@@ -38,18 +38,28 @@ export function CardView({
         d.type === "status" ? "grayscale" : "",
       )}
     >
-      <div className="absolute inset-0">
-        <PixelSprite src={d.art} className="size-full object-cover" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-black/80" />
+      <div className="shrink-0 border-b-2 border-white bg-black px-1 py-0.5">
+        <p className={cn("truncate text-white", compact ? "text-xs" : "text-sm")}>
+          {d.name}
+          {card.upgraded ? "+" : ""}
+        </p>
       </div>
 
-      <span className="absolute top-1 left-1 z-10 grid size-8 place-items-center border-2 border-white bg-black text-sm text-white">
-        {costLabel}
-      </span>
+      <div className="relative min-h-16 flex-1 overflow-hidden">
+        <PixelSprite src={d.art} className="size-full object-cover" />
+        <span className="absolute top-1 left-1 z-10 grid size-8 place-items-center border-2 border-white bg-black text-sm text-white">
+          {costLabel}
+        </span>
+      </div>
 
-      <div className="absolute inset-x-1 bottom-1 z-10 flex flex-col items-center gap-0.5 text-center">
+      <div className="relative h-1 shrink-0 bg-black">
+        <div className="absolute inset-x-0 top-0 h-px bg-white" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-white" />
+      </div>
+
+      <div className="shrink-0 bg-black px-1 py-1 text-left">
         {runes.length ? (
-          <div className="flex flex-wrap justify-center gap-0.5">
+          <div className="mb-0.5 flex flex-wrap gap-0.5">
             {runes.map((rune) => (
               <span
                 key={rune.id}
@@ -62,11 +72,7 @@ export function CardView({
             ))}
           </div>
         ) : null}
-        <p className={cn("w-full truncate text-white", compact ? "text-xs" : "text-sm")}>
-          {d.name}
-          {card.upgraded ? "+" : ""}
-        </p>
-        <p className={cn("w-full text-white/80", compact ? "text-[9px] leading-snug" : "text-[10px] leading-snug")}>
+        <p className={cn("text-left text-white/80", compact ? "text-[9px] leading-snug" : "text-[10px] leading-snug")}>
           {cardText(card)}
         </p>
       </div>
