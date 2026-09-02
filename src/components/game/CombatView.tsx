@@ -57,10 +57,12 @@ export function CombatView() {
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
 
         <div className={cn("combat-foe", targeting ? "is-aiming" : "")}>
-          {combat.enemies.map((e) => (
+          {combat.enemies.map((e, i) => (
             <EnemyStage
               key={e.uid}
               enemy={e}
+              index={i}
+              count={combat.enemies.length}
               floaters={combat.floaters.filter((f) => f.who === e.uid)}
               targeting={!!targeting}
               striking={fx.playerHit && e.hp > 0}
@@ -298,21 +300,42 @@ function Energy({ n, max }: { n: number; max: number }) {
   );
 }
 
-function EnemyIntentCard({ enemy }: { enemy: CombatEnemy }) {
+function EnemyIntentCard({
+  enemy,
+  index,
+  count,
+}: {
+  enemy: CombatEnemy;
+  index: number;
+  count: number;
+}) {
   if (enemy.hp <= 0) return null;
+  const shift =
+    count <= 1
+      ? "-translate-x-1/2"
+      : index === 0
+        ? "-translate-x-[80%]"
+        : index === count - 1
+          ? "-translate-x-[20%]"
+          : "-translate-x-1/2";
   const cardId = enemy.shownCardId ?? enemy.actionCardId;
   if (!cardId) {
     const i = enemy.shownIntent ?? enemy.intent;
     if (!i.seal) return null;
     return (
-      <div className="pointer-events-none absolute -top-6 left-1/2 z-20 -translate-x-1/2 border-2 border-white bg-black px-2 py-1 font-pixel text-[10px] whitespace-nowrap text-blood">
+      <div
+        className={cn(
+          "pointer-events-none absolute -top-10 left-1/2 z-20 border-2 border-white bg-black px-2 py-1 font-pixel text-[10px] whitespace-nowrap text-blood",
+          shift,
+        )}
+      >
         {i.seal === "attack" ? "攻撃封印" : "技能封印"}
       </div>
     );
   }
   const card = makeCard(cardId);
   return (
-    <div className="pointer-events-none absolute -top-24 left-1/2 z-20 -translate-x-1/2 [&>*]:!h-24 [&>*]:!w-16">
+    <div className={cn("pointer-events-none absolute -top-52 left-1/2 z-20", shift)}>
       <CardView card={card} compact />
     </div>
   );
@@ -320,12 +343,16 @@ function EnemyIntentCard({ enemy }: { enemy: CombatEnemy }) {
 
 function EnemyStage({
   enemy,
+  index,
+  count,
   floaters,
   targeting,
   striking,
   onTarget,
 }: {
   enemy: CombatEnemy;
+  index: number;
+  count: number;
   floaters: Floater[];
   targeting: boolean;
   striking: boolean;
@@ -350,7 +377,7 @@ function EnemyStage({
         targeting && !dead ? "is-aim" : "",
       )}
     >
-      <EnemyIntentCard enemy={enemy} />
+      <EnemyIntentCard enemy={enemy} index={index} count={count} />
       <div className="enemy-figure is-cutout">
         <EnemyView
           imageUrl={asset(`art/pixel/${enemy.defId}.jpg`)}
