@@ -1,6 +1,8 @@
-import { Vitals } from "@/components/game/Hud";
 import { DeckInspect } from "@/components/game/DeckInspect";
+import { Vitals } from "@/components/game/Hud";
 import { StageBack } from "@/components/game/StageBack";
+import { PixelButton } from "@/components/ui/PixelButton";
+import { PixelWindow } from "@/components/ui/PixelWindow";
 import { useGame } from "@/game/store";
 
 export function EventView() {
@@ -11,7 +13,7 @@ export function EventView() {
   if (!event) return null;
 
   return (
-    <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
+    <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink font-pixel">
       <StageBack opacity={0.28} />
 
       <div className="relative z-10 shrink-0 px-6 pt-6 sm:px-10">
@@ -24,25 +26,26 @@ export function EventView() {
             <button
               type="button"
               onClick={dismiss}
-              className="rounded-[var(--radius-md)] bg-surface px-4 py-3 text-left text-sm text-parchment shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-accent)_40%,transparent)]"
+              className="border-2 border-white bg-black px-4 py-3 text-left text-sm text-white shadow-[3px_3px_0_0_#000]"
             >
               {toast}
             </button>
           ) : null}
-          <p className="font-mono text-xs tracking-widest text-accent">予兆</p>
-          <h2 className="font-display text-3xl text-balance text-parchment sm:text-4xl">{event.title}</h2>
-          <p className="text-sm leading-relaxed text-pretty text-muted sm:text-base">{event.body}</p>
+          <PixelWindow>
+            <p className="text-xs tracking-widest text-accent">予兆</p>
+            <h2 className="mt-1 text-3xl text-balance text-white sm:text-4xl">{event.title}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-pretty text-muted sm:text-base">{event.body}</p>
+          </PixelWindow>
           <div className="flex flex-col gap-3">
             {event.choices.map((c) => (
-              <button
+              <PixelButton
                 key={c.id}
-                type="button"
                 onClick={() => resolve(c.id)}
-                className="rot-paper min-h-12 px-4 py-3 text-left font-display text-parchment hover:brightness-110"
+                className="min-h-12 w-full px-4 py-3 text-left"
               >
-                {c.label}
-                <span className="mt-1 block font-sans text-xs font-normal text-muted">{c.result}</span>
-              </button>
+                <span className="block">{c.label}</span>
+                <span className="mt-1 block text-xs opacity-70">{c.result}</span>
+              </PixelButton>
             ))}
           </div>
         </div>

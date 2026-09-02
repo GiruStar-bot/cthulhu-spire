@@ -1,8 +1,10 @@
-import { Vitals } from "@/components/game/Hud";
 import { DeckInspect } from "@/components/game/DeckInspect";
+import { Vitals } from "@/components/game/Hud";
 import { StageBack } from "@/components/game/StageBack";
-import { DEMO_MAX_FLOOR, layerLabel } from "@/game/floors";
+import { PixelButton } from "@/components/ui/PixelButton";
+import { PixelWindow } from "@/components/ui/PixelWindow";
 import { getCard } from "@/game/cards";
+import { DEMO_MAX_FLOOR, layerLabel } from "@/game/floors";
 import { useGame } from "@/game/store";
 
 export function BetweenView() {
@@ -12,18 +14,20 @@ export function BetweenView() {
   const advance = useGame((s) => s.continueClimb);
 
   return (
-    <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink">
+    <section className="relative flex min-h-dvh flex-col overflow-hidden bg-ink font-pixel">
       <StageBack opacity={0.32} />
-      <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/75 to-ink/40" />
+      <div className="absolute inset-0 bg-black/70" />
       <div className="relative z-10 mt-auto flex flex-col gap-5 px-6 pb-16 sm:px-12">
-        <p className="font-mono text-[11px] tracking-widest text-accent">{layerLabel(floor)}まで沈んだ</p>
-        <h2 className="font-display text-4xl text-parchment sm:text-5xl">都市は、まだ沈む</h2>
-        <p className="max-w-md text-sm leading-relaxed text-muted">
-          大ボスは倒した。肉体もデッキも遺物も、削れたまま連れていく。デモは第{DEMO_MAX_FLOOR}
-          層まで。次の一歩で、ただちに次の層へ沈む。
-        </p>
+        <PixelWindow className="max-w-lg">
+          <p className="text-[11px] tracking-widest text-accent">{layerLabel(floor)}まで沈んだ</p>
+          <h2 className="mt-1 text-4xl text-white sm:text-5xl">都市は、まだ沈む</h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            大ボスは倒した。肉体もデッキも遺物も、削れたまま連れていく。デモは第{DEMO_MAX_FLOOR}
+            層まで。次の一歩で、ただちに次の層へ沈む。
+          </p>
+        </PixelWindow>
         <Vitals />
-        <p className="font-mono text-[11px] text-muted">
+        <p className="text-[11px] text-muted">
           デッキ {deck.length}枚
           {relics.length ? ` · 遺物 ${relics.length}` : ""} · 強化 {deck.filter((c) => c.upgraded).length}
         </p>
@@ -37,13 +41,9 @@ export function BetweenView() {
           ))}
           {deck.length > 12 ? <li className="inline">…</li> : null}
         </ul>
-        <button
-          type="button"
-          onClick={advance}
-          className="w-fit min-h-11 rounded-[var(--radius-md)] bg-parchment px-6 py-3 font-display text-ink"
-        >
+        <PixelButton onClick={advance} className="w-fit px-6">
           {layerLabel(floor + 1)}へ沈む
-        </button>
+        </PixelButton>
       </div>
       <DeckInspect />
     </section>
