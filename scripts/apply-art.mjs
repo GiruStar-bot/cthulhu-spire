@@ -73,7 +73,7 @@ function main() {
 
     copyFileSync(join(cfg.incomingDir, file), destAbsPath);
 
-    const re = new RegExp(`(id:\\s*"${id}"[\\s\\S]{0,500}?art:\\s*asset\\()"[^"]*"(\\))`);
+    const re = new RegExp(`(id:\\s*"${id}",[\\s\\S]{0,800}?art:\\s*asset\\()"[^"]*"(\\))`);
     if (re.test(code)) {
       code = code.replace(re, `$1"${destRelPath}"$2`);
       updated.push(id);
