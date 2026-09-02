@@ -1,6 +1,7 @@
 import { PrepareView } from "@/components/game/PrepareView";
 import { CardForgeScreen } from "@/components/loadout/CardForgeScreen";
 import { CollectionCard } from "@/components/loadout/CollectionCard";
+import { PixelRune } from "@/components/loadout/PixelRune";
 import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
@@ -120,8 +121,9 @@ function StashPanel() {
       <ul className="grid grid-cols-4 gap-2 sm:grid-cols-6">
         {inventory.runes.map((rune) => (
           <li key={rune.id}>
-            <PixelWindow className="rounded-none p-2 text-center">
-              <p className="text-xs text-white">{rune.effect}</p>
+            <PixelWindow className="rounded-none p-1 text-center">
+              <PixelRune effect={rune.effect} className="mx-auto h-12 w-full" />
+              <p className="mt-1 text-xs text-white">{rune.effect}</p>
               <p className="text-[10px] text-muted">{rune.value}</p>
             </PixelWindow>
           </li>

@@ -1,21 +1,11 @@
 import { CollectionCard } from "@/components/loadout/CollectionCard";
+import { PixelRune } from "@/components/loadout/PixelRune";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { getCard } from "@/game/cards";
 import { cn } from "@/lib/utils";
 import { peekRune, useCollectionStore, type Rune } from "@/store/useCollectionStore";
 import { useEffect, useRef, useState } from "react";
-
-const GEM_COLOR: Record<string, string> = {
-  "ATK+": "bg-blood",
-  "BLK+": "bg-sky-700",
-  DRAW: "bg-emerald-700",
-  "COST-": "bg-amber-600",
-  "SAN+": "bg-violet-700",
-  "STR+": "bg-orange-700",
-  POISON: "bg-lime-700",
-  HEAL: "bg-rose-700",
-};
 
 type Flight = {
   rune: Rune;
@@ -155,7 +145,10 @@ export function CardForgeScreen({ onClose, embedded = false }: { onClose?: () =>
                       {empty ? (
                         <span className="size-6 border-2 border-ink-2 bg-ink" />
                       ) : (
-                        <PixelGem rune={rune ?? { id: runeId!, effect: "ATK+", value: 0 }} />
+                        <PixelRune
+                          effect={(rune ?? { effect: "ATK+" }).effect}
+                          className="size-10"
+                        />
                       )}
                     </button>
                   );
@@ -192,7 +185,7 @@ export function CardForgeScreen({ onClose, embedded = false }: { onClose?: () =>
                     heldRune === rune.id ? "text-black" : "text-white",
                   )}
                 >
-                  <PixelGem rune={rune} />
+                  <PixelRune effect={rune.effect} className="h-14 w-full" />
                   <span className="text-[9px]">{rune.effect}</span>
                   <span className="text-[9px] text-muted">{rune.value}</span>
                 </button>
@@ -210,21 +203,9 @@ export function CardForgeScreen({ onClose, embedded = false }: { onClose?: () =>
           className="pointer-events-none fixed z-50 transition-[left,top] duration-200 ease-linear"
           style={{ left: flight.x, top: flight.y, transform: "translate(-50%, -50%)" }}
         >
-          <PixelGem rune={flight.rune} />
+          <PixelRune effect={flight.rune.effect} className="size-12" />
         </div>
       ) : null}
     </section>
-  );
-}
-
-function PixelGem({ rune }: { rune: Rune }) {
-  const color = GEM_COLOR[rune.effect] ?? "bg-blood";
-  return (
-    <span className="relative block size-8" aria-hidden>
-      <span className={cn("absolute top-0 left-2 size-4", color)} />
-      <span className={cn("absolute top-2 left-0 size-8", color)} />
-      <span className={cn("absolute top-2 left-2 size-4 bg-parchment")} />
-      <span className="absolute right-0 bottom-0 size-2 bg-black" />
-    </span>
   );
 }

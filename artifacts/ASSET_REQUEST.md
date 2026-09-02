@@ -9,22 +9,7 @@
 ## P0 今すぐ欲しい（新UIが空に見える）
 
 ### 1. ルーン宝石 ×8
-現状: 画像ゼロ。`PixelGem` が四角を積んでいるだけ。
-
-配置: `public/art/pixel/runes/{id}.png`  
-サイズ: **32×32** または **48×48**（等倍が綺麗な整数）  
-内容: ソケットに嵌まる「石」。種類が色と形で一発で分かる。
-
-| ファイル | 効果 | 色の目安 |
-|---|---|---|
-| `atk.png` | ATK+ | 血赤 |
-| `blk.png` | BLK+ | 青 |
-| `draw.png` | DRAW | 緑 |
-| `cost.png` | COST- | 琥珀 |
-| `san.png` | SAN+ | 紫 |
-| `str.png` | STR+ | 橙 |
-| `poison.png` | POISON | 毒緑 |
-| `heal.png` | HEAL | 薔薇 |
+**受領済み** `public/art/pixel/runes/{atk,blk,cost,draw,heal,poison,san,str}.jpg`
 
 ### 2. カード1枚1絵（本編デッキ）
 現状: 約35種が **6枚の古い写実カード**（strike/ward/study/lash/rite/tome）を使い回し。デッキ編成グリッドで全部同じ絵に見える。
