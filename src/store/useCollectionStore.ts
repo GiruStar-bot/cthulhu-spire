@@ -8,6 +8,7 @@ export type CardInstance = {
   baseCardId: string;
   sockets: number;
   socketedRunes: string[];
+  origin: "starter" | "loot";
 };
 
 export type Rune = {
@@ -68,6 +69,7 @@ function seedInventory(): { cards: CardInstance[]; runes: Rune[]; runeRegistry: 
         baseCardId: id,
         sockets,
         socketedRunes: Array.from({ length: sockets }, () => ""),
+        origin: "starter",
       });
       i++;
     }
@@ -138,6 +140,7 @@ export const useCollectionStore = create<CollectionState>()(
             baseCardId,
             sockets,
             socketedRunes: Array.from({ length: sockets }, () => ""),
+            origin: "loot",
           };
           return { inventory: { ...s.inventory, cards: [...s.inventory.cards, card] } };
         });
@@ -191,7 +194,22 @@ export const useCollectionStore = create<CollectionState>()(
     }),
     {
       name: "cthulhu-spire-collection-v1",
-      version: 1,
+      version: 2,
+      migrate: (persisted) => {
+        const s = persisted as {
+          inventory?: { cards?: Array<CardInstance & { origin?: CardInstance["origin"] }>; runes?: Rune[] };
+          deck?: string[];
+          runeRegistry?: Record<string, Rune>;
+        };
+        const cards = (s.inventory?.cards ?? []).map((c) => ({
+          ...c,
+          origin: c.origin ?? "starter",
+        }));
+        return {
+          ...s,
+          inventory: { cards, runes: s.inventory?.runes ?? [] },
+        };
+      },
       storage: createJSONStorage(() =>
         typeof window === "undefined"
           ? {
