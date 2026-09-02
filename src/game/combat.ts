@@ -287,8 +287,13 @@ function runEffects(
         break;
       }
       case "vulnerable": {
-        const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
-        if (tgt) tgt.vulnerable += e.n;
+        const live = living(c);
+        if (targetId) {
+          const tgt = live.find((x) => x.uid === targetId);
+          if (tgt) tgt.vulnerable += e.n;
+        } else {
+          for (const tgt of live) tgt.vulnerable += e.n;
+        }
         break;
       }
       case "gainPower":
@@ -306,8 +311,13 @@ function runEffects(
         if (player.sanity < e.threshold) runEffects(e.then, c, player, targetId, rand, card);
         break;
       case "poison": {
-        const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
-        if (tgt) tgt.poison += e.n;
+        const live = living(c);
+        if (targetId) {
+          const tgt = live.find((x) => x.uid === targetId);
+          if (tgt) tgt.poison += e.n;
+        } else {
+          for (const tgt of live) tgt.poison += e.n;
+        }
         break;
       }
       case "intangible":
