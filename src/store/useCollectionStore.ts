@@ -44,17 +44,33 @@ type CollectionState = {
 
 const runeVault = new Map<string, Rune>();
 
+const STARTER_CARDS: { id: string; count: number }[] = [
+  { id: "strike", count: 4 },
+  { id: "ward", count: 4 },
+  { id: "study", count: 2 },
+  { id: "whisper", count: 2 },
+  { id: "insight", count: 2 },
+  { id: "lash", count: 2 },
+  { id: "dressing", count: 2 },
+  { id: "sweep", count: 2 },
+];
+
 function seedInventory(): Inventory {
-  const cardIds = Object.keys(CARDS).filter((id) => CARDS[id]?.rarity !== "status");
-  const cards: CardInstance[] = cardIds.map((baseCardId, i) => {
-    const sockets = 1 + (i % 3);
-    return {
-      instanceId: uid("ci"),
-      baseCardId,
-      sockets,
-      socketedRunes: Array.from({ length: sockets }, () => ""),
-    };
-  });
+  const cards: CardInstance[] = [];
+  let i = 0;
+  for (const { id, count } of STARTER_CARDS) {
+    if (!CARDS[id]) throw new Error(`unknown starter card: ${id}`);
+    for (let n = 0; n < count; n++) {
+      const sockets = 1 + (i % 3);
+      cards.push({
+        instanceId: uid("ci"),
+        baseCardId: id,
+        sockets,
+        socketedRunes: Array.from({ length: sockets }, () => ""),
+      });
+      i++;
+    }
+  }
   const runes: Rune[] = RUNE_CATALOG.flatMap((spec) =>
     [0, 1].map(() => {
       const rune: Rune = { id: uid("rn"), effect: spec.effect, value: spec.value };
