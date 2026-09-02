@@ -1,12 +1,14 @@
+import { chromaKeyCanvas } from "@/lib/imageUtils";
 import { useEffect, useRef } from "react";
 
 type PixelSpriteProps = {
   src: string;
   className?: string;
   tolerance?: number;
+  feather?: number;
 };
 
-export function PixelSprite({ src, className, tolerance = 80 }: PixelSpriteProps) {
+export function PixelSprite({ src, className, tolerance = 104, feather = 72 }: PixelSpriteProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -29,23 +31,14 @@ export function PixelSprite({ src, className, tolerance = 80 }: PixelSpriteProps
 
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(img, 0, 0);
-      const frame = ctx.getImageData(0, 0, w, h);
-      const px = frame.data;
-      const lo = tolerance;
-      const hi = 255 - tolerance;
-      for (let i = 0; i < px.length; i += 4) {
-        if (px[i] > hi && px[i + 1] < lo && px[i + 2] > hi) {
-          px[i + 3] = 0;
-        }
-      }
-      ctx.putImageData(frame, 0, 0);
+      chromaKeyCanvas(ctx, w, h, { tolerance, feather, sampleCorners: true });
     };
     img.src = src;
 
     return () => {
       cancelled = true;
     };
-  }, [src, tolerance]);
+  }, [src, tolerance, feather]);
 
   return <canvas ref={canvasRef} className={className} />;
 }

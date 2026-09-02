@@ -13,5 +13,5 @@ export function PixelRune({
   if (!src) {
     return <span className={cn("block size-8 bg-blood", className)} />;
   }
-  return <PixelSprite src={src} tolerance={110} className={cn("block object-contain", className)} />;
+  return <PixelSprite src={src} tolerance={120} feather={80} className={cn("block object-contain", className)} />;
 }
