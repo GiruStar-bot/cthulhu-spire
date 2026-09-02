@@ -347,10 +347,12 @@ function EnemyIntentCard({
   enemy,
   index,
   count,
+  anchorTop,
 }: {
   enemy: CombatEnemy;
   index: number;
   count: number;
+  anchorTop: number | null;
 }) {
   if (enemy.hp <= 0) return null;
   const shift =
@@ -368,9 +370,10 @@ function EnemyIntentCard({
     return (
       <div
         className={cn(
-          "pointer-events-none absolute -top-10 left-1/2 z-20 border-2 border-white bg-black px-2 py-1 font-pixel text-[10px] whitespace-nowrap text-blood",
+          "pointer-events-none absolute left-1/2 z-20 border-2 border-white bg-black px-2 py-1 font-pixel text-[10px] whitespace-nowrap text-blood",
           shift,
         )}
+        style={anchorTop != null ? { top: anchorTop - 36 } : undefined}
       >
         {i.seal === "attack" ? "攻撃封印" : "技能封印"}
       </div>
@@ -378,7 +381,10 @@ function EnemyIntentCard({
   }
   const card = makeCard(cardId);
   return (
-    <div className={cn("pointer-events-none absolute -top-52 left-1/2 z-20", shift)}>
+    <div
+      className={cn("pointer-events-none absolute left-1/2 z-20", shift)}
+      style={anchorTop != null ? { top: anchorTop - 208 } : undefined}
+    >
       <CardView card={card} compact />
     </div>
   );
@@ -397,10 +403,27 @@ function EnemyStage({
   floaters: Floater[];
   striking: boolean;
 }) {
+  const hitZoneRef = useRef<HTMLDivElement>(null);
+  const [zoneTop, setZoneTop] = useState<number | null>(null);
   const dead = enemy.hp <= 0;
   const gone = useCorpseGone(dead);
   const pose = useEnemyPose(enemy.hp, striking);
   const boss = enemy.maxHp >= 150;
+
+  useEffect(() => {
+    if (gone) return;
+    const el = hitZoneRef.current;
+    if (!el) return;
+    const update = () => {
+      const parent = el.closest(".enemy-stage")?.getBoundingClientRect();
+      const zone = el.getBoundingClientRect();
+      if (parent) setZoneTop(zone.top - parent.top);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [gone, boss]);
+
   if (gone) return null;
 
   return (
@@ -415,8 +438,16 @@ function EnemyStage({
         pose === "strike" && "enemy-strike",
       )}
     >
-      <EnemyIntentCard enemy={enemy} index={index} count={count} />
+      <EnemyIntentCard enemy={enemy} index={index} count={count} anchorTop={zoneTop} />
       <div className="enemy-figure is-cutout">
+        <div
+          ref={hitZoneRef}
+          data-hit-zone=""
+          className={cn(
+            "pointer-events-none absolute",
+            boss ? "inset-x-[18%] top-[22%] bottom-[4%]" : "inset-x-[15%] top-[28%] bottom-[6%]",
+          )}
+        />
         <EnemyView
           imageUrl={asset(`art/pixel/${enemy.defId}.jpg`)}
           frames={IDLE_FRAMES[enemy.defId]}
@@ -487,40 +518,16 @@ function resolveDrop(
 
 function pickFoe(clientX: number, clientY: number): HTMLElement | null {
   const stages = [...document.querySelectorAll<HTMLElement>(".enemy-stage")];
-  let best: HTMLElement | null = null;
-  let bestA = -1;
   for (const el of stages) {
     if (el.dataset.dead === "1") continue;
-    const canvas = el.querySelector("canvas");
-    const img = el.querySelector(".enemy-figure img");
-    const media = canvas ?? img;
-    if (!media) continue;
-    const r = media.getBoundingClientRect();
-    if (clientX < r.left || clientX > r.right || clientY < r.top || clientY > r.bottom) continue;
-    const a = canvas ? Math.max(1, alphaAt(canvas, clientX, clientY)) : 1;
-    if (a >= bestA) {
-      bestA = a;
-      best = el;
+    const zone = el.querySelector<HTMLElement>("[data-hit-zone]");
+    if (!zone) continue;
+    const r = zone.getBoundingClientRect();
+    if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+      return el;
     }
   }
-  return best;
-}
-
-function alphaAt(canvas: HTMLCanvasElement, clientX: number, clientY: number): number {
-  const r = canvas.getBoundingClientRect();
-  const iw = canvas.width;
-  const ih = canvas.height;
-  if (!iw || !ih) return 1;
-  const sx = ((clientX - r.left) / r.width) * iw;
-  const sy = ((clientY - r.top) / r.height) * ih;
-  if (sx < 0 || sy < 0 || sx >= iw || sy >= ih) return 0;
-  try {
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return 1;
-    return ctx.getImageData(Math.floor(sx), Math.floor(sy), 1, 1).data[3];
-  } catch {
-    return 1;
-  }
+  return null;
 }
 
 function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
