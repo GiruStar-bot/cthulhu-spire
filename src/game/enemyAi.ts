@@ -1,4 +1,5 @@
-import { aiCardPool } from "./cards";
+import { aiCardPool, aiCardPoolFrom } from "./cards";
+import { getEnemy } from "./enemies";
 import { pick, weightedPick } from "./rng";
 import type { CardDef, Effect, Intent } from "./types";
 
@@ -8,12 +9,29 @@ export const AI_CATEGORY_WEIGHTS: Record<"attack" | "defense" | "effect", number
   effect: 0.2,
 };
 
-export function rollEnemyCard(rand: () => number): CardDef {
-  const category = weightedPick(AI_CATEGORY_WEIGHTS, rand);
-  const pool = aiCardPool(category);
-  if (pool.length) return pick(pool, rand);
-  const fallback = aiCardPool("attack");
-  return pick(fallback, rand);
+export function rollEnemyCard(defId: string, rand: () => number): CardDef {
+  const def = getEnemy(defId);
+  const pools: Record<"attack" | "defense" | "effect", CardDef[]> = def.deck
+    ? {
+        attack: aiCardPoolFrom(def.deck, "attack"),
+        defense: aiCardPoolFrom(def.deck, "defense"),
+        effect: aiCardPoolFrom(def.deck, "effect"),
+      }
+    : {
+        attack: aiCardPool("attack"),
+        defense: aiCardPool("defense"),
+        effect: aiCardPool("effect"),
+      };
+
+  const activeWeights = Object.fromEntries(
+    (Object.entries(AI_CATEGORY_WEIGHTS) as ["attack" | "defense" | "effect", number][]).filter(
+      ([tag]) => pools[tag].length > 0,
+    ),
+  ) as Record<"attack" | "defense" | "effect", number>;
+
+  if (!Object.keys(activeWeights).length) return pick(aiCardPool("attack"), rand);
+  const category = weightedPick(activeWeights, rand);
+  return pick(pools[category], rand);
 }
 
 export function cardToIntent(card: CardDef): Intent {
@@ -34,6 +52,10 @@ export function cardToIntent(card: CardDef): Intent {
       }
       if (eff.t === "weak") {
         intent.weak = (intent.weak ?? 0) + eff.n;
+        if (intent.kind === "unknown") intent.kind = "debuff";
+      }
+      if (eff.t === "vulnerable") {
+        intent.vulnerable = (intent.vulnerable ?? 0) + eff.n;
         if (intent.kind === "unknown") intent.kind = "debuff";
       }
       if (eff.t === "addDread") {

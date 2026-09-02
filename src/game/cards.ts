@@ -608,10 +608,34 @@ export function getCard(id: string): CardDef {
   return c;
 }
 
+const AI_TRANSLATABLE = new Set([
+  "damage",
+  "damageAll",
+  "block",
+  "blockPerEnemy",
+  "strength",
+  "weak",
+  "vulnerable",
+  "addDread",
+]);
+
+function hasTranslatableEffect(card: CardDef): boolean {
+  return card.effects.some((e) => AI_TRANSLATABLE.has(e.t));
+}
+
 export function aiCardPool(tag: "attack" | "defense" | "effect"): CardDef[] {
   return Object.values(CARDS).filter(
-    (c) => c.type !== "status" && c.type !== "power" && c.aiTag === tag,
+    (c) => c.type !== "status" && c.type !== "power" && c.aiTag === tag && hasTranslatableEffect(c),
   );
+}
+
+export function aiCardPoolFrom(deckIds: string[], tag: "attack" | "defense" | "effect"): CardDef[] {
+  return deckIds
+    .map((id) => CARDS[id])
+    .filter(
+      (c): c is CardDef =>
+        !!c && c.type !== "status" && c.type !== "power" && c.aiTag === tag && hasTranslatableEffect(c),
+    );
 }
 
 export function makeCard(defId: string, upgraded = false): CardInst {

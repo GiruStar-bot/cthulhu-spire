@@ -136,6 +136,7 @@ export interface EnemyDef {
   pattern?: Intent[];
   trait?: EnemyTrait;
   biome: BiomeId;
+  deck?: string[];
 }
 
 export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split";
@@ -147,6 +148,7 @@ export interface Intent {
   block?: number;
   strength?: number;
   weak?: number;
+  vulnerable?: number;
   dread?: number;
   seal?: "attack" | "skill";
 }

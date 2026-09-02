@@ -66,11 +66,11 @@ function rollNextAction(e: CombatEnemy, rand: () => number) {
     e.intent = { kind: "debuff", seal: sealType };
     return;
   }
-  const card = rollEnemyCard(rand);
+  const card = rollEnemyCard(e.defId, rand);
   e.actionCardId = card.id;
   e.intent = cardToIntent(card);
   if (d.trait === "liar") {
-    const fake = rollEnemyCard(rand);
+    const fake = rollEnemyCard(e.defId, rand);
     e.shownCardId = fake.id;
     e.shownIntent = cardToIntent(fake);
   } else {
@@ -551,6 +551,7 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
   }
   if (intent.strength) e.strength += intent.strength;
   if (intent.weak) c.weak += intent.weak;
+  if (intent.vulnerable) c.vulnerable += intent.vulnerable;
   if (intent.dread) {
     for (let i = 0; i < intent.dread; i++) addToDiscard(c, makeCard("dread"));
     c.log.push(`${getEnemy(e.defId).name}が恐怖を注ぎ込む。`);
