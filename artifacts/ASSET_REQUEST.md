@@ -22,11 +22,11 @@
 | id | 日本語 | 今の流用元 |
 |---|---|---|
 | strike | 打撃 | **受領済み** pixel/cards/strike.jpg |
-| ward | 結界 | card-ward |
-| study | 精読 | card-study |
-| lash | 鞭撃 | card-lash |
-| sigil | 印 | ward 流用 |
-| whisper | 囁き | study 流用 |
+| ward | 結界 | **受領済み** pixel/cards/ward.jpg |
+| study | 精読 | **受領済み** pixel/cards/study.jpg |
+| lash | 鞭撃 | **受領済み** pixel/cards/lash.jpg |
+| sigil | 印 | **受領済み** pixel/cards/sigil.jpg |
+| whisper | 囁き | **受領済み** pixel/cards/whisper.jpg |
 | precise | 計測打撃 | strike 流用 |
 | dressing | 応急処置 | ward 流用 |
 | bloodpact | 血契 | rite 流用 |
