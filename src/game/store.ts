@@ -16,6 +16,7 @@ import { cardText, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
 import { DEMO_MAX_FLOOR, generateRunTable } from "./floors";
 import { pickRelicTemplate, powerOf, relicLabel, rollRelic } from "./relics";
+import { RUNE_CATALOG, rollRune } from "./runes";
 import {
   canPlay,
   clearFloaters,
@@ -110,8 +111,7 @@ export interface GameStore {
   play: (cardUid: string, targetId?: string | null) => void;
   setTargeting: (cardUid: string | null) => void;
   endPlayerTurn: () => void;
-  pickReward: (card: CardInst | null) => void;
-  skipReward: () => void;
+  claimReward: () => void;
   restHeal: () => void;
   restUpgrade: (uid: string) => void;
   visitVillage: (room: GameStore["restMode"]) => void;
@@ -579,23 +579,22 @@ export const useGame = create<GameStore>((set, get) => {
       presentCombat(get, set, { ...s.combat }, hook);
     },
 
-    pickReward: (card) => {
+    claimReward: () => {
       const s = get();
+      const reward = s.reward;
       let hp = s.hp;
       let maxHp = s.maxHp;
       let maxSanity = s.maxSanity;
       let sanity = s.sanity;
       const relics = s.relics.slice();
       let profile = { ...s.profile, collection: s.profile.collection.slice() };
-      const bits: string[] = [];
+      let toast: string | null = null;
 
-      if (card) {
-        useCollectionStore.getState().addLootCard(card.defId);
-        bits.push(`${getCard(card.defId).name}を戦利品として持ち帰った。`);
-      }
-
-      if (s.reward?.relic) {
-        const inst = s.reward.relic;
+      if (reward?.kind === "card") {
+        useCollectionStore.getState().addLootCard(reward.card.defId);
+        toast = `${getCard(reward.card.defId).name}を戦利品として持ち帰った。`;
+      } else if (reward?.kind === "relic") {
+        const inst = reward.relic;
         if (!relics.some((r) => r.uid === inst.uid)) relics.push(inst);
         const hpGain = powerOf([inst], "maxHp");
         if (hpGain) {
@@ -608,22 +607,17 @@ export const useGame = create<GameStore>((set, get) => {
           sanity = Math.min(maxSanity, sanity + sanGain);
         }
         sfx.reward();
-        bits.push(`${relicLabel(inst)} を得た。`);
+        toast = `${relicLabel(inst)} を得た。`;
+      } else if (reward?.kind === "rune") {
+        useCollectionStore.getState().addLootRune(reward.rune);
+        toast = `${reward.rune.effect}のルーンを見つけた。`;
+      } else {
+        toast = "何も見つからなかった。";
       }
 
       persist(profile);
-      afterGain({
-        relics,
-        hp,
-        maxHp,
-        maxSanity,
-        sanity,
-        profile,
-        toast: bits.length ? bits.join(" ") : null,
-      });
+      afterGain({ relics, hp, maxHp, maxSanity, sanity, profile, toast });
     },
-
-    skipReward: () => get().pickReward(null),
 
     restHeal: () => get().innStay(10),
     restUpgrade: (cardUid) => get().forgeAtSmith(cardUid),
@@ -886,30 +880,43 @@ export const useGame = create<GameStore>((set, get) => {
   };
 });
 
+const DROP_RATES = {
+  combat: { chance: 0.5, weights: { card: 0.6, rune: 0.3, relic: 0.1 } },
+  elite: { chance: 0.9, weights: { card: 0.4, rune: 0.35, relic: 0.25 } },
+  boss: { chance: 1.0, weights: { card: 0.2, rune: 0.3, relic: 0.5 } },
+} as const;
+
+function pickWeighted<T extends string>(weights: Record<T, number>, rand: () => number): T {
+  const entries = Object.entries(weights) as [T, number][];
+  const total = entries.reduce((sum, [, w]) => sum + w, 0);
+  let roll = rand() * total;
+  for (const [key, w] of entries) {
+    if (roll < w) return key;
+    roll -= w;
+  }
+  return entries[entries.length - 1][0];
+}
+
 function makeReward(s: GameStore): RewardOffer {
   const spec = specAt(s);
-  const owner = s.character ?? "investigator";
-  const cards = [weightedCard(owner, s.rand), weightedCard(owner, s.rand), weightedCard(owner, s.rand)];
-  const seen = new Set<string>();
-  const unique = cards.map((c) => {
-    if (!seen.has(c.defId)) {
-      seen.add(c.defId);
-      return c;
-    }
-    const alt = pick(
-      rewardPool(owner).filter((d) => !seen.has(d.id)),
-      s.rand,
-    );
-    seen.add(alt.id);
-    return makeCard(alt.id);
-  });
-  let relic: RelicInstance | undefined;
-  if (spec?.type === "elite" || spec?.type === "boss") {
-    const ownedDefs = s.profile.collection.map((r) => r.defId);
-    const defId = pickRelicTemplate(ownedDefs, s.rand);
-    relic = rollRelic(defId, spec.type === "boss" ? s.floor + 5 : s.floor, s.rand, "drop");
+  const kind = spec?.type === "boss" ? "boss" : spec?.type === "elite" ? "elite" : "combat";
+  const table = DROP_RATES[kind];
+  if (s.rand() >= table.chance) return { kind: "none" };
+
+  const category = pickWeighted(table.weights, s.rand);
+  const floorForRoll = kind === "boss" ? s.floor + 5 : s.floor;
+
+  if (category === "card") {
+    const owner = s.character ?? "investigator";
+    return { kind: "card", card: weightedCard(owner, s.rand) };
   }
-  return { cards: unique, relic };
+  if (category === "rune") {
+    const effect = pick(RUNE_CATALOG, s.rand).effect;
+    return { kind: "rune", rune: rollRune(effect, floorForRoll, s.rand) };
+  }
+  const ownedDefs = s.profile.collection.map((r) => r.defId);
+  const defId = pickRelicTemplate(ownedDefs, s.rand);
+  return { kind: "relic", relic: rollRelic(defId, floorForRoll, s.rand, "drop") };
 }
 
 export { cardText, canPlay };

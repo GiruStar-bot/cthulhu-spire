@@ -194,6 +194,12 @@ export interface RelicInstance {
   source: "drop" | "event" | "gift";
 }
 
+export interface Rune {
+  id: string;
+  effect: string;
+  value: number;
+}
+
 export interface PlayerStats {
   hp: number;
   san: number;
@@ -272,10 +278,11 @@ export interface Floater {
   who: "player" | string;
 }
 
-export interface RewardOffer {
-  cards: CardInst[];
-  relic?: RelicInstance;
-}
+export type RewardOffer =
+  | { kind: "none" }
+  | { kind: "card"; card: CardInst }
+  | { kind: "relic"; relic: RelicInstance }
+  | { kind: "rune"; rune: Rune };
 
 export interface GameEvent {
   id: string;

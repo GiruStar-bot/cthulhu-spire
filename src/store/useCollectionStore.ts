@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { CARDS, DECK_LIMIT } from "@/game/cards";
+import { RUNE_CATALOG } from "@/game/runes";
 import { uid } from "@/game/rng";
+import type { Rune } from "@/game/types";
+
+export type { Rune } from "@/game/types";
 
 export type CardInstance = {
   instanceId: string;
@@ -11,24 +15,7 @@ export type CardInstance = {
   origin: "starter" | "loot";
 };
 
-export type Rune = {
-  id: string;
-  effect: string;
-  value: number;
-};
-
 export const COPY_LIMIT = 4;
-
-export const RUNE_CATALOG: Omit<Rune, "id">[] = [
-  { effect: "ATK+", value: 2 },
-  { effect: "BLK+", value: 2 },
-  { effect: "DRAW", value: 1 },
-  { effect: "COST-", value: 1 },
-  { effect: "SAN+", value: 3 },
-  { effect: "STR+", value: 1 },
-  { effect: "POISON", value: 2 },
-  { effect: "HEAL", value: 4 },
-];
 
 type Inventory = {
   cards: CardInstance[];
@@ -42,6 +29,7 @@ type CollectionState = {
   addToDeck: (instanceId: string) => boolean;
   removeFromDeck: (instanceId: string) => void;
   addLootCard: (baseCardId: string) => void;
+  addLootRune: (rune: Rune) => void;
   socketRune: (cardInstanceId: string, runeId: string, socketIndex: number) => boolean;
   unsocketRune: (cardInstanceId: string, socketIndex: number) => boolean;
 };
@@ -144,6 +132,13 @@ export const useCollectionStore = create<CollectionState>()(
           };
           return { inventory: { ...s.inventory, cards: [...s.inventory.cards, card] } };
         });
+      },
+
+      addLootRune: (rune) => {
+        set((s) => ({
+          inventory: { ...s.inventory, runes: [...s.inventory.runes, rune] },
+          runeRegistry: { ...s.runeRegistry, [rune.id]: rune },
+        }));
       },
 
       socketRune: (cardInstanceId, runeId, socketIndex) => {
