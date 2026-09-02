@@ -11,6 +11,7 @@ export function CollectionCard({
   inDeck,
   size = "sm",
   dim,
+  stackCount,
   onClick,
 }: {
   instance: CardInstance;
@@ -19,6 +20,7 @@ export function CollectionCard({
   inDeck?: boolean;
   size?: "sm" | "md" | "lg";
   dim?: boolean;
+  stackCount?: number;
   onClick?: () => void;
 }) {
   const card = instFromLoadout(instance);
@@ -67,6 +69,11 @@ export function CollectionCard({
               <span key={i} className="size-3 border border-black bg-ink-2" />
             );
           })}
+        </span>
+      ) : null}
+      {typeof stackCount === "number" && stackCount > 1 ? (
+        <span className="pointer-events-none absolute bottom-0 left-0 z-10 border-2 border-white bg-black px-1 font-pixel text-[10px] text-white shadow-[2px_2px_0_0_#000]">
+          ×{stackCount}
         </span>
       ) : null}
     </div>
