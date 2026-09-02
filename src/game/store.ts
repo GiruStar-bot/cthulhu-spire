@@ -195,6 +195,7 @@ function presentCombat(
     maxHp: hook.maxHp,
     sanity: hook.sanity,
     targeting: null,
+    deck: [...combat.hand, ...combat.draw, ...combat.discard, ...combat.exhaust],
   });
   if (combat.result === "win") {
     sfx.win();
