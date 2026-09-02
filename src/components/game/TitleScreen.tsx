@@ -1,4 +1,5 @@
-import { LoadoutScreen } from "@/components/loadout/LoadoutScreen";
+import { CardForgeScreen } from "@/components/loadout/CardForgeScreen";
+import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
 import { getMusicVolume, getSfxVolume, playBgm, setMusicVolume, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
 import { GrimoirePanel } from "@/components/game/GrimoireView";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -11,7 +12,7 @@ import { useEffect, useState } from "react";
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
   const profile = useGame((s) => s.profile);
-  const [sheet, setSheet] = useState<"settings" | "credits" | "tome" | "loadout" | null>(null);
+  const [sheet, setSheet] = useState<"settings" | "credits" | "tome" | "deck" | "forge" | null>(null);
   const showBook = grimoireOpen(profile);
 
   useEffect(() => {
@@ -55,11 +56,20 @@ export function TitleScreen() {
           <PixelButton
             onClick={() => {
               unlockAudio();
-              setSheet("loadout");
+              setSheet("deck");
             }}
             className="min-w-28 px-6"
           >
-            装備
+            デッキ編成
+          </PixelButton>
+          <PixelButton
+            onClick={() => {
+              unlockAudio();
+              setSheet("forge");
+            }}
+            className="min-w-28 px-6"
+          >
+            魔改造
           </PixelButton>
           <PixelButton
             onClick={() => {
@@ -84,9 +94,14 @@ export function TitleScreen() {
           {profile.collection.length}
         </p>
       </div>
-      {sheet === "loadout" ? (
+      {sheet === "deck" ? (
         <div className="fixed inset-0 z-50">
-          <LoadoutScreen onClose={() => setSheet(null)} />
+          <DeckBuilderScreen onClose={() => setSheet(null)} />
+        </div>
+      ) : null}
+      {sheet === "forge" ? (
+        <div className="fixed inset-0 z-50">
+          <CardForgeScreen onClose={() => setSheet(null)} />
         </div>
       ) : null}
       {sheet === "settings" ? <SettingsPanel onClose={() => setSheet(null)} /> : null}
