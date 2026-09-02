@@ -132,7 +132,7 @@ export function CardForgeScreen({ onClose, embedded = false }: { onClose?: () =>
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-6">
         <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 md:col-span-2 md:border-r-2 md:border-b-0">
           <p className="mb-2 text-xs tracking-widest text-muted">カード</p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-2">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-2">
             {inventory.cards.map((c) => (
               <CollectionCard
                 key={c.instanceId}

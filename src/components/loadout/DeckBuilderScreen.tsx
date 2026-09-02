@@ -131,7 +131,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-5">
         <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">
           <p className="mb-2 text-xs tracking-widest text-muted">所持カード</p>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-2">
             {groups.map((group) => {
               const copies = copiesOfBase(deck, inventory.cards, group.baseCardId);
               const inDeckCount = group.instanceIds.filter((id) => deck.includes(id)).length;
@@ -218,7 +218,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
               {deckCards.length === 0 ? (
                 <p className="py-10 text-center text-xs text-muted">左のカードをクリックして編成</p>
               ) : (
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-3">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-2">
                   {deckCards.map((card) => (
                     <CollectionCard
                       key={card.instanceId}
