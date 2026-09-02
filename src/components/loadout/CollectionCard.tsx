@@ -26,18 +26,18 @@ export function CollectionCard({
     <div
       className={cn(
         "relative rounded-none",
-        size === "sm" && "w-[6.5rem]",
-        size === "md" && "w-28",
-        size === "lg" && "w-52 sm:w-64",
+        size === "sm" && "w-32",
+        size === "md" && "w-36",
+        size === "lg" && "w-64 sm:w-72",
         dim && "opacity-40",
         selected && "outline-2 outline-offset-2 outline-white",
       )}
     >
       <div
         className={cn(
-          size === "sm" && "[&>*]:!h-36 [&>*]:!w-[6.5rem]",
-          size === "md" && "[&>*]:!h-40 [&>*]:!w-28",
-          size === "lg" && "[&>*]:!h-[22rem] [&>*]:!w-52 sm:[&>*]:!h-[26rem] sm:[&>*]:!w-64",
+          size === "sm" && "[&>*]:!h-48 [&>*]:!w-32",
+          size === "md" && "[&>*]:!h-48 [&>*]:!w-36",
+          size === "lg" && "[&>*]:!h-[26rem] [&>*]:!w-64 sm:[&>*]:!h-[31rem] sm:[&>*]:!w-72",
         )}
       >
         <CardView card={card} compact={size !== "lg"} selected={selected} playable={!dim} onClick={onClick} />
