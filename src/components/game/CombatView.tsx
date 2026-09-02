@@ -445,7 +445,7 @@ function EnemyStage({
           data-hit-zone=""
           className={cn(
             "pointer-events-none absolute",
-            boss ? "inset-x-[18%] top-[22%] bottom-[4%]" : "inset-x-[15%] top-[28%] bottom-[6%]",
+            boss ? "inset-x-[8%] top-[4%] bottom-[3%]" : "inset-x-[8%] top-[8%] bottom-[4%]",
           )}
         />
         <EnemyView

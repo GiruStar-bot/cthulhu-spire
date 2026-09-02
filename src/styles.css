@@ -436,6 +436,11 @@
   background: rgb(0 0 0 / 0.8);
 }
 
+.combat-foe:has(.enemy-stage:nth-child(2)) {
+  gap: 0.5rem;
+  bottom: 14%;
+}
+
 .combat-foe:has(.enemy-stage:nth-child(2)) .enemy-vitals {
   transform: translate(1.85rem, 0);
 }
@@ -454,6 +459,7 @@
 .enemy-figure.is-cutout {
   width: min(94vw, 43rem);
   height: min(70dvh, 38rem);
+  overflow: hidden;
 }
 
 .enemy-stage.is-boss .enemy-figure.is-cutout {
@@ -482,6 +488,8 @@
   filter: contrast(1.1) saturate(0.95) brightness(1.14) drop-shadow(0 22px 18px color-mix(in oklab, var(--color-ink) 88%, transparent));
   mask-image: none;
   -webkit-mask-image: none;
+  transform: scale(1.4);
+  transform-origin: 50% 100%;
 }
 
 .enemy-figure video,
