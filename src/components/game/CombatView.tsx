@@ -85,12 +85,10 @@ export function CombatView() {
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
 
         <div className="combat-foe">
-          {combat.enemies.map((e, i) => (
+          {combat.enemies.map((e) => (
             <EnemyStage
               key={e.uid}
               enemy={e}
-              index={i}
-              count={combat.enemies.length}
               floaters={combat.floaters.filter((f) => f.who === e.uid)}
               striking={fx.playerHit && e.hp > 0}
             />
@@ -343,86 +341,19 @@ function Energy({ n, max }: { n: number; max: number }) {
   );
 }
 
-function EnemyIntentCard({
-  enemy,
-  index,
-  count,
-  anchorTop,
-}: {
-  enemy: CombatEnemy;
-  index: number;
-  count: number;
-  anchorTop: number | null;
-}) {
-  if (enemy.hp <= 0) return null;
-  const shift =
-    count <= 1
-      ? "-translate-x-1/2"
-      : index === 0
-        ? "-translate-x-[80%]"
-        : index === count - 1
-          ? "-translate-x-[20%]"
-          : "-translate-x-1/2";
-  const cardId = enemy.shownCardId ?? enemy.actionCardId;
-  if (!cardId) {
-    const i = enemy.shownIntent ?? enemy.intent;
-    if (!i.seal) return null;
-    return (
-      <div
-        className={cn(
-          "pointer-events-none absolute left-1/2 z-20 border-2 border-white bg-black px-2 py-1 font-pixel text-[10px] whitespace-nowrap text-blood",
-          shift,
-        )}
-        style={anchorTop != null ? { top: anchorTop - 36 } : undefined}
-      >
-        {i.seal === "attack" ? "攻撃封印" : "技能封印"}
-      </div>
-    );
-  }
-  const card = makeCard(cardId);
-  return (
-    <div
-      className={cn("pointer-events-none absolute left-1/2 z-20", shift)}
-      style={anchorTop != null ? { top: anchorTop - 208 } : undefined}
-    >
-      <CardView card={card} compact />
-    </div>
-  );
-}
-
 function EnemyStage({
   enemy,
-  index,
-  count,
   floaters,
   striking,
 }: {
   enemy: CombatEnemy;
-  index: number;
-  count: number;
   floaters: Floater[];
   striking: boolean;
 }) {
-  const hitZoneRef = useRef<HTMLDivElement>(null);
-  const [zoneTop, setZoneTop] = useState<number | null>(null);
   const dead = enemy.hp <= 0;
   const gone = useCorpseGone(dead);
   const pose = useEnemyPose(enemy.hp, striking);
   const boss = enemy.maxHp >= 150;
-
-  useEffect(() => {
-    if (gone) return;
-    const el = hitZoneRef.current;
-    if (!el) return;
-    const update = () => {
-      const parent = el.closest(".enemy-stage")?.getBoundingClientRect();
-      const zone = el.getBoundingClientRect();
-      if (parent) setZoneTop(zone.top - parent.top);
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [gone, boss]);
 
   if (gone) return null;
 
@@ -438,10 +369,8 @@ function EnemyStage({
         pose === "strike" && "enemy-strike",
       )}
     >
-      <EnemyIntentCard enemy={enemy} index={index} count={count} anchorTop={zoneTop} />
       <div className="enemy-figure is-cutout">
         <div
-          ref={hitZoneRef}
           data-hit-zone=""
           className={cn(
             "pointer-events-none absolute",
@@ -458,7 +387,6 @@ function EnemyStage({
         />
         <div className="enemy-impact" />
       </div>
-      <div className="enemy-shadow" />
       <div className="pointer-events-none absolute top-[12%] left-1/2 z-10 -translate-x-1/2">
         {floaters.map((f) => (
           <span
@@ -533,9 +461,20 @@ function pickFoe(clientX: number, clientY: number): HTMLElement | null {
 function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
   const def = getEnemy(enemy.defId);
   const intent = intentLabel(enemy);
-  const dead = enemy.hp <= 0;
+  const cardId = enemy.shownCardId ?? enemy.actionCardId;
+  const i = enemy.shownIntent ?? enemy.intent;
+
   return (
     <div data-enemy-plate="" className="w-full text-left">
+      {cardId ? (
+        <div className="mb-1.5 flex justify-center [&>*]:!h-28 [&>*]:!w-20">
+          <CardView card={makeCard(cardId)} compact />
+        </div>
+      ) : i.seal ? (
+        <div className="mb-1.5 border-2 border-white bg-black px-2 py-1 text-center font-pixel text-[10px] text-blood">
+          {i.seal === "attack" ? "攻撃封印" : "技能封印"}
+        </div>
+      ) : null}
       <p className="font-pixel text-sm text-white">{def.name}</p>
       <p className="font-pixel text-xs text-accent">{intent}</p>
       <div className="mt-1 h-1.5 overflow-hidden bg-black">

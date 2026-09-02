@@ -430,7 +430,7 @@
   z-index: 12;
   transform: translate(3.4rem, 0);
   pointer-events: auto;
-  min-width: 9.25rem;
+  min-width: 11rem;
   padding: 0.45rem 0.65rem;
   border: 2px solid #e5e7eb;
   background: rgb(0 0 0 / 0.8);
@@ -516,15 +516,6 @@
 .combat-hand {
   position: relative;
   z-index: 20;
-}
-
-.enemy-shadow {
-  height: 1.15rem;
-  margin: -1.1rem auto 0;
-  width: 48%;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--color-ink) 90%, transparent);
-  filter: blur(8px);
 }
 
 .enemy-impact {
