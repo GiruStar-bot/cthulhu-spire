@@ -148,6 +148,11 @@ function addToDiscard(c: CombatState, card: CardInst) {
   c.discard.push(card);
 }
 
+function insertIntoDraw(c: CombatState, card: CardInst, rand: () => number) {
+  const idx = Math.floor(rand() * (c.draw.length + 1));
+  c.draw.splice(idx, 0, card);
+}
+
 export function startCombat(
   deck: CardInst[],
   enemyIds: string[],
@@ -300,7 +305,7 @@ function runEffects(
         if (!c.powers.includes(e.id)) c.powers.push(e.id);
         break;
       case "addDread":
-        for (let i = 0; i < e.n; i++) addToDiscard(c, makeCard("dread"));
+        for (let i = 0; i < e.n; i++) insertIntoDraw(c, makeCard("dread"), rand);
         break;
       case "ifIntentAttack": {
         const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
@@ -567,7 +572,7 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
     c.floaters.push(floater(`-${intent.sanityDrain}`, "sanity", "player"));
   }
   if (intent.dread) {
-    for (let i = 0; i < intent.dread; i++) addToDiscard(c, makeCard("dread"));
+    for (let i = 0; i < intent.dread; i++) insertIntoDraw(c, makeCard("dread"), rand);
     c.log.push(`${getEnemy(e.defId).name}が恐怖を注ぎ込む。`);
   }
   if (intent.seal) {
