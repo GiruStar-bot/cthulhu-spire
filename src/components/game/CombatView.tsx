@@ -5,21 +5,19 @@ import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { POWER_TEXT, canPlay } from "@/game/combat";
 import { getEnemy } from "@/game/enemies";
-import { cardCost, getCard, makeCard } from "@/game/cards";
+import { getCard, makeCard } from "@/game/cards";
 import { floorBand, layerLabel } from "@/game/floors";
 import { useGame } from "@/game/store";
 import { IDLE_FRAMES } from "@/game/idleFrames";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
-import type { CardInst, CombatEnemy, Floater } from "@/game/types";
+import type { CardInst, CombatEnemy, CombatState, Floater } from "@/game/types";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 
 export function CombatView() {
   const combat = useGame((s) => s.combat);
-  const targeting = useGame((s) => s.targeting);
   const play = useGame((s) => s.play);
   const endTurn = useGame((s) => s.endPlayerTurn);
-  const setTargeting = useGame((s) => s.setTargeting);
   const hp = useGame((s) => s.hp);
   const maxHp = useGame((s) => s.maxHp);
   const sanity = useGame((s) => s.sanity);
@@ -28,7 +26,37 @@ export function CombatView() {
   const dismiss = useGame((s) => s.dismissToast);
   const fx = useCombatFx(hp, maxHp, sanity, maxSanity);
   const [pile, setPile] = useState<"draw" | "discard" | null>(null);
-  useAimAtFoe(targeting, play);
+  const [drag, setDrag] = useState<{ uid: string; x: number; y: number } | null>(null);
+  const [dragValid, setDragValid] = useState(false);
+  const combatRef = useRef(combat);
+  const playRef = useRef(play);
+  combatRef.current = combat;
+  playRef.current = play;
+
+  useEffect(() => {
+    if (!drag) return;
+    const move = (e: PointerEvent) => {
+      const cur = combatRef.current;
+      if (!cur) return;
+      setDrag((d) => (d ? { ...d, x: e.clientX, y: e.clientY } : d));
+      setDragValid(resolveDrop(drag.uid, e.clientX, e.clientY, cur).ok);
+    };
+    const up = (e: PointerEvent) => {
+      const cur = combatRef.current;
+      if (cur) {
+        const result = resolveDrop(drag.uid, e.clientX, e.clientY, cur);
+        if (result.ok) playRef.current(drag.uid, result.targetId ?? null);
+      }
+      setDrag(null);
+      setDragValid(false);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    return () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+  }, [drag?.uid]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -56,7 +84,7 @@ export function CombatView() {
         <div className="fx-blood" style={{ "--blood": blood } as CSSProperties} />
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
 
-        <div className={cn("combat-foe", targeting ? "is-aiming" : "")}>
+        <div className="combat-foe">
           {combat.enemies.map((e, i) => (
             <EnemyStage
               key={e.uid}
@@ -64,9 +92,7 @@ export function CombatView() {
               index={i}
               count={combat.enemies.length}
               floaters={combat.floaters.filter((f) => f.who === e.uid)}
-              targeting={!!targeting}
               striking={fx.playerHit && e.hp > 0}
-              onTarget={() => targeting && play(targeting, e.uid)}
             />
           ))}
         </div>
@@ -128,22 +154,23 @@ export function CombatView() {
               {combat.hand.map((card) => {
                 const playable = canPlay(combat, card) && combat.phase === "player";
                 return (
-                  <CardView
+                  <div
                     key={card.uid}
-                    card={card}
-                    playable={playable}
-                    selected={targeting === card.uid}
-                    compact
-                    onClick={() => {
-                      if (!playable) {
-                        const d = getCard(card.defId);
-                        if (d.unplayable) return;
-                        if (cardCost(card) > combat.energy) return;
-                      }
-                      if (targeting === card.uid) setTargeting(null);
-                      else play(card.uid);
+                    onPointerDown={(e) => {
+                      if (!playable) return;
+                      e.preventDefault();
+                      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+                      setDrag({ uid: card.uid, x: e.clientX, y: e.clientY });
+                      setDragValid(false);
                     }}
-                  />
+                    className={cn(
+                      "touch-none select-none",
+                      playable ? "cursor-grab" : "opacity-55",
+                      drag?.uid === card.uid && "opacity-0",
+                    )}
+                  >
+                    <CardView card={card} playable={playable} compact />
+                  </div>
                 );
               })}
             </div>
@@ -154,10 +181,26 @@ export function CombatView() {
             </div>
           </div>
 
-          {targeting ? (
-            <p className="pointer-events-none absolute bottom-[28dvh] left-0 right-0 z-20 text-center font-pixel text-xs tracking-wider text-accent">
-              敵を選択
-            </p>
+          {drag ? (
+            <div
+              className="pointer-events-none fixed z-50"
+              style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
+            >
+              {(() => {
+                const held = combat.hand.find((c) => c.uid === drag.uid);
+                if (!held) return null;
+                return (
+                  <div
+                    className={cn(
+                      dragValid &&
+                        "outline-2 outline-accent drop-shadow-[0_0_10px_var(--color-accent)] outline",
+                    )}
+                  >
+                    <CardView card={held} compact />
+                  </div>
+                );
+              })()}
+            </div>
           ) : null}
 
           <PlayerFloaters floaters={combat.floaters.filter((f) => f.who === "player")} />
@@ -346,17 +389,13 @@ function EnemyStage({
   index,
   count,
   floaters,
-  targeting,
   striking,
-  onTarget,
 }: {
   enemy: CombatEnemy;
   index: number;
   count: number;
   floaters: Floater[];
-  targeting: boolean;
   striking: boolean;
-  onTarget: () => void;
 }) {
   const dead = enemy.hp <= 0;
   const gone = useCorpseGone(dead);
@@ -374,7 +413,6 @@ function EnemyStage({
         pose === "enter" && "enemy-enter",
         pose === "hit" && "enemy-hit",
         pose === "strike" && "enemy-strike",
-        targeting && !dead ? "is-aim" : "",
       )}
     >
       <EnemyIntentCard enemy={enemy} index={index} count={count} />
@@ -385,7 +423,6 @@ function EnemyStage({
           hp={enemy.hp}
           maxHp={enemy.maxHp}
           isDead={dead}
-          onClick={onTarget}
           showHpBar={false}
         />
         <div className="enemy-impact" />
@@ -405,7 +442,7 @@ function EnemyStage({
         ))}
       </div>
       <div className="enemy-vitals">
-        <EnemyPlate enemy={enemy} targeting={targeting} onTarget={onTarget} />
+        <EnemyPlate enemy={enemy} />
       </div>
     </div>
   );
@@ -424,24 +461,28 @@ function useCorpseGone(dead: boolean) {
   return gone;
 }
 
-function useAimAtFoe(targeting: string | null, play: (cardUid: string, targetId?: string | null) => void) {
-  useEffect(() => {
-    if (!targeting) return;
-    const aim = (e: Event) => {
-      const pe = e as PointerEvent | MouseEvent;
-      if (!("clientX" in pe)) return;
-      const t = pe.target as HTMLElement | null;
-      if (t?.closest(".combat-hand")) return;
-      if (t?.closest("[data-enemy-plate]")) return;
-      const el = pickFoe(pe.clientX, pe.clientY);
-      if (!el?.dataset.uid) return;
-      pe.preventDefault();
-      pe.stopPropagation();
-      play(targeting, el.dataset.uid);
-    };
-    document.addEventListener("pointerdown", aim, true);
-    return () => document.removeEventListener("pointerdown", aim, true);
-  }, [targeting, play]);
+function isAboveHand(clientY: number): boolean {
+  const hand = document.querySelector(".combat-hand");
+  const top = hand?.getBoundingClientRect().top ?? Infinity;
+  return clientY < top - 20;
+}
+
+function resolveDrop(
+  cardUid: string,
+  clientX: number,
+  clientY: number,
+  combat: CombatState,
+): { ok: boolean; targetId?: string } {
+  const card = combat.hand.find((c) => c.uid === cardUid);
+  if (!card) return { ok: false };
+  const d = getCard(card.defId);
+  if (!isAboveHand(clientY)) return { ok: false };
+  if (d.target !== "enemy") return { ok: true };
+  const living = combat.enemies.filter((e) => e.hp > 0);
+  const foe = pickFoe(clientX, clientY);
+  if (foe?.dataset.uid) return { ok: true, targetId: foe.dataset.uid };
+  if (living.length === 1) return { ok: true, targetId: living[0].uid };
+  return { ok: false };
 }
 
 function pickFoe(clientX: number, clientY: number): HTMLElement | null {
@@ -482,26 +523,12 @@ function alphaAt(canvas: HTMLCanvasElement, clientX: number, clientY: number): n
   }
 }
 
-function EnemyPlate({
-  enemy,
-  targeting,
-  onTarget,
-}: {
-  enemy: CombatEnemy;
-  targeting: boolean;
-  onTarget: () => void;
-}) {
+function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
   const def = getEnemy(enemy.defId);
   const intent = intentLabel(enemy);
   const dead = enemy.hp <= 0;
   return (
-    <button
-      type="button"
-      data-enemy-plate=""
-      disabled={dead}
-      onClick={onTarget}
-      className={cn("pointer-events-auto w-full text-left", targeting && !dead ? "ring-1 ring-white px-1" : "")}
-    >
+    <div data-enemy-plate="" className="w-full text-left">
       <p className="font-pixel text-sm text-white">{def.name}</p>
       <p className="font-pixel text-xs text-accent">{intent}</p>
       <div className="mt-1 h-1.5 overflow-hidden bg-black">
@@ -513,7 +540,7 @@ function EnemyPlate({
         {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
         {enemy.poison ? ` · 毒 ${enemy.poison}` : ""}
       </p>
-    </button>
+    </div>
   );
 }
 
