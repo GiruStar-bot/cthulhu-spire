@@ -40,7 +40,7 @@ import {
   totalPoints,
   wipeProfile,
 } from "./profile";
-import { loadoutDeck, loadoutError, loadoutRelics } from "./cardEvaluator";
+import { equippedRelics, loadoutDeck, loadoutError } from "./cardEvaluator";
 import { nextUnread } from "./grimoire";
 import { forgeCard, makeSmith, SHOP_PRICE } from "./smith";
 
@@ -503,7 +503,7 @@ export const useGame = create<GameStore>((set, get) => {
       }
 
       const deck = loadoutDeck();
-      const loadout = loadoutRelics(rand);
+      const loadout = equippedRelics(profile);
       const maxHp = vitals.maxHp + powerOf(loadout, "maxHp");
       const maxSanity = vitals.maxSanity + powerOf(loadout, "maxSanity");
       if (maxSanity <= 0) {

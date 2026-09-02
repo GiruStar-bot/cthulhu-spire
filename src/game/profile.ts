@@ -1,4 +1,4 @@
-import type { PlayerProfile, PlayerStats, RelicInstance, StatKey } from "./types";
+import type { PlayerProfile, PlayerStats, StatKey } from "./types";
 
 export const STAT_MIN = 0;
 export const MAX_LOADOUT = 6;
@@ -141,14 +141,6 @@ export function loadProfile(): PlayerProfile {
 
 export function saveProfile(p: PlayerProfile) {
   localStorage.setItem(KEY, JSON.stringify(p));
-}
-
-export function equippedRelics(profile: PlayerProfile): RelicInstance[] {
-  const map = new Map(profile.collection.map((r) => [r.uid, r]));
-  return profile.loadoutIds
-    .map((id) => map.get(id))
-    .filter((r): r is RelicInstance => !!r)
-    .slice(0, MAX_LOADOUT);
 }
 
 export function homeScene(_profile?: PlayerProfile): "title" {

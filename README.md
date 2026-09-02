@@ -44,7 +44,7 @@ title → hub（探索開始 / デッキ編成 / 魔改造 / 戦利品）
 
 - **デッキ:** 上限 20、同名 4 枚。`src/store/useCollectionStore.ts`
 - **魔改造:** DnD ソケット。ゴーストは透過 PNG 単体（`dataTransfer.setDragImage`）。枠・発光・テキストは追従しない。`src/components/loadout/CardForgeScreen.tsx`
-- **遺物:** 永久コレクション + ラン持込 6 枠（`RELIC_SLOTS`）。撃破時に tier + ロールでインスタンス生成。`src/game/relics.ts`、`PlayerProfile.collection`
+- **遺物:** 永久コレクション + ラン持込 6 枠（`MAX_LOADOUT`）。点検画面の `profile.loadoutIds` が持込の正。撃破時に tier + ロールでインスタンス生成。`src/game/relics.ts`、`PlayerProfile.collection`
 - **プロファイル:** 名前・ステ・刻んだ遺物は `localStorage`（`src/game/profile.ts`）
 - **戦闘一時データ:** 現在 HP、階層、`CombatState` はラン限り。ハブ帰還で捨てる
 - **進行:** 直線沈降。10 層ごと中ボス、50 層ごと大ボス。デモは第 100 層で一旦閉じる
@@ -54,7 +54,7 @@ title → hub（探索開始 / デッキ編成 / 魔改造 / 戦利品）
 | 層 | 内容 | 永続 |
 |---|---|---|
 | `profile` | 名前、ステ、刻んだ遺物 | する（`profile.ts`） |
-| `useCollectionStore` | 所持カード、デッキ、ルーン、装備遺物 | **しない** |
+| `useCollectionStore` | 所持カード、デッキ、ルーン | **しない** |
 | `CombatState` / ラン | HP、階層、手札 | しない |
 
 ---

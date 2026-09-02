@@ -1,43 +1,36 @@
 import { getCard } from "@/game/cards";
 import { DECK_LIMIT } from "@/game/cards";
-import { RELICS } from "@/game/relics";
+import { MAX_LOADOUT } from "@/game/profile";
+import { relicDesc, relicLabel } from "@/game/relics";
+import { useGame } from "@/game/store";
 import { cn } from "@/lib/utils";
 import {
   COPY_LIMIT,
-  RELIC_SLOTS,
   copiesOfBase,
   peekRune,
   useCollectionStore,
   type CardInstance,
-  type Relic,
   type Rune,
 } from "@/store/useCollectionStore";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Tab = "CARDS" | "RUNES" | "RELICS";
 
 export function LoadoutScreen({ onClose }: { onClose?: () => void }) {
   const inventory = useCollectionStore((s) => s.inventory);
   const deck = useCollectionStore((s) => s.deck);
-  const equippedRelics = useCollectionStore((s) => s.equippedRelics);
   const addToDeck = useCollectionStore((s) => s.addToDeck);
   const removeFromDeck = useCollectionStore((s) => s.removeFromDeck);
-  const equipRelic = useCollectionStore((s) => s.equipRelic);
-  const unequipRelic = useCollectionStore((s) => s.unequipRelic);
   const socketRune = useCollectionStore((s) => s.socketRune);
   const unsocketRune = useCollectionStore((s) => s.unsocketRune);
+  const profile = useGame((s) => s.profile);
+  const toggleLoadout = useGame((s) => s.toggleLoadout);
 
   const [tab, setTab] = useState<Tab>("CARDS");
   const [activeCardId, setActiveCardId] = useState<string | null>(deck[0] ?? inventory.cards[0]?.instanceId ?? null);
   const [activeRuneId, setActiveRuneId] = useState<string | null>(null);
-  const [heldRelicId, setHeldRelicId] = useState<string | null>(null);
 
   const activeCard = inventory.cards.find((c) => c.instanceId === activeCardId) ?? null;
-  const relicById = useMemo(() => {
-    const m = new Map<string, Relic>();
-    for (const r of inventory.relics) m.set(r.id, r);
-    return m;
-  }, [inventory.relics]);
 
   const runeLookup = (id: string): Rune | undefined =>
     inventory.runes.find((r) => r.id === id) ?? peekRune(id);
@@ -55,7 +48,7 @@ export function LoadoutScreen({ onClose }: { onClose?: () => void }) {
       <header className="flex h-9 shrink-0 items-center justify-between border-b border-gray-800 bg-gray-900 px-3 text-[11px] tracking-wider">
         <span className="text-emerald-400">LOADOUT // CARD FORGE</span>
         <span className="text-gray-500">
-          DECK {deck.length}/{DECK_LIMIT} · RELICS {equippedRelics.filter(Boolean).length}/{RELIC_SLOTS}
+          DECK {deck.length}/{DECK_LIMIT} · RELICS {profile.loadoutIds.length}/{MAX_LOADOUT}
         </span>
         {onClose ? (
           <button type="button" onClick={onClose} className="border border-gray-700 px-2 py-0.5 text-gray-400 hover:border-emerald-400 hover:text-emerald-300">
@@ -145,33 +138,29 @@ export function LoadoutScreen({ onClose }: { onClose?: () => void }) {
 
             {tab === "RELICS" ? (
               <div className="grid grid-cols-1 gap-1.5">
-                {inventory.relics.map((relic) => {
-                  const equipped = equippedRelics.includes(relic.id);
-                  const def = RELICS[relic.id];
+                {profile.collection.map((relic) => {
+                  const equipped = profile.loadoutIds.includes(relic.uid);
                   return (
                     <button
-                      key={relic.id}
+                      key={relic.uid}
                       type="button"
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData("text/relic", relic.id);
-                        setHeldRelicId(relic.id);
-                      }}
-                      onClick={() => setHeldRelicId(relic.id === heldRelicId ? null : relic.id)}
+                      onClick={() => toggleLoadout(relic.uid)}
                       className={cn(
                         "border px-2 py-2 text-left text-[10px]",
-                        heldRelicId === relic.id ? "border-emerald-400" : "border-gray-800 hover:border-gray-600",
-                        equipped && "opacity-50",
+                        equipped ? "border-emerald-400" : "border-gray-800 hover:border-gray-600",
                       )}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-200">{relic.name}</span>
+                        <span className="text-gray-200">{relicLabel(relic)}</span>
                         {equipped ? <span className="text-amber-400">EQ</span> : null}
                       </div>
-                      <div className="mt-0.5 text-gray-500">{def?.text ?? relic.id}</div>
+                      <div className="mt-0.5 text-gray-500">{relicDesc(relic)}</div>
                     </button>
                   );
                 })}
+                {profile.collection.length === 0 ? (
+                  <p className="px-1 py-6 text-center text-[10px] text-gray-600">NO ENGRAVED RELICS</p>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -184,26 +173,15 @@ export function LoadoutScreen({ onClose }: { onClose?: () => void }) {
           <section className="shrink-0 border-b border-gray-800 px-3 py-2">
             <div className="mb-1 text-[10px] tracking-[0.2em] text-gray-500">ACTIVE RELICS</div>
             <div className="grid grid-cols-6 gap-2">
-              {equippedRelics.map((id, i) => {
-                const relic = id ? relicById.get(id) : null;
+              {Array.from({ length: MAX_LOADOUT }, (_, i) => {
+                const uid = profile.loadoutIds[i];
+                const relic = uid ? profile.collection.find((r) => r.uid === uid) : null;
                 return (
                   <button
-                    key={i}
+                    key={uid ?? `empty-${i}`}
                     type="button"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const dropped = e.dataTransfer.getData("text/relic") || heldRelicId;
-                      if (dropped) equipRelic(dropped, i);
-                      setHeldRelicId(null);
-                    }}
                     onClick={() => {
-                      if (heldRelicId) {
-                        equipRelic(heldRelicId, i);
-                        setHeldRelicId(null);
-                        return;
-                      }
-                      if (id) unequipRelic(i);
+                      if (relic) toggleLoadout(relic.uid);
                     }}
                     className={cn(
                       "flex h-16 flex-col items-center justify-center border border-dashed text-[9px]",
@@ -211,7 +189,7 @@ export function LoadoutScreen({ onClose }: { onClose?: () => void }) {
                     )}
                   >
                     <span className="text-gray-600">[{i + 1}]</span>
-                    <span className="mt-1 px-1 text-center leading-tight">{relic?.name ?? "EMPTY"}</span>
+                    <span className="mt-1 px-1 text-center leading-tight">{relic ? relicLabel(relic) : "EMPTY"}</span>
                   </button>
                 );
               })}

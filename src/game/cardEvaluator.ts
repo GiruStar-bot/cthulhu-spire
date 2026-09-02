@@ -1,7 +1,6 @@
 import { cardCost, cardEffects, makeCard } from "./cards";
-import { rollRelic } from "./relics";
 import { peekRune, useCollectionStore, type CardInstance } from "@/store/useCollectionStore";
-import type { CardInst, CombatState, Effect, RelicInstance } from "./types";
+import type { CardInst, CombatState, Effect, PlayerProfile, RelicInstance } from "./types";
 
 export const MIN_RUN_DECK = 10;
 
@@ -92,10 +91,11 @@ export function loadoutDeck(): CardInst[] {
     .map(instFromLoadout);
 }
 
-export function loadoutRelics(rand: () => number): RelicInstance[] {
-  const col = useCollectionStore.getState();
-  const ids = col.equippedRelics.filter((id): id is string => !!id);
-  return ids.map((id) => rollRelic(id, 1, rand, "gift"));
+export function equippedRelics(profile: PlayerProfile): RelicInstance[] {
+  const byUid = new Map(profile.collection.map((r) => [r.uid, r]));
+  return profile.loadoutIds
+    .map((uid) => byUid.get(uid))
+    .filter((r): r is RelicInstance => !!r);
 }
 
 export function loadoutError(): string | null {

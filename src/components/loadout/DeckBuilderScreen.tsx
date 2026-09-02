@@ -3,25 +3,20 @@ import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DECK_LIMIT } from "@/game/cards";
-import { RELICS } from "@/game/relics";
+import { MAX_LOADOUT } from "@/game/profile";
+import { relicDesc, relicLabel } from "@/game/relics";
+import { useGame } from "@/game/store";
 import { cn } from "@/lib/utils";
-import {
-  COPY_LIMIT,
-  RELIC_SLOTS,
-  copiesOfBase,
-  useCollectionStore,
-} from "@/store/useCollectionStore";
-import { useEffect, useState } from "react";
+import { COPY_LIMIT, copiesOfBase, useCollectionStore } from "@/store/useCollectionStore";
+import { useEffect } from "react";
 
 export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean }) {
   const inventory = useCollectionStore((s) => s.inventory);
   const deck = useCollectionStore((s) => s.deck);
-  const equippedRelics = useCollectionStore((s) => s.equippedRelics);
   const addToDeck = useCollectionStore((s) => s.addToDeck);
   const removeFromDeck = useCollectionStore((s) => s.removeFromDeck);
-  const equipRelic = useCollectionStore((s) => s.equipRelic);
-  const unequipRelic = useCollectionStore((s) => s.unequipRelic);
-  const [heldRelic, setHeldRelic] = useState<string | null>(null);
+  const profile = useGame((s) => s.profile);
+  const toggleLoadout = useGame((s) => s.toggleLoadout);
 
   useEffect(() => {
     if (embedded) return;
@@ -85,65 +80,53 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
         <div className="flex min-h-0 flex-col lg:col-span-2">
           <PixelWindow className="shrink-0 rounded-none border-0 border-b-2 border-gray-200">
             <p className="mb-2 text-xs tracking-widest text-muted">
-              遺物 {equippedRelics.filter(Boolean).length}/{RELIC_SLOTS}
+              持込遺物 {profile.loadoutIds.length}/{MAX_LOADOUT}
             </p>
             <div className="grid grid-cols-6 gap-1">
-              {equippedRelics.map((id, i) => {
-                const relic = id ? inventory.relics.find((r) => r.id === id) : null;
+              {Array.from({ length: MAX_LOADOUT }, (_, i) => {
+                const uid = profile.loadoutIds[i];
+                const relic = uid ? profile.collection.find((r) => r.uid === uid) : null;
                 return (
                   <button
-                    key={i}
+                    key={uid ?? `empty-${i}`}
                     type="button"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const dropped = e.dataTransfer.getData("text/relic") || heldRelic;
-                      if (dropped) equipRelic(dropped, i);
-                      setHeldRelic(null);
-                    }}
                     onClick={() => {
-                      if (heldRelic) {
-                        equipRelic(heldRelic, i);
-                        setHeldRelic(null);
-                        return;
-                      }
-                      if (id) unequipRelic(i);
+                      if (relic) toggleLoadout(relic.uid);
                     }}
+                    title={relic ? relicDesc(relic) : "空"}
                     className={cn(
                       "flex aspect-square flex-col items-center justify-center rounded-none border-2 bg-black p-1 text-[8px] leading-tight shadow-[2px_2px_0_0_#000]",
                       relic ? "border-white text-white" : "border-gray-200/40 text-muted",
                     )}
                   >
-                    {relic ? <PixelRelic defId={relic.id} className="size-8" /> : <span>{i + 1}</span>}
-                    <span className="mt-0.5 line-clamp-2 text-center">{relic?.name ?? "空"}</span>
+                    {relic ? <PixelRelic defId={relic.defId} className="size-8" /> : <span>{i + 1}</span>}
+                    <span className="mt-0.5 line-clamp-2 text-center">{relic ? relicLabel(relic) : "空"}</span>
                   </button>
                 );
               })}
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
-              {inventory.relics.map((relic) => {
-                const on = equippedRelics.includes(relic.id);
-                return (
-                  <PixelButton
-                    key={relic.id}
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData("text/relic", relic.id);
-                      setHeldRelic(relic.id);
-                    }}
-                    onClick={() => setHeldRelic(relic.id === heldRelic ? null : relic.id)}
-                    title={RELICS[relic.id]?.text}
-                    className={cn(
-                      "flex min-h-8 items-center gap-1 px-2 py-1 text-[9px]",
-                      heldRelic === relic.id && "bg-white text-black",
-                      on && "opacity-40",
-                    )}
-                  >
-                    <PixelRelic defId={relic.id} className="size-5" />
-                    {relic.name}
-                  </PixelButton>
-                );
-              })}
+              {profile.collection.length === 0 ? (
+                <p className="text-[9px] text-muted">魂に刻んだ遺物はまだない。潜航前点検でも選べる。</p>
+              ) : (
+                profile.collection.map((relic) => {
+                  const on = profile.loadoutIds.includes(relic.uid);
+                  return (
+                    <PixelButton
+                      key={relic.uid}
+                      onClick={() => toggleLoadout(relic.uid)}
+                      title={relicDesc(relic)}
+                      className={cn(
+                        "flex min-h-8 items-center gap-1 px-2 py-1 text-[9px]",
+                        on && "bg-white text-black",
+                      )}
+                    >
+                      <PixelRelic defId={relic.defId} className="size-5" />
+                      {relicLabel(relic)}
+                    </PixelButton>
+                  );
+                })
+              )}
             </div>
           </PixelWindow>
 

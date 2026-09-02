@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { CARDS, DECK_LIMIT } from "@/game/cards";
-import { RELICS } from "@/game/relics";
 import { uid } from "@/game/rng";
 
 export type CardInstance = {
@@ -16,13 +15,7 @@ export type Rune = {
   value: number;
 };
 
-export type Relic = {
-  id: string;
-  name: string;
-};
-
 export const COPY_LIMIT = 4;
-export const RELIC_SLOTS = 6;
 
 export const RUNE_CATALOG: Omit<Rune, "id">[] = [
   { effect: "ATK+", value: 2 },
@@ -38,17 +31,13 @@ export const RUNE_CATALOG: Omit<Rune, "id">[] = [
 type Inventory = {
   cards: CardInstance[];
   runes: Rune[];
-  relics: Relic[];
 };
 
 type CollectionState = {
   inventory: Inventory;
   deck: string[];
-  equippedRelics: (string | null)[];
   addToDeck: (instanceId: string) => boolean;
   removeFromDeck: (instanceId: string) => void;
-  equipRelic: (relicId: string, slotIndex: number) => boolean;
-  unequipRelic: (slotIndex: number) => void;
   socketRune: (cardInstanceId: string, runeId: string, socketIndex: number) => boolean;
   unsocketRune: (cardInstanceId: string, socketIndex: number) => boolean;
 };
@@ -73,12 +62,7 @@ function seedInventory(): Inventory {
       return rune;
     }),
   );
-  const relics: Relic[] = Object.values(RELICS).map((r) => ({ id: r.id, name: r.name }));
-  return { cards, runes, relics };
-}
-
-function emptySlots(): (string | null)[] {
-  return Array.from({ length: RELIC_SLOTS }, () => null);
+  return { cards, runes };
 }
 
 function cardById(cards: CardInstance[], instanceId: string) {
@@ -106,7 +90,6 @@ export function copiesOfBase(deck: string[], cards: CardInstance[], baseCardId: 
 export const useCollectionStore = create<CollectionState>((set, get) => ({
   inventory: seedInventory(),
   deck: [],
-  equippedRelics: emptySlots(),
 
   addToDeck: (instanceId) => {
     const s = get();
@@ -121,26 +104,6 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
 
   removeFromDeck: (instanceId) => {
     set((s) => ({ deck: s.deck.filter((id) => id !== instanceId) }));
-  },
-
-  equipRelic: (relicId, slotIndex) => {
-    const s = get();
-    if (slotIndex < 0 || slotIndex >= RELIC_SLOTS) return false;
-    if (!s.inventory.relics.some((r) => r.id === relicId)) return false;
-    if (s.equippedRelics.includes(relicId) && s.equippedRelics[slotIndex] !== relicId) return false;
-    const next = [...s.equippedRelics];
-    next[slotIndex] = relicId;
-    set({ equippedRelics: next });
-    return true;
-  },
-
-  unequipRelic: (slotIndex) => {
-    if (slotIndex < 0 || slotIndex >= RELIC_SLOTS) return;
-    set((s) => {
-      const next = [...s.equippedRelics];
-      next[slotIndex] = null;
-      return { equippedRelics: next };
-    });
   },
 
   socketRune: (cardInstanceId, runeId, socketIndex) => {
