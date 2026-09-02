@@ -8,6 +8,7 @@
   --color-parchment: #e6dcc8;
   --color-muted: #9a9386;
   --color-accent: #5eead4;
+  --color-scrollbar-hover: #3a3a3a;
   --color-blood: #b4544a;
   --color-border: color-mix(in oklab, #e6dcc8 14%, transparent);
 
@@ -78,7 +79,11 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-accent);
+    background: var(--color-scrollbar-hover);
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
   }
 
   ::-webkit-scrollbar-corner {
