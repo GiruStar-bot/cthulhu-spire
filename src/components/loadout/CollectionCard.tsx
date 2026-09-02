@@ -24,11 +24,12 @@ export function CollectionCard({
   return (
     <div
       className={cn(
-        "relative",
+        "relative rounded-none",
         size === "sm" && "w-[6.5rem]",
         size === "md" && "w-28",
         size === "lg" && "w-52 sm:w-64",
-        dim && "opacity-45",
+        dim && "opacity-40",
+        selected && "outline-2 outline-offset-2 outline-white",
       )}
     >
       <div
@@ -43,27 +44,24 @@ export function CollectionCard({
       {typeof copies === "number" ? (
         <span
           className={cn(
-            "pointer-events-none absolute top-1 right-1 z-10 border-2 border-white bg-black px-1 font-pixel text-[10px] text-white",
-            copies >= COPY_LIMIT && "border-amber-400 text-amber-300",
+            "pointer-events-none absolute top-0 right-0 z-10 border-2 border-white bg-black px-1 font-pixel text-[10px] text-white shadow-[2px_2px_0_0_#000]",
+            copies >= COPY_LIMIT && "bg-white text-black",
           )}
         >
           {copies}/{COPY_LIMIT}
         </span>
       ) : null}
       {inDeck ? (
-        <span className="pointer-events-none absolute top-1 left-1 z-10 border border-emerald-400 bg-black/80 px-1 font-pixel text-[9px] text-emerald-300">
+        <span className="pointer-events-none absolute top-0 left-0 z-10 border-2 border-white bg-black px-1 font-pixel text-[9px] text-accent shadow-[2px_2px_0_0_#000]">
           IN
         </span>
       ) : null}
       {instance.sockets > 0 ? (
-        <span className="pointer-events-none absolute right-1 bottom-10 z-10 flex gap-0.5">
+        <span className="pointer-events-none absolute right-1 bottom-10 z-10 flex gap-px">
           {Array.from({ length: instance.sockets }, (_, i) => (
             <span
               key={i}
-              className={cn(
-                "size-1.5 rounded-full ring-1 ring-black",
-                instance.socketedRunes[i] ? "bg-emerald-400 shadow-[0_0_6px_#34d399]" : "bg-gray-700",
-              )}
+              className={cn("size-2 border border-black", instance.socketedRunes[i] ? "bg-accent" : "bg-ink-2")}
             />
           ))}
         </span>

@@ -1,4 +1,6 @@
 import { CollectionCard } from "@/components/loadout/CollectionCard";
+import { PixelButton } from "@/components/ui/PixelButton";
+import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DECK_LIMIT } from "@/game/cards";
 import { RELICS } from "@/game/relics";
 import { cn } from "@/lib/utils";
@@ -18,7 +20,6 @@ export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
   const removeFromDeck = useCollectionStore((s) => s.removeFromDeck);
   const equipRelic = useCollectionStore((s) => s.equipRelic);
   const unequipRelic = useCollectionStore((s) => s.unequipRelic);
-
   const [heldRelic, setHeldRelic] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,24 +35,24 @@ export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
     .filter((c): c is NonNullable<typeof c> => !!c);
 
   return (
-    <section className="flex h-dvh w-full flex-col bg-gray-950 font-pixel text-gray-200">
-      <header className="flex h-10 shrink-0 items-center justify-between border-b-2 border-white/20 bg-black px-3 text-xs tracking-widest">
-        <span className="text-white">DECK BUILDER</span>
-        <span className={cn("tabular-nums", deck.length >= DECK_LIMIT ? "text-amber-300" : "text-emerald-300")}>
+    <section className="flex h-dvh w-full flex-col bg-ink font-pixel text-parchment">
+      <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-gray-200 bg-black px-3">
+        <h1 className="text-sm tracking-widest">デッキ編成</h1>
+        <span className={cn("text-sm tabular-nums", deck.length >= DECK_LIMIT ? "text-blood" : "text-accent")}>
           {deck.length}/{DECK_LIMIT}
         </span>
         {onClose ? (
-          <button type="button" onClick={onClose} className="border-2 border-white px-2 py-0.5 hover:bg-white hover:text-black">
-            ESC
-          </button>
+          <PixelButton onClick={onClose} className="min-h-9 px-3 py-1 text-xs">
+            戻る
+          </PixelButton>
         ) : (
           <span />
         )}
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-5">
-        <aside className="min-h-0 overflow-y-auto border-b-2 border-white/15 p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">
-          <p className="mb-2 text-[10px] tracking-[0.25em] text-gray-500">CARD POOL</p>
+        <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">
+          <p className="mb-2 text-xs tracking-widest text-muted">所持カード</p>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {inventory.cards.map((card) => {
               const copies = copiesOfBase(deck, inventory.cards, card.baseCardId);
@@ -78,9 +79,11 @@ export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
         </aside>
 
         <div className="flex min-h-0 flex-col lg:col-span-2">
-          <section className="shrink-0 border-b-2 border-white/15 p-3">
-            <p className="mb-2 text-[10px] tracking-[0.25em] text-gray-500">RELICS {equippedRelics.filter(Boolean).length}/{RELIC_SLOTS}</p>
-            <div className="grid grid-cols-6 gap-1.5">
+          <PixelWindow className="shrink-0 rounded-none border-0 border-b-2 border-gray-200">
+            <p className="mb-2 text-xs tracking-widest text-muted">
+              遺物 {equippedRelics.filter(Boolean).length}/{RELIC_SLOTS}
+            </p>
+            <div className="grid grid-cols-6 gap-1">
               {equippedRelics.map((id, i) => {
                 const relic = id ? inventory.relics.find((r) => r.id === id) : null;
                 return (
@@ -103,12 +106,12 @@ export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
                       if (id) unequipRelic(i);
                     }}
                     className={cn(
-                      "flex aspect-square flex-col items-center justify-center border-2 bg-black p-1 text-[8px] leading-tight",
-                      relic ? "border-emerald-400 text-white" : "border-dashed border-gray-600 text-gray-600",
+                      "flex aspect-square flex-col items-center justify-center rounded-none border-2 bg-black p-1 text-[8px] leading-tight shadow-[2px_2px_0_0_#000]",
+                      relic ? "border-white text-white" : "border-gray-200/40 text-muted",
                     )}
                   >
-                    <span className="text-gray-500">{i + 1}</span>
-                    <span className="mt-0.5 line-clamp-2 text-center">{relic?.name ?? "—"}</span>
+                    <span>{i + 1}</span>
+                    <span className="mt-0.5 line-clamp-2 text-center">{relic?.name ?? "空"}</span>
                   </button>
                 );
               })}
@@ -117,9 +120,8 @@ export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
               {inventory.relics.map((relic) => {
                 const on = equippedRelics.includes(relic.id);
                 return (
-                  <button
+                  <PixelButton
                     key={relic.id}
-                    type="button"
                     draggable
                     onDragStart={(e) => {
                       e.dataTransfer.setData("text/relic", relic.id);
@@ -128,39 +130,36 @@ export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
                     onClick={() => setHeldRelic(relic.id === heldRelic ? null : relic.id)}
                     title={RELICS[relic.id]?.text}
                     className={cn(
-                      "border px-1.5 py-1 text-[9px]",
-                      heldRelic === relic.id ? "border-white bg-white text-black" : "border-gray-600 bg-black",
+                      "min-h-8 px-2 py-1 text-[9px]",
+                      heldRelic === relic.id && "bg-white text-black",
                       on && "opacity-40",
                     )}
                   >
                     {relic.name}
-                  </button>
+                  </PixelButton>
                 );
               })}
             </div>
-          </section>
+          </PixelWindow>
 
           <section className="flex min-h-0 flex-1 flex-col p-3">
-            <p className="mb-2 text-[10px] tracking-[0.25em] text-gray-500">CURRENT DECK</p>
-            <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto">
-              {deckCards.map((card) => {
-                const copies = copiesOfBase(deck, inventory.cards, card.baseCardId);
-                return (
-                  <li key={card.instanceId} className="flex items-center gap-2 border-2 border-white/20 bg-black">
+            <p className="mb-2 text-xs tracking-widest text-muted">編成中</p>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {deckCards.length === 0 ? (
+                <p className="py-10 text-center text-xs text-muted">左のカードをクリックして編成</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-3">
+                  {deckCards.map((card) => (
                     <CollectionCard
+                      key={card.instanceId}
                       instance={card}
-                      size="sm"
-                      copies={copies}
+                      copies={copiesOfBase(deck, inventory.cards, card.baseCardId)}
                       onClick={() => removeFromDeck(card.instanceId)}
                     />
-                    <span className="flex-1 pr-3 text-xs text-gray-400">クリックで除外</span>
-                  </li>
-                );
-              })}
-              {deckCards.length === 0 ? (
-                <li className="py-10 text-center text-xs text-gray-600">左のカードをクリックして編成</li>
-              ) : null}
-            </ul>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         </div>
       </div>
