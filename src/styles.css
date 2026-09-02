@@ -60,6 +60,35 @@
   input[type="checkbox"] {
     accent-color: var(--color-parchment);
   }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink);
+    border-left: 2px solid var(--color-parchment);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-parchment);
+    border: 2px solid var(--color-ink);
+    border-radius: 0 !important;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--color-ink);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-parchment) var(--color-ink);
+  }
 }
 
 .settings-sheet {
