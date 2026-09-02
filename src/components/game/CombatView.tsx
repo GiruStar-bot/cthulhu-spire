@@ -5,7 +5,7 @@ import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { POWER_TEXT, canPlay } from "@/game/combat";
 import { getEnemy } from "@/game/enemies";
-import { cardCost, getCard } from "@/game/cards";
+import { cardCost, getCard, makeCard } from "@/game/cards";
 import { floorBand, layerLabel } from "@/game/floors";
 import { useGame } from "@/game/store";
 import { IDLE_FRAMES } from "@/game/idleFrames";
@@ -298,6 +298,26 @@ function Energy({ n, max }: { n: number; max: number }) {
   );
 }
 
+function EnemyIntentCard({ enemy }: { enemy: CombatEnemy }) {
+  if (enemy.hp <= 0) return null;
+  const cardId = enemy.shownCardId ?? enemy.actionCardId;
+  if (!cardId) {
+    const i = enemy.shownIntent ?? enemy.intent;
+    if (!i.seal) return null;
+    return (
+      <div className="pointer-events-none absolute -top-6 left-1/2 z-20 -translate-x-1/2 border-2 border-white bg-black px-2 py-1 font-pixel text-[10px] whitespace-nowrap text-blood">
+        {i.seal === "attack" ? "攻撃封印" : "技能封印"}
+      </div>
+    );
+  }
+  const card = makeCard(cardId);
+  return (
+    <div className="pointer-events-none absolute -top-24 left-1/2 z-20 -translate-x-1/2 [&>*]:!h-24 [&>*]:!w-16">
+      <CardView card={card} compact />
+    </div>
+  );
+}
+
 function EnemyStage({
   enemy,
   floaters,
@@ -330,6 +350,7 @@ function EnemyStage({
         targeting && !dead ? "is-aim" : "",
       )}
     >
+      <EnemyIntentCard enemy={enemy} />
       <div className="enemy-figure is-cutout">
         <EnemyView
           imageUrl={asset(`art/pixel/${enemy.defId}.jpg`)}
