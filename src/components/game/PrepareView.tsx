@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { DEMO_MAX_FLOOR, layerLabel, tallyFloors } from "@/game/floors";
 import {
-  MAX_LOADOUT,
   STAT_MIN,
   statBase,
   statFinal,
@@ -9,8 +8,6 @@ import {
   totalPoints,
   unlockedFeatures,
 } from "@/game/profile";
-import { PixelRelic } from "@/components/loadout/PixelRelic";
-import { RELICS, relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
@@ -33,7 +30,6 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
   const playerName = useGame((s) => s.playerName);
   const setPlayerName = useGame((s) => s.setPlayerName);
   const setStat = useGame((s) => s.setStat);
-  const toggleLoadout = useGame((s) => s.toggleLoadout);
   const startRun = useGame((s) => s.startRun);
   const toast = useGame((s) => s.toast);
   const runFloors = useGame((s) => s.runFloors);
@@ -108,43 +104,6 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
           ) : (
             <p className="mt-2 shrink-0 text-xs text-muted">ポイントは最深到達で増える。余らせて潜航してもよい。</p>
           )}
-
-          <div className="mt-4 flex min-h-0 shrink-0 flex-col">
-            <div className="flex items-baseline justify-between">
-              <h3 className="text-sm text-white">遺物の持込</h3>
-              <span className="text-xs tabular-nums text-muted">
-                {profile.loadoutIds.length}/{MAX_LOADOUT}
-              </span>
-            </div>
-            {profile.collection.length === 0 ? (
-              <p className="mt-2 text-xs text-muted">まだ遺物を持っていない。</p>
-            ) : (
-              <ul className="mt-1 max-h-28 overflow-y-auto">
-                {profile.collection.map((inst) => {
-                  const on = profile.loadoutIds.includes(inst.uid);
-                  const def = RELICS[inst.defId];
-                  return (
-                    <li key={inst.uid} className="border-b border-gray-200/30">
-                      <button
-                        type="button"
-                        onClick={() => toggleLoadout(inst.uid)}
-                        className="flex min-h-11 w-full items-center justify-between gap-3 py-1.5 text-left"
-                      >
-                        <span className="flex min-w-0 items-center gap-2">
-                          <PixelRelic defId={inst.defId} className="size-7 shrink-0" />
-                          <span className="min-w-0 truncate text-sm text-white">{relicLabel(inst)}</span>
-                        </span>
-                        <span className="shrink-0 text-xs text-muted">
-                          {on ? "持込中" : "保管"}
-                          {def ? ` · ${layerLabel(inst.obtainedFloor)}` : ""}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
 
           {runFloors.length > 0 ? (
             <p className="mt-2 shrink-0 text-xs text-muted">
