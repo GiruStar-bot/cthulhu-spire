@@ -35,29 +35,62 @@ function VillageHub() {
   const dismiss = useGame((s) => s.dismissToast);
   return (
     <section className="relative h-dvh overflow-hidden bg-ink font-pixel">
-      <img src={asset("art/village.jpg")} alt="" className="absolute inset-0 size-full object-cover" />
-      <div className="absolute inset-0 bg-black/55" />
-      <div className="relative z-10 flex h-dvh flex-col justify-end gap-3 px-5 pb-10 sm:px-12">
-        <Vitals />
-        <Shells />
-        {toast ? (
-          <button
-            type="button"
-            onClick={dismiss}
-            className="w-fit border-2 border-white bg-black px-3 py-2 text-left text-sm text-white"
-          >
-            {toast}
-          </button>
-        ) : null}
-        <PixelWindow>
-          <p className="text-[11px] tracking-widest text-accent">村落</p>
-          <h2 className="text-4xl text-white">灯の見える岸</h2>
-        </PixelWindow>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <PixelButton onClick={() => visit("inn")}>酒場</PixelButton>
-          <PixelButton onClick={() => visit("pub")}>パブ</PixelButton>
-          <PixelButton onClick={() => visit("smith")}>鍛冶屋</PixelButton>
-          <PixelButton onClick={leave}>次の層へ</PixelButton>
+      <img src={asset("art/pixel/village/bg.jpg")} alt="" className="absolute inset-0 size-full object-cover" />
+      <div className="absolute inset-0 bg-black/25" />
+
+      {/* 酒場：左手前、大きく */}
+      <button
+        type="button"
+        onClick={() => visit("inn")}
+        className="group absolute bottom-[18%] left-[1%] z-10 w-[46vw] max-w-96 min-w-40 transition-transform hover:-translate-y-1"
+      >
+        <img
+          src={asset("art/pixel/village/tavern.png")}
+          alt="酒場"
+          className="w-full select-none drop-shadow-[4px_4px_0_rgba(0,0,0,0.6)]"
+        />
+        <span className="absolute inset-x-6 -bottom-1 border-2 border-white bg-black px-2 py-1 text-center text-xs text-white">
+          酒場
+        </span>
+      </button>
+
+      {/* 鍛冶屋：桟橋の奥、小さく */}
+      <button
+        type="button"
+        onClick={() => visit("smith")}
+        className="group absolute bottom-[44%] right-[16%] z-[9] w-[18vw] max-w-40 min-w-24 transition-transform hover:-translate-y-1"
+      >
+        <img
+          src={asset("art/pixel/village/smith.png")}
+          alt="鍛冶屋"
+          className="w-full select-none drop-shadow-[2px_2px_0_rgba(0,0,0,0.6)]"
+        />
+        <span className="absolute inset-x-0 -bottom-6 border-2 border-white bg-black px-1.5 py-0.5 text-center text-[10px] text-white">
+          鍛冶屋
+        </span>
+      </button>
+
+      <div className="relative z-20 flex h-dvh flex-col justify-end gap-3 px-5 pb-8 sm:px-12 pointer-events-none">
+        <div className="pointer-events-auto flex flex-col gap-3">
+          <Vitals />
+          <Shells />
+          {toast ? (
+            <button
+              type="button"
+              onClick={dismiss}
+              className="w-fit border-2 border-white bg-black px-3 py-2 text-left text-sm text-white"
+            >
+              {toast}
+            </button>
+          ) : null}
+          <PixelWindow className="w-fit">
+            <p className="text-[11px] tracking-widest text-accent">村落</p>
+            <h2 className="text-4xl text-white">灯の見える岸</h2>
+          </PixelWindow>
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <PixelButton onClick={() => visit("pub")}>パブ</PixelButton>
+            <PixelButton onClick={leave}>次の層へ</PixelButton>
+          </div>
         </div>
       </div>
       <DeckInspect />
