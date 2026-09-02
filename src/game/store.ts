@@ -14,6 +14,7 @@ import type {
 } from "./types";
 import { cardText, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
+import { getEnemy } from "./enemies";
 import { DEMO_MAX_FLOOR, generateRunTable } from "./floors";
 import { pickRelicTemplate, powerOf, relicLabel, rollRelic } from "./relics";
 import { RUNE_CATALOG, rollRune } from "./runes";
@@ -897,6 +898,12 @@ function makeReward(s: GameStore): RewardOffer {
 
   if (category === "card") {
     const owner = s.character ?? "investigator";
+    const bossDef = s.combat?.enemies
+      .map((e) => getEnemy(e.defId))
+      .find((d) => d.signatureCardId);
+    if (bossDef?.signatureCardId && s.rand() < 0.2) {
+      return { kind: "card", card: makeCard(bossDef.signatureCardId) };
+    }
     return { kind: "card", card: weightedCard(owner, s.rand) };
   }
   if (category === "rune") {

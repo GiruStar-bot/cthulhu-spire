@@ -99,6 +99,7 @@ export interface CardDef {
   ethereal?: boolean;
   grimoire?: boolean;
   shop?: boolean;
+  enemyOnly?: boolean;
   xCost?: boolean;
   charges?: number;
   onDraw?: Effect[];
@@ -137,6 +138,7 @@ export interface EnemyDef {
   trait?: EnemyTrait;
   biome: BiomeId;
   deck?: string[];
+  signatureCardId?: string;
 }
 
 export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split";
@@ -150,6 +152,7 @@ export interface Intent {
   weak?: number;
   vulnerable?: number;
   dread?: number;
+  sanityDrain?: number;
   seal?: "attack" | "skill";
 }
 

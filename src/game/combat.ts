@@ -552,6 +552,10 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
   if (intent.strength) e.strength += intent.strength;
   if (intent.weak) c.weak += intent.weak;
   if (intent.vulnerable) c.vulnerable += intent.vulnerable;
+  if (intent.sanityDrain) {
+    player.sanity = Math.max(0, player.sanity - intent.sanityDrain);
+    c.floaters.push(floater(`-${intent.sanityDrain}`, "sanity", "player"));
+  }
   if (intent.dread) {
     for (let i = 0; i < intent.dread; i++) addToDiscard(c, makeCard("dread"));
     c.log.push(`${getEnemy(e.defId).name}が恐怖を注ぎ込む。`);

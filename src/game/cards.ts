@@ -598,6 +598,176 @@ export const CARDS: Record<string, CardDef> = {
     effects: [{ t: "intangible", n: 2 }, { t: "loseMaxHp", n: 3 }],
     upgradedEffects: [{ t: "intangible", n: 2 }, { t: "loseMaxHp", n: 3 }],
   },
+  revelation: {
+    id: "revelation",
+    name: "大司祭の啓示",
+    type: "skill",
+    aiTag: "effect",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "恐怖を2枚デッキに差し込む。",
+    upgradedText: "恐怖を3枚デッキに差し込む。",
+    flavor: "禁忌の言葉が、聞く者の正気を蝕む。",
+    art: asset("art/card-tome.jpg"),
+    target: "none",
+    effects: [{ t: "addDread", n: 2 }],
+    upgradedEffects: [{ t: "addDread", n: 3 }],
+  },
+  chorusunity: {
+    id: "chorusunity",
+    name: "唱和の呪文",
+    type: "skill",
+    aiTag: "effect",
+    cost: 0,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "筋力2を得る。",
+    upgradedText: "筋力3を得る。",
+    flavor: "声が声を呼び、力となる。",
+    art: asset("art/card-rite.jpg"),
+    target: "none",
+    effects: [{ t: "strength", n: 2 }],
+    upgradedEffects: [{ t: "strength", n: 3 }],
+  },
+  embrace: {
+    id: "embrace",
+    name: "抱擁",
+    type: "skill",
+    aiTag: "defense",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "ブロック14を得る。",
+    upgradedText: "ブロック18を得る。",
+    flavor: "歪んだ母性が、その身を包み込む。",
+    art: asset("art/pixel/cards/ward.jpg"),
+    target: "none",
+    effects: [{ t: "block", n: 14 }],
+    upgradedEffects: [{ t: "block", n: 18 }],
+  },
+  flockrush: {
+    id: "flockrush",
+    name: "群れの急襲",
+    type: "attack",
+    aiTag: "attack",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "9ダメージ。",
+    upgradedText: "12ダメージ。",
+    flavor: "無数の翼が、一斉に牙を立てる。",
+    art: asset("art/pixel/cards/lash.jpg"),
+    target: "enemy",
+    effects: [{ t: "damage", n: 9 }],
+    upgradedEffects: [{ t: "damage", n: 12 }],
+  },
+  heraldscall: {
+    id: "heraldscall",
+    name: "呼び声",
+    type: "skill",
+    aiTag: "effect",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "脆弱2を与える。恐怖を1枚差し込む。",
+    upgradedText: "脆弱3を与える。恐怖を1枚差し込む。",
+    flavor: "その声を聞いた者は、二度と元には戻れない。",
+    art: asset("art/card-rite.jpg"),
+    target: "enemy",
+    effects: [{ t: "vulnerable", n: 2 }, { t: "addDread", n: 1 }],
+    upgradedEffects: [{ t: "vulnerable", n: 3 }, { t: "addDread", n: 1 }],
+  },
+  noneuclid: {
+    id: "noneuclid",
+    name: "非ユークリッドの罠",
+    type: "skill",
+    aiTag: "defense",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "ブロック16を得る。弱体1を与える。",
+    upgradedText: "ブロック21を得る。弱体1を与える。",
+    flavor: "角度が、あるべきでない形に曲がる。",
+    art: asset("art/pixel/cards/ward.jpg"),
+    target: "enemy",
+    effects: [{ t: "block", n: 16 }, { t: "weak", n: 1 }],
+    upgradedEffects: [{ t: "block", n: 21 }, { t: "weak", n: 1 }],
+  },
+  tollbell: {
+    id: "tollbell",
+    name: "鐘鳴らし",
+    type: "skill",
+    aiTag: "effect",
+    cost: 0,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "弱体2を与える。",
+    upgradedText: "弱体3を与える。",
+    flavor: "沈んだ街に、今も鐘は鳴り続ける。",
+    art: asset("art/card-rite.jpg"),
+    target: "enemy",
+    effects: [{ t: "weak", n: 2 }],
+    upgradedEffects: [{ t: "weak", n: 3 }],
+  },
+  pricewisdom: {
+    id: "pricewisdom",
+    name: "千貌の代償",
+    type: "skill",
+    aiTag: "effect",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "相手の正気を5失わせ、弱体1を与える。",
+    upgradedText: "相手の正気を6失わせ、弱体1を与える。",
+    flavor: "知ることは、失うことと同義である。",
+    art: asset("art/card-tome.jpg"),
+    target: "enemy",
+    effects: [{ t: "sanity", n: -5 }, { t: "weak", n: 1 }],
+    upgradedEffects: [{ t: "sanity", n: -6 }, { t: "weak", n: 1 }],
+  },
+  protosurge: {
+    id: "protosurge",
+    name: "原形質の奔流",
+    type: "attack",
+    aiTag: "attack",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "12ダメージ。",
+    upgradedText: "16ダメージ。",
+    flavor: "腐肉が形を失い、押し寄せる。",
+    art: asset("art/pixel/cards/lash.jpg"),
+    target: "enemy",
+    effects: [{ t: "damage", n: 12 }],
+    upgradedEffects: [{ t: "damage", n: 16 }],
+  },
+  devourmaw: {
+    id: "devourmaw",
+    name: "貪る顎",
+    type: "attack",
+    aiTag: "attack",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "18ダメージ。脆弱1を与える。",
+    upgradedText: "24ダメージ。脆弱1を与える。",
+    flavor: "それは、ただ喰らうために在る。",
+    art: asset("art/pixel/cards/strike.jpg"),
+    target: "enemy",
+    effects: [{ t: "damage", n: 18 }, { t: "vulnerable", n: 1 }],
+    upgradedEffects: [{ t: "damage", n: 24 }, { t: "vulnerable", n: 1 }],
+  },
 };
 
 Object.assign(CARDS, SHOP_CARDS);
@@ -620,12 +790,21 @@ const AI_TRANSLATABLE = new Set([
 ]);
 
 function hasTranslatableEffect(card: CardDef): boolean {
-  return card.effects.some((e) => AI_TRANSLATABLE.has(e.t));
+  return card.effects.some(
+    (e) =>
+      AI_TRANSLATABLE.has(e.t) ||
+      (e.t === "sanity" && typeof e.n === "number" && e.n < 0),
+  );
 }
 
 export function aiCardPool(tag: "attack" | "defense" | "effect"): CardDef[] {
   return Object.values(CARDS).filter(
-    (c) => c.type !== "status" && c.type !== "power" && c.aiTag === tag && hasTranslatableEffect(c),
+    (c) =>
+      c.type !== "status" &&
+      c.type !== "power" &&
+      !c.enemyOnly &&
+      c.aiTag === tag &&
+      hasTranslatableEffect(c),
   );
 }
 
@@ -688,6 +867,7 @@ export function rewardPool(owner: CharacterId): CardDef[] {
       c.rarity !== "status" &&
       !c.grimoire &&
       !c.shop &&
+      !c.enemyOnly &&
       (c.owner === "shared" || c.owner === owner),
   );
 }

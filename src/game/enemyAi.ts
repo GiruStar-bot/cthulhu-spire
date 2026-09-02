@@ -62,6 +62,10 @@ export function cardToIntent(card: CardDef): Intent {
         intent.dread = (intent.dread ?? 0) + eff.n;
         if (intent.kind === "unknown") intent.kind = "debuff";
       }
+      if (eff.t === "sanity" && eff.n < 0) {
+        intent.sanityDrain = (intent.sanityDrain ?? 0) + Math.abs(eff.n);
+        if (intent.kind === "unknown") intent.kind = "debuff";
+      }
     }
   };
   scan(card.effects);
