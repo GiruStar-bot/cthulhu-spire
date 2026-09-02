@@ -12,7 +12,6 @@ import type {
   Scene,
   VillageState,
 } from "./types";
-import { CHARACTERS } from "./characters";
 import { cardText, DECK_LIMIT, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
 import { DEMO_MAX_FLOOR, generateRunTable } from "./floors";
@@ -31,7 +30,6 @@ import { playBgm, playCues, sfx, stopBgm, unlockAudio } from "./audio";
 import {
   clampStats,
   derivedVitals,
-  equippedRelics,
   homeScene,
   loadProfile,
   MADNESS_STEP,
@@ -42,6 +40,7 @@ import {
   totalPoints,
   wipeProfile,
 } from "./profile";
+import { loadoutDeck, loadoutError, loadoutRelics } from "./cardEvaluator";
 import { nextUnread } from "./grimoire";
 import { forgeCard, makeSmith, SHOP_PRICE } from "./smith";
 
@@ -473,13 +472,30 @@ export const useGame = create<GameStore>((set, get) => {
         set({ toast: "名前を入れてください。" });
         return;
       }
+      const deckErr = loadoutError();
+      if (deckErr) {
+        set({ toast: deckErr });
+        sfx.hurt();
+        return;
+      }
+
       profile.runs += 1;
       persist(profile);
 
       const path = starterPath(profile.stats);
-      const ch = CHARACTERS[path]!;
       const vitals = derivedVitals(profile.stats, profile.madness);
-      const loadout = equippedRelics(profile);
+
+      let seed = s.seed;
+      let rand = s.rand;
+      let runFloors = s.runFloors;
+      if (!runFloors.length) {
+        seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+        rand = mulberry32(seed);
+        runFloors = generateRunTable(rand);
+      }
+
+      const deck = loadoutDeck();
+      const loadout = loadoutRelics(rand);
       const maxHp = vitals.maxHp + powerOf(loadout, "maxHp");
       const maxSanity = vitals.maxSanity + powerOf(loadout, "maxSanity");
       if (maxSanity <= 0) {
@@ -492,19 +508,8 @@ export const useGame = create<GameStore>((set, get) => {
         return;
       }
 
-      let seed = s.seed;
-      let rand = s.rand;
-      let runFloors = s.runFloors;
-      if (!runFloors.length) {
-        seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
-        rand = mulberry32(seed);
-        runFloors = generateRunTable(rand);
-      }
-
       unlockAudio();
       sfx.reward();
-
-      const tome = (profile.grimoireRead ?? []).map((id) => makeCard(id));
 
       set({
         profile,
@@ -517,9 +522,9 @@ export const useGame = create<GameStore>((set, get) => {
         maxHp,
         sanity,
         maxSanity,
-        deck: [...ch.starter.map((cid) => makeCard(cid)), ...tome],
-        relics: loadout.map((r) => ({ ...r })),
-        runStrength: vitals.strength,
+        deck,
+        relics: loadout,
+        runStrength: vitals.strength + powerOf(loadout, "strength"),
         extraEnergyNext: 0,
         act: 1,
         combat: null,

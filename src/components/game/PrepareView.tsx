@@ -14,6 +14,8 @@ import { useGame } from "@/game/store";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { asset } from "@/lib/asset";
+import { MIN_RUN_DECK, loadoutError } from "@/game/cardEvaluator";
+import { useCollectionStore } from "@/store/useCollectionStore";
 import type { StatKey } from "@/game/types";
 
 const STAT_UI: { key: StatKey; name: string; tag: string }[] = [
@@ -40,7 +42,9 @@ export function PrepareView() {
   const remain = Math.max(0, budget - spent);
   const features = useMemo(() => unlockedFeatures(profile.stats), [profile.stats]);
   const tally = useMemo(() => tallyFloors(runFloors), [runFloors]);
-  const canStart = playerName.trim().length > 0;
+  const deckCount = useCollectionStore((s) => s.deck.length);
+  const deckErr = loadoutError();
+  const canStart = playerName.trim().length > 0 && !deckErr;
 
   return (
     <section className="relative flex h-dvh flex-col overflow-hidden bg-ink">
@@ -144,7 +148,11 @@ export function PrepareView() {
 
       <div className="absolute right-4 bottom-4 z-10 flex flex-col items-end gap-2">
         {toast ? <p className="text-sm text-blood">{toast}</p> : null}
-        {!canStart ? <p className="text-xs text-muted">名前を入れてください。</p> : null}
+        {!playerName.trim() ? <p className="text-xs text-muted">名前を入れてください。</p> : null}
+        {deckErr ? <p className="text-xs text-blood">{deckErr}</p> : null}
+        <p className="text-xs tabular-nums text-muted">
+          ロードアウト {deckCount}/{MIN_RUN_DECK}〜20
+        </p>
         <PixelButton disabled={!canStart} onClick={startRun} className="min-h-12 px-8">
           潜航開始
         </PixelButton>

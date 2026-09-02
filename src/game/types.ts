@@ -105,12 +105,21 @@ export interface CardDef {
   upgradedEffects: Effect[];
 }
 
+export type RuneMods = {
+  costDelta: number;
+  damage: number;
+  block: number;
+  extra: Effect[];
+};
+
 export interface CardInst {
   uid: string;
   defId: string;
   upgraded: boolean;
   charges?: number;
   forge?: number;
+  socketedRunes?: string[];
+  runeMods?: RuneMods;
 }
 
 export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour";

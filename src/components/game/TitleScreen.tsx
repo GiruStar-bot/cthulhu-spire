@@ -1,3 +1,4 @@
+import { LoadoutScreen } from "@/components/loadout/LoadoutScreen";
 import { getMusicVolume, getSfxVolume, playBgm, setMusicVolume, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
 import { GrimoirePanel } from "@/components/game/GrimoireView";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -10,7 +11,7 @@ import { useEffect, useState } from "react";
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
   const profile = useGame((s) => s.profile);
-  const [sheet, setSheet] = useState<"settings" | "credits" | "tome" | null>(null);
+  const [sheet, setSheet] = useState<"settings" | "credits" | "tome" | "loadout" | null>(null);
   const showBook = grimoireOpen(profile);
 
   useEffect(() => {
@@ -54,6 +55,15 @@ export function TitleScreen() {
           <PixelButton
             onClick={() => {
               unlockAudio();
+              setSheet("loadout");
+            }}
+            className="min-w-28 px-6"
+          >
+            装備
+          </PixelButton>
+          <PixelButton
+            onClick={() => {
+              unlockAudio();
               setSheet("settings");
             }}
             className="min-w-28 px-6"
@@ -74,6 +84,11 @@ export function TitleScreen() {
           {profile.collection.length}
         </p>
       </div>
+      {sheet === "loadout" ? (
+        <div className="fixed inset-0 z-50">
+          <LoadoutScreen onClose={() => setSheet(null)} />
+        </div>
+      ) : null}
       {sheet === "settings" ? <SettingsPanel onClose={() => setSheet(null)} /> : null}
       {sheet === "credits" ? <CreditsPanel onClose={() => setSheet(null)} /> : null}
       {sheet === "tome" ? <GrimoirePanel onClose={() => setSheet(null)} /> : null}

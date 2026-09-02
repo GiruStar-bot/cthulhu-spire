@@ -8,7 +8,8 @@ import type {
   PowerId,
   RelicInstance,
 } from "./types";
-import { cardCost, cardEffects, getCard, makeCard, scaleN } from "./cards";
+import { getCard, makeCard, scaleN } from "./cards";
+import { evaluateCardEffect } from "./cardEvaluator";
 import { getEnemy } from "./enemies";
 import { powerOf } from "./relics";
 import { pick, shuffle, uid } from "./rng";
@@ -450,7 +451,7 @@ export function canPlay(c: CombatState, card: CardInst) {
   if (d.unplayable) return false;
   if (c.sealed && d.type === c.sealed) return false;
   if (d.xCost) return true;
-  return cardCost(card) <= c.energy;
+  return evaluateCardEffect(card, c).cost <= c.energy;
 }
 
 export function playCard(
@@ -468,7 +469,8 @@ export function playCard(
   const d = getCard(card.defId);
   if (d.unplayable) return { error: "プレイできない。", sfx: empty };
   if (c.sealed && d.type === c.sealed) return { error: `${c.sealed === "attack" ? "攻撃" : "技能"}は封じられている。`, sfx: empty };
-  const cost = d.xCost ? c.energy : cardCost(card);
+  const evaled = evaluateCardEffect(card, c);
+  const cost = d.xCost ? c.energy : evaled.cost;
   if (!d.xCost && cost > c.energy) return { error: "エネルギーが足りない。", sfx: empty };
   if (d.target === "enemy" && living(c).length > 1 && !targetId) return { error: "対象を選んでください。", sfx: empty };
 
@@ -476,7 +478,7 @@ export function playCard(
   c.xSpent = d.xCost ? cost : 0;
   c.energy -= cost;
   c.cardsPlayed += 1;
-  runEffects(cardEffects(card), c, player, targetId, rand, card);
+  runEffects(evaled.effects, c, player, targetId, rand, card);
   if (d.type === "attack" && c.powers.includes("resolve")) {
     c.block += 3;
   }

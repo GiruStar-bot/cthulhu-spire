@@ -4,17 +4,34 @@ import { useEffect, useRef } from "react";
 export function CreatureMedia({
   src,
   poster,
+  className,
 }: {
   src: string;
   poster?: string;
+  className?: string;
 }) {
   if (!isVideoSrc(src)) {
-    return <img src={src} alt="" crossOrigin="anonymous" />;
+    return (
+      <img
+        src={src}
+        alt=""
+        className={className}
+        crossOrigin="anonymous"
+      />
+    );
   }
-  return <CreatureVideo src={src} poster={poster} />;
+  return <CreatureVideo src={src} poster={poster} className={className} />;
 }
 
-function CreatureVideo({ src, poster }: { src: string; poster?: string }) {
+function CreatureVideo({
+  src,
+  poster,
+  className,
+}: {
+  src: string;
+  poster?: string;
+  className?: string;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stem = videoStem(src);
@@ -53,7 +70,7 @@ function CreatureVideo({ src, poster }: { src: string; poster?: string }) {
     <>
       <video
         ref={videoRef}
-        className="creature-video-src"
+        className="pointer-events-none absolute size-px select-none opacity-0"
         muted
         loop
         playsInline
@@ -65,7 +82,7 @@ function CreatureVideo({ src, poster }: { src: string; poster?: string }) {
         <source src={`${stem}.mp4`} type="video/mp4" />
         <source src={`${stem}.webm`} type="video/webm" />
       </video>
-      <canvas ref={canvasRef} className="creature-video-canvas" aria-hidden />
+      <canvas ref={canvasRef} className={className ?? "creature-video-canvas"} aria-hidden />
     </>
   );
 }

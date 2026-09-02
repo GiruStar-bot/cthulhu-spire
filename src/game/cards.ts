@@ -588,13 +588,29 @@ export function cardText(card: CardInst): string {
 export function cardCost(card: CardInst): number {
   const d = getCard(card.defId);
   if (d.xCost) return 0;
-  if (card.upgraded && d.upgradedCost !== undefined) return d.upgradedCost;
-  return d.cost;
+  const base = card.upgraded && d.upgradedCost !== undefined ? d.upgradedCost : d.cost;
+  const delta = card.runeMods?.costDelta ?? 0;
+  return Math.max(0, base - delta);
 }
 
 export function cardEffects(card: CardInst) {
   const d = getCard(card.defId);
-  return card.upgraded ? d.upgradedEffects : d.effects;
+  const base = card.upgraded ? d.upgradedEffects : d.effects;
+  const mods = card.runeMods;
+  if (!mods) return base;
+  const bumped = base.map((e) => {
+    if ((e.t === "damage" || e.t === "damageAll") && mods.damage) return { ...e, n: e.n + mods.damage };
+    if ((e.t === "block" || e.t === "blockPerEnemy") && mods.block) return { ...e, n: e.n + mods.block };
+    return e;
+  });
+  const extra = [...mods.extra];
+  if (mods.damage && !base.some((e) => e.t === "damage" || e.t === "damageAll" || e.t === "damageX")) {
+    extra.unshift({ t: "damage", n: mods.damage });
+  }
+  if (mods.block && !base.some((e) => e.t === "block" || e.t === "blockPerEnemy")) {
+    extra.unshift({ t: "block", n: mods.block });
+  }
+  return extra.length ? [...bumped, ...extra] : bumped;
 }
 
 export function scaleN(n: number, card?: CardInst) {
