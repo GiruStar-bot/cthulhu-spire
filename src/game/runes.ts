@@ -1,17 +1,17 @@
 import { asset } from "@/lib/asset";
 
 const FILES: Record<string, string> = {
-  "ATK+": "atk",
-  "BLK+": "blk",
-  DRAW: "draw",
-  "COST-": "cost",
-  "SAN+": "san",
-  "STR+": "str",
-  POISON: "poison",
-  HEAL: "heal",
+  "ATK+": "atk.jpg",
+  "BLK+": "blk.png",
+  DRAW: "draw.jpg",
+  "COST-": "cost.jpg",
+  "SAN+": "san.jpg",
+  "STR+": "str.jpg",
+  POISON: "poison.jpg",
+  HEAL: "heal.jpg",
 };
 
 export function runeArt(effect: string): string | null {
-  const id = FILES[effect];
-  return id ? asset(`art/pixel/runes/${id}.jpg`) : null;
+  const file = FILES[effect];
+  return file ? asset(`art/pixel/runes/${file}`) : null;
 }
