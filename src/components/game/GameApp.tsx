@@ -1,6 +1,5 @@
 import { BetweenView } from "@/components/game/BetweenView";
 import { CombatView } from "@/components/game/CombatView";
-import { CullView } from "@/components/game/CullView";
 import { EndView } from "@/components/game/EndView";
 import { EventView } from "@/components/game/EventView";
 import { HubScreen } from "@/components/game/HubScreen";
@@ -28,8 +27,6 @@ export function GameApp() {
       return <CombatView />;
     case "reward":
       return <RewardView />;
-    case "cull":
-      return <CullView />;
     case "rest":
       return <RestView />;
     case "event":

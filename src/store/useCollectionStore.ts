@@ -38,6 +38,7 @@ type CollectionState = {
   deck: string[];
   addToDeck: (instanceId: string) => boolean;
   removeFromDeck: (instanceId: string) => void;
+  addLootCard: (baseCardId: string) => void;
   socketRune: (cardInstanceId: string, runeId: string, socketIndex: number) => boolean;
   unsocketRune: (cardInstanceId: string, socketIndex: number) => boolean;
 };
@@ -120,6 +121,20 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
 
   removeFromDeck: (instanceId) => {
     set((s) => ({ deck: s.deck.filter((id) => id !== instanceId) }));
+  },
+
+  addLootCard: (baseCardId) => {
+    if (!CARDS[baseCardId]) return;
+    set((s) => {
+      const sockets = 1 + (s.inventory.cards.length % 3);
+      const card: CardInstance = {
+        instanceId: uid("ci"),
+        baseCardId,
+        sockets,
+        socketedRunes: Array.from({ length: sockets }, () => ""),
+      };
+      return { inventory: { ...s.inventory, cards: [...s.inventory.cards, card] } };
+    });
   },
 
   socketRune: (cardInstanceId, runeId, socketIndex) => {

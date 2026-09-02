@@ -12,7 +12,7 @@ import type {
   Scene,
   VillageState,
 } from "./types";
-import { cardText, DECK_LIMIT, getCard, makeCard, rewardPool } from "./cards";
+import { cardText, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
 import { DEMO_MAX_FLOOR, generateRunTable } from "./floors";
 import { pickRelicTemplate, powerOf, relicLabel, rollRelic } from "./relics";
@@ -41,6 +41,7 @@ import {
   wipeProfile,
 } from "./profile";
 import { equippedRelics, loadoutDeck, loadoutError } from "./cardEvaluator";
+import { useCollectionStore } from "@/store/useCollectionStore";
 import { nextUnread } from "./grimoire";
 import { forgeCard, makeSmith, SHOP_PRICE } from "./smith";
 
@@ -111,7 +112,6 @@ export interface GameStore {
   endPlayerTurn: () => void;
   pickReward: (card: CardInst | null) => void;
   skipReward: () => void;
-  discardFromDeck: (uid: string) => void;
   restHeal: () => void;
   restUpgrade: (uid: string) => void;
   visitVillage: (room: GameStore["restMode"]) => void;
@@ -354,18 +354,6 @@ export const useGame = create<GameStore>((set, get) => {
   }
 
   function afterGain(carry: Partial<GameStore>) {
-    const deck = (carry.deck ?? get().deck) as CardInst[];
-    if (deck.length > DECK_LIMIT) {
-      sfx.ui();
-      set({
-        ...carry,
-        scene: "cull",
-        reward: null,
-        event: null,
-        combat: null,
-      });
-      return;
-    }
     finishAdvance(carry);
   }
 
@@ -593,13 +581,18 @@ export const useGame = create<GameStore>((set, get) => {
 
     pickReward: (card) => {
       const s = get();
-      const deck = card ? [...s.deck, { ...card, uid: uid("c") }] : s.deck;
       let hp = s.hp;
       let maxHp = s.maxHp;
       let maxSanity = s.maxSanity;
       let sanity = s.sanity;
       const relics = s.relics.slice();
       let profile = { ...s.profile, collection: s.profile.collection.slice() };
+      const bits: string[] = [];
+
+      if (card) {
+        useCollectionStore.getState().addLootCard(card.defId);
+        bits.push(`${getCard(card.defId).name}を戦利品として持ち帰った。`);
+      }
 
       if (s.reward?.relic) {
         const inst = s.reward.relic;
@@ -615,45 +608,22 @@ export const useGame = create<GameStore>((set, get) => {
           sanity = Math.min(maxSanity, sanity + sanGain);
         }
         sfx.reward();
+        bits.push(`${relicLabel(inst)} を得た。`);
       }
 
       persist(profile);
-      const relicToast = s.reward?.relic ? `${relicLabel(s.reward.relic)} を得た。` : null;
       afterGain({
-        deck,
         relics,
         hp,
         maxHp,
         maxSanity,
         sanity,
         profile,
-        toast: relicToast,
+        toast: bits.length ? bits.join(" ") : null,
       });
     },
 
     skipReward: () => get().pickReward(null),
-
-    discardFromDeck: (uid) => {
-      const s = get();
-      if (s.scene !== "cull") return;
-      if (!s.deck.some((c) => c.uid === uid)) return;
-      const deck = s.deck.filter((c) => c.uid !== uid);
-      sfx.select();
-      if (deck.length > DECK_LIMIT) {
-        set({ deck });
-        return;
-      }
-      if (s.village) {
-        set({
-          scene: "rest",
-          restMode: "hub",
-          deck,
-          toast: `${getCard(s.deck.find((c) => c.uid === uid)!.defId).name}を捨てた。`,
-        });
-        return;
-      }
-      finishAdvance({ deck, toast: `${getCard(s.deck.find((c) => c.uid === uid)!.defId).name}を捨てた。` });
-    },
 
     restHeal: () => get().innStay(10),
     restUpgrade: (cardUid) => get().forgeAtSmith(cardUid),
@@ -687,17 +657,13 @@ export const useGame = create<GameStore>((set, get) => {
         set({ toast: "貝殻が足りない。" });
         return;
       }
-      const card = makeCard("beer");
-      const deck = [...s.deck, card];
+      useCollectionStore.getState().addLootCard("beer");
       sfx.reward();
-      const next = {
+      set({
         shells: s.shells - price,
-        deck,
         village: { ...s.village, beerSold: true },
-        toast: "ビール瓶を買った。",
-      };
-      if (deck.length > DECK_LIMIT) set({ ...next, scene: "cull" as const });
-      else set(next);
+        toast: "ビール瓶を戦利品として持ち帰った。",
+      });
     },
 
     buyGood: (uid) => {
@@ -710,16 +676,13 @@ export const useGame = create<GameStore>((set, get) => {
         return;
       }
       const goods = shop.goods.map((g) => (g.uid === uid ? { ...g, sold: true } : g));
-      const card = makeCard(good.defId);
+      useCollectionStore.getState().addLootCard(good.defId);
       sfx.reward();
-      const next = {
+      set({
         shells: s.shells - good.price,
-        deck: [...s.deck, card],
         village: { ...s.village, smith: { ...shop, goods } },
-        toast: `${getCard(good.defId).name}を買った。`,
-      };
-      if (next.deck.length > DECK_LIMIT) set({ ...next, scene: "cull" as const });
-      else set(next);
+        toast: `${getCard(good.defId).name}を戦利品として持ち帰った。`,
+      });
     },
 
     forgeAtSmith: (cardUid) => {
@@ -772,8 +735,8 @@ export const useGame = create<GameStore>((set, get) => {
           sanity = Math.max(0, sanity - 8);
           const up = deck.find((c) => !c.upgraded);
           if (up) up.upgraded = true;
-          deck.push(makeCard("tome"));
-          toast = "頁が、瞳の裏に残る。正気-8。禁断の書を得た。";
+          useCollectionStore.getState().addLootCard("tome");
+          toast = "頁が、瞳の裏に残る。正気-8。禁断の書を戦利品として持ち帰った。";
         } else toast = "本は、本の文法に任せる。";
       } else if (ev.id === "well") {
         if (choiceId === "drink") {
