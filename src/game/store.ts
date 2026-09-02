@@ -101,6 +101,7 @@ export interface GameStore {
   inspectDeck: boolean;
 
   begin: () => void;
+  toTitle: () => void;
   setPlayerName: (name: string) => void;
   setStat: (key: keyof PlayerStats, value: number) => void;
   toggleLoadout: (uid: string) => void;
@@ -404,7 +405,7 @@ export const useGame = create<GameStore>((set, get) => {
       const rand = mulberry32(seed);
       const runFloors = generateRunTable(rand);
       set({
-        scene: "prepare",
+        scene: "hub",
         profile,
         playerName: profile.playerName,
         seed,
@@ -413,6 +414,13 @@ export const useGame = create<GameStore>((set, get) => {
         floor: 0,
         toast: null,
       });
+      sfx.ui();
+    },
+
+    toTitle: () => {
+      stopBgm();
+      playBgm("title");
+      set({ scene: "title", combat: null, floor: 0, toast: null });
       sfx.ui();
     },
 
@@ -845,7 +853,7 @@ export const useGame = create<GameStore>((set, get) => {
       const s = get();
       const profile = { ...s.profile, sanity: s.sanity };
       persist(profile);
-      set({ scene: "title", combat: null, runFloors: [], profile, floor: 0 });
+      set({ scene: "hub", combat: null, runFloors: [], profile, floor: 0 });
     },
     finishPrologue: () => {
       const s = get();

@@ -3,7 +3,7 @@ import { CombatView } from "@/components/game/CombatView";
 import { CullView } from "@/components/game/CullView";
 import { EndView } from "@/components/game/EndView";
 import { EventView } from "@/components/game/EventView";
-import { PrepareView } from "@/components/game/PrepareView";
+import { HubScreen } from "@/components/game/HubScreen";
 import { PrologueView } from "@/components/game/PrologueView";
 import { RestView } from "@/components/game/RestView";
 import { RewardView } from "@/components/game/RewardView";
@@ -16,8 +16,9 @@ export function GameApp() {
   switch (scene) {
     case "title":
       return <TitleScreen />;
+    case "hub":
     case "prepare":
-      return <PrepareView />;
+      return <HubScreen />;
     case "prologue":
       return <PrologueView />;
     case "shatter":

@@ -12,7 +12,7 @@ import {
 } from "@/store/useCollectionStore";
 import { useEffect, useState } from "react";
 
-export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
+export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean }) {
   const inventory = useCollectionStore((s) => s.inventory);
   const deck = useCollectionStore((s) => s.deck);
   const equippedRelics = useCollectionStore((s) => s.equippedRelics);
@@ -23,19 +23,21 @@ export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
   const [heldRelic, setHeldRelic] = useState<string | null>(null);
 
   useEffect(() => {
+    if (embedded) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose?.();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, embedded]);
 
   const deckCards = deck
     .map((id) => inventory.cards.find((c) => c.instanceId === id))
     .filter((c): c is NonNullable<typeof c> => !!c);
 
   return (
-    <section className="flex h-dvh w-full flex-col bg-ink font-pixel text-parchment">
+    <section className={cn("flex w-full flex-col font-pixel text-parchment", embedded ? "h-full bg-transparent" : "h-dvh bg-ink")}>
+      {embedded ? null : (
       <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-gray-200 bg-black px-3">
         <h1 className="text-sm tracking-widest">デッキ編成</h1>
         <span className={cn("text-sm tabular-nums", deck.length >= DECK_LIMIT ? "text-blood" : "text-accent")}>
@@ -49,6 +51,7 @@ export function DeckBuilderScreen({ onClose }: { onClose?: () => void }) {
           <span />
         )}
       </header>
+      )}
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-5">
         <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">

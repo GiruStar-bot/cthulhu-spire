@@ -14,6 +14,7 @@ import { useGame } from "@/game/store";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { asset } from "@/lib/asset";
+import { cn } from "@/lib/utils";
 import { MIN_RUN_DECK, loadoutError } from "@/game/cardEvaluator";
 import { useCollectionStore } from "@/store/useCollectionStore";
 import type { StatKey } from "@/game/types";
@@ -26,7 +27,7 @@ const STAT_UI: { key: StatKey; name: string; tag: string }[] = [
   { key: "energy", name: "気力", tag: "NRG" },
 ];
 
-export function PrepareView() {
+export function PrepareView({ embedded = false }: { embedded?: boolean }) {
   const profile = useGame((s) => s.profile);
   const playerName = useGame((s) => s.playerName);
   const setPlayerName = useGame((s) => s.setPlayerName);
@@ -47,14 +48,18 @@ export function PrepareView() {
   const canStart = playerName.trim().length > 0 && !deckErr;
 
   return (
-    <section className="relative flex h-dvh flex-col overflow-hidden bg-ink">
-      <img
-        src={asset("art/pixel/bg/loadout.jpg")}
-        alt=""
-        className="absolute inset-0 size-full object-cover"
-        crossOrigin="anonymous"
-      />
-      <div className="absolute inset-0 bg-ink/55" />
+    <section className={cn("relative flex h-full flex-col overflow-hidden", embedded ? "bg-transparent" : "h-dvh bg-ink")}>
+      {embedded ? null : (
+        <>
+          <img
+            src={asset("art/pixel/bg/loadout.jpg")}
+            alt=""
+            className="absolute inset-0 size-full object-cover"
+            crossOrigin="anonymous"
+          />
+          <div className="absolute inset-0 bg-ink/55" />
+        </>
+      )}
 
       <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col items-center justify-center px-3 py-4">
         <PixelWindow className="flex max-h-full min-h-0 w-full flex-col overflow-hidden p-4 sm:p-5">

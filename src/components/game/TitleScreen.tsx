@@ -1,19 +1,13 @@
-import { CardForgeScreen } from "@/components/loadout/CardForgeScreen";
-import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
 import { getMusicVolume, getSfxVolume, playBgm, setMusicVolume, setSfxVolume, sfx, unlockAudio } from "@/game/audio";
-import { GrimoirePanel } from "@/components/game/GrimoireView";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
-import { grimoireOpen } from "@/game/profile";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { useEffect, useState } from "react";
 
 export function TitleScreen() {
   const begin = useGame((s) => s.begin);
-  const profile = useGame((s) => s.profile);
-  const [sheet, setSheet] = useState<"settings" | "credits" | "tome" | "deck" | "forge" | null>(null);
-  const showBook = grimoireOpen(profile);
+  const [sheet, setSheet] = useState<"settings" | "credits" | null>(null);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -49,64 +43,32 @@ export function TitleScreen() {
           <span className="block text-sm tracking-[0.4em] text-muted uppercase">Abyss of</span>
           <span className="mt-2 block text-5xl tracking-widest uppercase sm:text-7xl">R'lyeh</span>
         </h1>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <PixelButton onClick={begin} className="min-w-28 px-6">
-            探索
-          </PixelButton>
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
           <PixelButton
             onClick={() => {
               unlockAudio();
-              setSheet("deck");
+              begin();
             }}
-            className="min-w-28 px-6"
+            className="min-w-36 px-6"
           >
-            デッキ編成
-          </PixelButton>
-          <PixelButton
-            onClick={() => {
-              unlockAudio();
-              setSheet("forge");
-            }}
-            className="min-w-28 px-6"
-          >
-            魔改造
+            プレイ
           </PixelButton>
           <PixelButton
             onClick={() => {
               unlockAudio();
               setSheet("settings");
             }}
-            className="min-w-28 px-6"
+            className="min-w-36 px-6"
           >
             設定
           </PixelButton>
-          <PixelButton onClick={() => setSheet("credits")} className="min-w-28 px-6">
+          <PixelButton onClick={() => setSheet("credits")} className="min-w-36 px-6">
             クレジット
           </PixelButton>
-          {showBook ? (
-            <PixelButton onClick={() => setSheet("tome")} className="min-w-28 px-6">
-              全
-            </PixelButton>
-          ) : null}
         </div>
-        <p className="font-pixel text-xs tracking-wider text-muted">
-          回数 {profile.runs} · 最深 {profile.bestFloor ? `第${profile.bestFloor}層` : "未潜航"} · 遺物{" "}
-          {profile.collection.length}
-        </p>
       </div>
-      {sheet === "deck" ? (
-        <div className="fixed inset-0 z-50">
-          <DeckBuilderScreen onClose={() => setSheet(null)} />
-        </div>
-      ) : null}
-      {sheet === "forge" ? (
-        <div className="fixed inset-0 z-50">
-          <CardForgeScreen onClose={() => setSheet(null)} />
-        </div>
-      ) : null}
       {sheet === "settings" ? <SettingsPanel onClose={() => setSheet(null)} /> : null}
       {sheet === "credits" ? <CreditsPanel onClose={() => setSheet(null)} /> : null}
-      {sheet === "tome" ? <GrimoirePanel onClose={() => setSheet(null)} /> : null}
     </section>
   );
 }

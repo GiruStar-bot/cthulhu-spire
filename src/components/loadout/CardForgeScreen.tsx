@@ -26,7 +26,7 @@ type Flight = {
   armed: boolean;
 };
 
-export function CardForgeScreen({ onClose }: { onClose?: () => void }) {
+export function CardForgeScreen({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean }) {
   const inventory = useCollectionStore((s) => s.inventory);
   const socketRune = useCollectionStore((s) => s.socketRune);
   const unsocketRune = useCollectionStore((s) => s.unsocketRune);
@@ -39,12 +39,13 @@ export function CardForgeScreen({ onClose }: { onClose?: () => void }) {
   const card = inventory.cards.find((c) => c.instanceId === activeId) ?? null;
 
   useEffect(() => {
+    if (embedded) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose?.();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, embedded]);
 
   useEffect(() => {
     if (!flight || flight.armed) return;
@@ -84,7 +85,8 @@ export function CardForgeScreen({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <section className="relative flex h-dvh w-full flex-col overflow-hidden bg-ink font-pixel text-parchment">
+    <section className={cn("relative flex w-full flex-col overflow-hidden font-pixel text-parchment", embedded ? "h-full bg-transparent" : "h-dvh bg-ink")}>
+      {embedded ? null : (
       <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-gray-200 bg-black px-3">
         <h1 className="text-sm tracking-widest">魔改造</h1>
         <span className="truncate px-3 text-xs text-muted">{card ? getCard(card.baseCardId).name : "—"}</span>
@@ -96,6 +98,7 @@ export function CardForgeScreen({ onClose }: { onClose?: () => void }) {
           <span />
         )}
       </header>
+      )}
 
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-6">
         <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 md:col-span-2 md:border-r-2 md:border-b-0">
