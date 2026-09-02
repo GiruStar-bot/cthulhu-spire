@@ -524,19 +524,11 @@ function PlayerFloaters({ floaters }: { floaters: Floater[] }) {
 }
 
 function intentLabel(e: CombatEnemy) {
+  const cardId = e.shownCardId ?? e.actionCardId;
+  if (cardId) return `${getCard(cardId).name}を使用`;
   const i = e.shownIntent ?? e.intent;
-  if (i.kind === "attack") {
-    const hits = i.hits ?? 1;
-    const d = (i.damage ?? 0) + e.strength;
-    return hits > 1 ? `攻撃 ${d}×${hits}` : `攻撃 ${d}`;
-  }
-  if (i.kind === "defend") return `防御 ${i.block ?? 0}`;
-  if (i.kind === "buff") return `強化 筋+${i.strength ?? 0}`;
-  if (i.kind === "debuff") {
-    if (i.seal) return i.seal === "attack" ? "封印・攻撃" : "封印・技能";
-    return i.dread ? "侵食" : "弱体化";
-  }
-  return "不明";
+  if (i.seal) return i.seal === "attack" ? "攻撃封印" : "技能封印";
+  return "行動準備";
 }
 
 function reducedMotion() {

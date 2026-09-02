@@ -31,3 +31,14 @@ export function pickN<T>(arr: readonly T[], n: number, rand: () => number): T[] 
 export function uid(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
 }
+
+export function weightedPick<T extends string>(weights: Record<T, number>, rand: () => number): T {
+  const entries = Object.entries(weights) as [T, number][];
+  const total = entries.reduce((sum, [, w]) => sum + w, 0);
+  let roll = rand() * total;
+  for (const [key, w] of entries) {
+    if (roll < w) return key;
+    roll -= w;
+  }
+  return entries[entries.length - 1][0];
+}

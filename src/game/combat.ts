@@ -11,6 +11,7 @@ import type {
 import { getCard, makeCard, scaleN } from "./cards";
 import { evaluateCardEffect } from "./cardEvaluator";
 import { getEnemy } from "./enemies";
+import { cardToIntent, rollEnemyCard } from "./enemyAi";
 import { powerOf } from "./relics";
 import { pick, shuffle, uid } from "./rng";
 
@@ -38,7 +39,6 @@ function scaleHp(base: number, floor: number) {
 export function makeEnemy(defId: string, floor: number, rand: () => number): CombatEnemy {
   const d = getEnemy(defId);
   const maxHp = scaleHp(d.maxHp, floor);
-  const patternIndex = Math.floor(rand() * d.pattern.length);
   const e: CombatEnemy = {
     uid: uid("e"),
     defId,
@@ -49,18 +49,34 @@ export function makeEnemy(defId: string, floor: number, rand: () => number): Com
     weak: 0,
     vulnerable: 0,
     poison: 0,
-    patternIndex,
-    intent: d.pattern[patternIndex]!,
+    patternIndex: 0,
+    intent: { kind: "unknown" },
   };
-  if (d.trait === "liar") lieIntent(e, rand);
+  rollNextAction(e, rand);
   return e;
 }
 
-function lieIntent(e: CombatEnemy, rand: () => number) {
+function rollNextAction(e: CombatEnemy, rand: () => number) {
   const d = getEnemy(e.defId);
-  const others = d.pattern.filter((_, i) => i !== e.patternIndex);
-  const fake = others.length ? pick(others, rand) : d.pattern[0]!;
-  e.shownIntent = fake;
+  if (d.trait === "seal" && rand() < 0.35) {
+    const sealType: "attack" | "skill" = rand() < 0.5 ? "attack" : "skill";
+    e.actionCardId = undefined;
+    e.shownCardId = undefined;
+    e.shownIntent = undefined;
+    e.intent = { kind: "debuff", seal: sealType };
+    return;
+  }
+  const card = rollEnemyCard(rand);
+  e.actionCardId = card.id;
+  e.intent = cardToIntent(card);
+  if (d.trait === "liar") {
+    const fake = rollEnemyCard(rand);
+    e.shownCardId = fake.id;
+    e.shownIntent = cardToIntent(fake);
+  } else {
+    e.shownCardId = undefined;
+    e.shownIntent = undefined;
+  }
 }
 
 export function living(c: CombatState) {
@@ -508,14 +524,6 @@ function checkOver(c: CombatState, player: PlayerHook) {
   }
 }
 
-function advanceIntent(e: CombatEnemy, rand: () => number) {
-  const d = getEnemy(e.defId);
-  e.patternIndex = (e.patternIndex + 1) % d.pattern.length;
-  e.intent = d.pattern[e.patternIndex]!;
-  if (d.trait === "liar") lieIntent(e, rand);
-  else e.shownIntent = undefined;
-}
-
 function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () => number, sfx: CombatSfx[]) {
   if (e.hp <= 0) return;
   e.block = 0;
@@ -603,7 +611,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
     }
     if (e.weak > 0) e.weak -= 1;
     if (e.vulnerable > 0) e.vulnerable -= 1;
-    advanceIntent(e, rand);
+    rollNextAction(e, rand);
   }
   maybeChoir(c, rand);
   checkOver(c, player);

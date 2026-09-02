@@ -133,7 +133,7 @@ export interface EnemyDef {
   idleFrames?: string[];
   idleFps?: number;
   maxHp: number;
-  pattern: Intent[];
+  pattern?: Intent[];
   trait?: EnemyTrait;
   biome: BiomeId;
 }
@@ -164,6 +164,8 @@ export interface CombatEnemy {
   patternIndex: number;
   intent: Intent;
   shownIntent?: Intent;
+  actionCardId?: string;
+  shownCardId?: string;
   splitDone?: boolean;
   bound?: number;
 }

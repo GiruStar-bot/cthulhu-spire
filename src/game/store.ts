@@ -26,7 +26,7 @@ import {
   startCombat,
   type PlayerHook,
 } from "./combat";
-import { mulberry32, pick, uid } from "./rng";
+import { mulberry32, pick, uid, weightedPick } from "./rng";
 import { playBgm, playCues, sfx, stopBgm, unlockAudio } from "./audio";
 import {
   clampStats,
@@ -886,24 +886,13 @@ const DROP_RATES = {
   boss: { chance: 1.0, weights: { card: 0.2, rune: 0.3, relic: 0.5 } },
 } as const;
 
-function pickWeighted<T extends string>(weights: Record<T, number>, rand: () => number): T {
-  const entries = Object.entries(weights) as [T, number][];
-  const total = entries.reduce((sum, [, w]) => sum + w, 0);
-  let roll = rand() * total;
-  for (const [key, w] of entries) {
-    if (roll < w) return key;
-    roll -= w;
-  }
-  return entries[entries.length - 1][0];
-}
-
 function makeReward(s: GameStore): RewardOffer {
   const spec = specAt(s);
   const kind = spec?.type === "boss" ? "boss" : spec?.type === "elite" ? "elite" : "combat";
   const table = DROP_RATES[kind];
   if (s.rand() >= table.chance) return { kind: "none" };
 
-  const category = pickWeighted(table.weights, s.rand);
+  const category = weightedPick(table.weights, s.rand);
   const floorForRoll = kind === "boss" ? s.floor + 5 : s.floor;
 
   if (category === "card") {
