@@ -395,7 +395,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 30%;
+  bottom: 20%;
   z-index: 1;
   display: flex;
   align-items: flex-end;
@@ -452,18 +452,18 @@
 }
 
 .enemy-figure.is-cutout {
-  width: min(70vw, 32rem);
-  height: min(52dvh, 28rem);
+  width: min(94vw, 43rem);
+  height: min(70dvh, 38rem);
 }
 
 .enemy-stage.is-boss .enemy-figure.is-cutout {
-  width: min(78vw, 38rem);
-  height: min(58dvh, 32rem);
+  width: min(100vw, 51rem);
+  height: min(78dvh, 43rem);
 }
 
 .combat-foe:has(.enemy-stage:nth-child(2)) .enemy-figure.is-cutout {
-  width: min(42vw, 20rem);
-  height: min(48dvh, 24rem);
+  width: min(57vw, 27rem);
+  height: min(65dvh, 32rem);
 }
 
 .enemy-figure img {
