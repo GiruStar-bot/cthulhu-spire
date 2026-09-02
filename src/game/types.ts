@@ -84,6 +84,7 @@ export interface CardDef {
   id: string;
   name: string;
   type: CardType;
+  aiTag?: "attack" | "defense" | "effect";
   cost: number;
   upgradedCost?: number;
   rarity: Rarity;
