@@ -252,7 +252,7 @@ function ForgeRoom() {
   const upgradable = deck.filter((c) => getCard(c.defId).type !== "status" && !c.forge);
   return (
     <section className="relative min-h-dvh overflow-hidden bg-ink px-4 py-8 font-pixel">
-      <img src={asset("art/smith.jpg")} alt="" className="absolute inset-0 size-full object-cover opacity-40" />
+      <img src={asset("art/pixel/village/smith-interior.jpg")} alt="" className="absolute inset-0 size-full object-cover opacity-40" />
       <div className="relative z-10">
         <Vitals />
         <PixelWindow className="mt-6 max-w-md">
