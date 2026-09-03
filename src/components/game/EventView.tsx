@@ -1,4 +1,3 @@
-import { DeckInspect } from "@/components/game/DeckInspect";
 import { Vitals } from "@/components/game/Hud";
 import { StageBack } from "@/components/game/StageBack";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -50,7 +49,6 @@ export function EventView() {
           </div>
         </div>
       </div>
-      <DeckInspect />
     </section>
   );
 }

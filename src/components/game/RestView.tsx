@@ -1,5 +1,4 @@
 import { CardView } from "@/components/game/CardView";
-import { DeckInspect } from "@/components/game/DeckInspect";
 import { Vitals } from "@/components/game/Hud";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
@@ -252,7 +251,6 @@ function ForgeRoom() {
           戻る
         </PixelButton>
       </div>
-      <DeckInspect />
     </section>
   );
 }

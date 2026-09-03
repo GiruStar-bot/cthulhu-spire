@@ -1,5 +1,4 @@
 import { CardView } from "@/components/game/CardView";
-import { DeckInspect } from "@/components/game/DeckInspect";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelRune } from "@/components/loadout/PixelRune";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -73,7 +72,6 @@ export function RewardView() {
           次へ進む
         </PixelButton>
       </PixelWindow>
-      <DeckInspect />
     </section>
   );
 }

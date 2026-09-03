@@ -1,4 +1,3 @@
-import { DeckInspect } from "@/components/game/DeckInspect";
 import { Vitals } from "@/components/game/Hud";
 import { StageBack } from "@/components/game/StageBack";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -45,7 +44,6 @@ export function BetweenView() {
           {layerLabel(floor + 1)}へ沈む
         </PixelButton>
       </div>
-      <DeckInspect />
     </section>
   );
 }
