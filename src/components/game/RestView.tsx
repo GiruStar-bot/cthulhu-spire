@@ -40,6 +40,21 @@ function VillageHub() {
       <img src={asset("art/pixel/village/bg.jpg")} alt="" className="absolute inset-0 size-full object-cover" />
       <div className="absolute inset-0 bg-black/25" />
 
+      <div className="absolute top-3 left-3 z-20 flex flex-col gap-2 sm:top-5 sm:left-5">
+        <Vitals />
+        <Shells />
+      </div>
+
+      {toast ? (
+        <button
+          type="button"
+          onClick={dismiss}
+          className="absolute top-3 right-3 z-20 max-w-xs border-2 border-white bg-black px-3 py-2 text-left text-sm text-white sm:top-5 sm:right-5"
+        >
+          {toast}
+        </button>
+      ) : null}
+
       {/* 酒場 */}
       <button
         type="button"
@@ -72,31 +87,9 @@ function VillageHub() {
         </span>
       </button>
 
-      <div className="relative z-20 flex h-dvh flex-col justify-end gap-3 px-5 pb-8 sm:px-12 pointer-events-none">
-        <div className="pointer-events-auto flex w-fit max-w-[min(100%,22rem)] flex-col gap-3">
-          <Vitals />
-          <Shells />
-          {toast ? (
-            <button
-              type="button"
-              onClick={dismiss}
-              className="w-fit border-2 border-white bg-black px-3 py-2 text-left text-sm text-white"
-            >
-              {toast}
-            </button>
-          ) : null}
-          <PixelWindow className="w-fit">
-            <p className="text-[11px] tracking-widest text-accent">村落</p>
-            <h2 className="text-4xl text-white">灯の見える岸</h2>
-          </PixelWindow>
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <PixelButton onClick={() => visit("deck")}>デッキ編成</PixelButton>
-            <PixelButton onClick={() => visit("pub")}>パブ</PixelButton>
-            <PixelButton onClick={leave}>次の層へ</PixelButton>
-          </div>
-        </div>
-      </div>
-      <DeckInspect />
+      <PixelButton onClick={leave} className="absolute right-5 bottom-5 z-20">
+        次の層へ
+      </PixelButton>
     </section>
   );
 }
@@ -108,7 +101,7 @@ function DeckEditRoom() {
     <section className="h-dvh overflow-hidden bg-ink font-pixel">
       <DeckBuilderScreen
         onClose={() => {
-          if (apply()) visit("hub");
+          if (apply()) visit("smith");
         }}
       />
     </section>
@@ -135,11 +128,13 @@ function InnRoom() {
             {n}枚 · {n === 10 ? "体力2割 正気+10" : n === 20 ? "体力5割 正気+20" : "体力全快 正気+30"}
           </PixelButton>
         ))}
+        <PixelButton onClick={() => visit("pub")} className="w-fit">
+          パブへ
+        </PixelButton>
         <PixelButton onClick={() => visit("hub")} className="w-fit">
           戻る
         </PixelButton>
       </div>
-      <DeckInspect />
     </section>
   );
 }
@@ -176,7 +171,6 @@ function PubRoom() {
           戻る
         </PixelButton>
       </div>
-      <DeckInspect />
     </section>
   );
 }
@@ -223,11 +217,11 @@ function SmithRoom() {
           })}
         </div>
         <div className="mt-auto flex flex-wrap gap-3 pb-4">
+          <PixelButton onClick={() => visit("deck")}>デッキ編成</PixelButton>
           <PixelButton onClick={() => visit("upgrade")}>焼く（強化）</PixelButton>
           <PixelButton onClick={() => visit("hub")}>戻る</PixelButton>
         </div>
       </div>
-      <DeckInspect />
     </section>
   );
 }
