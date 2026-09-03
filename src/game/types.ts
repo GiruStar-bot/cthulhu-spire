@@ -140,6 +140,7 @@ export interface EnemyDef {
   tier?: "mob" | "elite";
   deck?: string[];
   signatureCardId?: string;
+  cardsPerTurn?: number;
 }
 
 export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split";
@@ -171,8 +172,9 @@ export interface CombatEnemy {
   patternIndex: number;
   intent: Intent;
   shownIntent?: Intent;
-  actionCardId?: string;
-  shownCardId?: string;
+  actionCardIds: string[];
+  shownCardIds?: string[];
+  hadAttackThisTurn?: boolean;
   splitDone?: boolean;
   bound?: number;
 }

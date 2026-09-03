@@ -465,14 +465,18 @@ function pickFoe(clientX: number, clientY: number): HTMLElement | null {
 function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
   const def = getEnemy(enemy.defId);
   const intent = intentLabel(enemy);
-  const cardId = enemy.shownCardId ?? enemy.actionCardId;
+  const cardIds = enemy.shownCardIds ?? enemy.actionCardIds;
   const i = enemy.shownIntent ?? enemy.intent;
 
   return (
     <div data-enemy-plate="" className="w-full text-left">
-      {cardId ? (
-        <div className="mb-1.5 flex justify-center [&>*]:!h-28 [&>*]:!w-20">
-          <CardView card={makeCard(cardId)} compact />
+      {cardIds.length > 0 ? (
+        <div className="mb-1.5 flex justify-center gap-1">
+          {cardIds.map((id, idx) => (
+            <div key={idx} className="[&>*]:!h-24 [&>*]:!w-16">
+              <CardView card={makeCard(id)} compact />
+            </div>
+          ))}
         </div>
       ) : i.seal ? (
         <div className="mb-1.5 border-2 border-white bg-black px-2 py-1 text-center font-pixel text-[10px] text-blood">
@@ -549,8 +553,8 @@ function PlayerFloaters({ floaters }: { floaters: Floater[] }) {
 }
 
 function intentLabel(e: CombatEnemy) {
-  const cardId = e.shownCardId ?? e.actionCardId;
-  if (cardId) return `${getCard(cardId).name}を使用`;
+  const ids = e.shownCardIds ?? e.actionCardIds;
+  if (ids.length > 0) return `${ids.map((id) => getCard(id).name).join("・")}を使用`;
   const i = e.shownIntent ?? e.intent;
   if (i.seal) return i.seal === "attack" ? "攻撃封印" : "技能封印";
   return "行動準備";

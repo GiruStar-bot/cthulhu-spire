@@ -154,6 +154,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "street",
     maxHp: 168,
     signatureCardId: "revelation",
+    cardsPerTurn: 2,
     deck: ["revelation", "lash", "bash", "ward", "chant"],
     pattern: [
       { kind: "debuff", dread: 1 },
@@ -171,6 +172,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 42,
     trait: "choir",
     signatureCardId: "chorusunity",
+    cardsPerTurn: 2,
     deck: ["chorusunity", "strike", "sigil", "rite"],
     pattern: [
       { kind: "attack", damage: 8 },
@@ -187,6 +189,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 112,
     trait: "nurse",
     signatureCardId: "embrace",
+    cardsPerTurn: 2,
     deck: ["embrace", "dressing", "bash", "all-vacuum"],
     pattern: [
       { kind: "defend", block: 16 },
@@ -203,6 +206,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "reef",
     maxHp: 52,
     signatureCardId: "flockrush",
+    cardsPerTurn: 2,
     deck: ["flockrush", "lash", "all-glass", "ward"],
     pattern: [
       { kind: "attack", damage: 5, hits: 3 },
@@ -219,6 +223,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 108,
     trait: "liar",
     signatureCardId: "noneuclid",
+    cardsPerTurn: 2,
     deck: ["noneuclid", "eldersign", "all-phase", "bash", "all-geo"],
     pattern: [
       { kind: "attack", damage: 16 },
@@ -236,6 +241,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 118,
     trait: "bell",
     signatureCardId: "tollbell",
+    cardsPerTurn: 2,
     deck: ["tollbell", "all-necrosis", "all-zero", "ironwill"],
     pattern: [
       { kind: "attack", damage: 15 },
@@ -253,6 +259,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 124,
     trait: "seal",
     signatureCardId: "pricewisdom",
+    cardsPerTurn: 2,
     deck: ["pricewisdom", "all-necrosis", "rite", "all-vacuum", "eldersign"],
     pattern: [
       { kind: "debuff", seal: "attack", weak: 1 },
@@ -270,6 +277,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 96,
     trait: "split",
     signatureCardId: "protosurge",
+    cardsPerTurn: 2,
     deck: ["protosurge", "all-geo", "all-glass", "ironwill", "all-zero"],
     pattern: [
       { kind: "attack", damage: 14 },
@@ -286,6 +294,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "throne",
     maxHp: 214,
     signatureCardId: "heraldscall",
+    cardsPerTurn: 2,
     deck: ["heraldscall", "thecall", "all-zero", "ironwill", "eldersign"],
     pattern: [
       { kind: "debuff", dread: 1, weak: 2 },
@@ -302,6 +311,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "throne",
     maxHp: 268,
     signatureCardId: "devourmaw",
+    cardsPerTurn: 2,
     deck: ["devourmaw", "thecall", "all-zero", "all-necrosis", "ironwill", "eldersign"],
     pattern: [
       { kind: "debuff", dread: 2 },

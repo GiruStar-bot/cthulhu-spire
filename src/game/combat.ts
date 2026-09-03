@@ -51,6 +51,7 @@ export function makeEnemy(defId: string, floor: number, rand: () => number): Com
     poison: 0,
     patternIndex: 0,
     intent: { kind: "unknown" },
+    actionCardIds: [],
   };
   rollNextAction(e, rand);
   return e;
@@ -60,21 +61,26 @@ function rollNextAction(e: CombatEnemy, rand: () => number) {
   const d = getEnemy(e.defId);
   if (d.trait === "seal" && rand() < 0.35) {
     const sealType: "attack" | "skill" = rand() < 0.5 ? "attack" : "skill";
-    e.actionCardId = undefined;
-    e.shownCardId = undefined;
+    e.actionCardIds = [];
+    e.shownCardIds = undefined;
     e.shownIntent = undefined;
     e.intent = { kind: "debuff", seal: sealType };
     return;
   }
-  const card = rollEnemyCard(e.defId, rand);
-  e.actionCardId = card.id;
-  e.intent = cardToIntent(card);
+
+  const n = d.cardsPerTurn ?? 1;
+  const cardIds: string[] = [];
+  for (let i = 0; i < n; i++) cardIds.push(rollEnemyCard(e.defId, rand).id);
+  e.actionCardIds = cardIds;
+  e.intent = cardToIntent(getCard(cardIds[0]));
+
   if (d.trait === "liar") {
-    const fake = rollEnemyCard(e.defId, rand);
-    e.shownCardId = fake.id;
-    e.shownIntent = cardToIntent(fake);
+    const shown: string[] = [];
+    for (let i = 0; i < n; i++) shown.push(rollEnemyCard(e.defId, rand).id);
+    e.shownCardIds = shown;
+    e.shownIntent = cardToIntent(getCard(shown[0]));
   } else {
-    e.shownCardId = undefined;
+    e.shownCardIds = undefined;
     e.shownIntent = undefined;
   }
 }
@@ -540,11 +546,16 @@ function checkOver(c: CombatState, player: PlayerHook) {
   }
 }
 
-function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () => number, sfx: CombatSfx[]) {
-  if (e.hp <= 0) return;
-  e.block = 0;
-  const intent: Intent = e.intent;
+function applyEnemyIntent(
+  intent: Intent,
+  e: CombatEnemy,
+  c: CombatState,
+  player: PlayerHook,
+  rand: () => number,
+  sfx: CombatSfx[],
+) {
   if (intent.kind === "attack") {
+    e.hadAttackThisTurn = true;
     const hits = intent.hits ?? 1;
     const base = intent.damage ?? 0;
     for (let i = 0; i < hits; i++) {
@@ -580,6 +591,19 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
   if (intent.seal) {
     c.sealed = intent.seal;
     c.log.push(`${getEnemy(e.defId).name}が${intent.seal === "attack" ? "攻撃" : "技能"}を封じた。`);
+  }
+}
+
+function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () => number, sfx: CombatSfx[]) {
+  if (e.hp <= 0) return;
+  e.block = 0;
+  e.hadAttackThisTurn = false;
+  if (e.actionCardIds.length === 0) {
+    applyEnemyIntent(e.intent, e, c, player, rand, sfx);
+    return;
+  }
+  for (const id of e.actionCardIds) {
+    applyEnemyIntent(cardToIntent(getCard(id)), e, c, player, rand, sfx);
   }
 }
 
@@ -634,7 +658,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
       c.log.push(`${getEnemy(e.defId).name}は動けない。`);
     } else {
       enemyAct(e, c, player, rand, sfx);
-      if (c.thornsVulnerable > 0 && e.intent.kind === "attack") e.vulnerable += c.thornsVulnerable;
+      if (c.thornsVulnerable > 0 && e.hadAttackThisTurn) e.vulnerable += c.thornsVulnerable;
     }
     if (e.weak > 0) e.weak -= 1;
     if (e.vulnerable > 0) e.vulnerable -= 1;
