@@ -50,7 +50,7 @@ export function Vitals() {
   );
 }
 
-function Bar({
+export function Bar({
   label,
   value,
   max,

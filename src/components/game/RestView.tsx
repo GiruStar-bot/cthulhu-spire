@@ -1,5 +1,5 @@
 import { CardView } from "@/components/game/CardView";
-import { Vitals } from "@/components/game/Hud";
+import { Bar, Vitals } from "@/components/game/Hud";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
@@ -107,6 +107,19 @@ function DeckEditRoom() {
   );
 }
 
+function VillageStatus() {
+  const hp = useGame((s) => s.hp);
+  const maxHp = useGame((s) => s.maxHp);
+  const sanity = useGame((s) => s.sanity);
+  const maxSanity = useGame((s) => s.maxSanity);
+  return (
+    <div className="w-48 border-2 border-white bg-black/85 px-3 py-2 font-pixel">
+      <Bar label="肉体" value={hp} max={maxHp} tone="hp" />
+      <Bar label="正気" value={sanity} max={maxSanity} tone="sanity" />
+    </div>
+  );
+}
+
 function InnRoom() {
   const stay = useGame((s) => s.innStay);
   const visit = useGame((s) => s.visitVillage);
@@ -121,20 +134,29 @@ function InnRoom() {
       <div className="absolute inset-0 bg-black/55" />
 
       <div className="absolute top-3 left-3 z-20 flex flex-col gap-2 sm:top-5 sm:left-5">
-        <Vitals />
+        <VillageStatus />
         <Shells />
+        <PixelWindow className="w-48">
+          <h2 className="text-2xl text-white">酒場</h2>
+          <p className="mt-1 text-xs text-muted">貝殻で部屋を取る。高いほど、傷が閉じる。</p>
+        </PixelWindow>
       </div>
 
+      <img
+        src={asset("art/pixel/village/landlady.png")}
+        alt=""
+        className="pointer-events-none absolute bottom-0 left-[8%] z-10 h-[55dvh] max-h-96 select-none object-contain object-bottom drop-shadow-[4px_4px_0_rgba(0,0,0,0.6)]"
+      />
+
       <div className="relative z-10 flex h-dvh flex-col items-center justify-center gap-3 px-5 text-center">
-        <PixelWindow className="max-w-md">
-          <h2 className="text-3xl text-white">酒場</h2>
-          <p className="mt-1 text-sm text-muted">貝殻で部屋を取る。高いほど、傷が閉じる。</p>
-        </PixelWindow>
         {([10, 20, 30] as const).map((n) => (
           <PixelButton key={n} disabled={shells < n} onClick={() => stay(n)} className="w-fit">
             {n}枚 · {n === 10 ? "体力2割 正気+10" : n === 20 ? "体力5割 正気+20" : "体力全快 正気+30"}
           </PixelButton>
         ))}
+      </div>
+
+      <div className="absolute right-3 bottom-3 z-20 flex flex-col items-end gap-2 sm:right-5 sm:bottom-5">
         <PixelButton onClick={() => visit("pub")} className="w-fit">
           パブへ
         </PixelButton>
@@ -169,7 +191,7 @@ function PubRoom() {
       <div className="relative z-10 flex h-dvh flex-col items-center justify-center gap-4 px-5 text-center">
         <div className="flex items-end gap-4">
           <img
-            src={asset("art/landlady.jpg")}
+            src={asset("art/pixel/village/landlady.png")}
             alt=""
             className="h-40 w-28 rounded-none border-2 border-white object-cover object-top"
           />
@@ -205,6 +227,11 @@ function SmithRoom() {
         className="absolute inset-0 size-full object-cover"
       />
       <div className="absolute inset-0 bg-black/70" />
+      <img
+        src={asset("art/pixel/village/smith-npc.png")}
+        alt=""
+        className="pointer-events-none absolute bottom-0 left-[4%] z-[5] h-[50dvh] max-h-80 select-none object-contain object-bottom object-left opacity-90"
+      />
       <div className="relative z-10 flex min-h-dvh flex-col gap-4 px-5 py-6 sm:px-12">
         <Vitals />
         <div className="flex items-center justify-between gap-3">
@@ -254,8 +281,7 @@ function ForgeRoom() {
     <section className="relative min-h-dvh overflow-hidden bg-ink px-4 py-8 font-pixel">
       <img src={asset("art/pixel/village/smith-interior.jpg")} alt="" className="absolute inset-0 size-full object-cover opacity-40" />
       <div className="relative z-10">
-        <Vitals />
-        <PixelWindow className="mt-6 max-w-md">
+        <PixelWindow className="max-w-md">
           <h2 className="text-3xl text-white">焼く</h2>
           <p className="mt-2 text-sm text-muted">{taboo ? "代償つきで、何度でも。" : "貝殻5。一度だけ、値が太る。"}</p>
         </PixelWindow>
