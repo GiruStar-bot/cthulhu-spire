@@ -431,7 +431,7 @@
   transform: translate(3.4rem, 0);
   pointer-events: auto;
   width: max-content;
-  min-width: 11rem;
+  min-width: 16rem;
   padding: 0.45rem 0.65rem;
   border: 2px solid #e5e7eb;
   background: rgb(0 0 0 / 0.8);

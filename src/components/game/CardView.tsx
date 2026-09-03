@@ -23,13 +23,22 @@ export function CardView({
   const costLabel = d.xCost ? "X" : d.unplayable ? "—" : String(cost);
   const runes = socketedRunes(card);
   const Tag = onClick ? "button" : "div";
+  const borderColor =
+    d.aiTag === "attack"
+      ? "border-red-600"
+      : d.aiTag === "defense"
+        ? "border-blue-500"
+        : d.aiTag === "effect"
+          ? "border-purple-500"
+          : "border-white";
 
   return (
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={cn(
-        "relative flex shrink-0 flex-col overflow-hidden border-2 border-white bg-black text-left font-pixel",
+        "relative flex shrink-0 flex-col overflow-hidden border-2 bg-black text-left font-pixel",
+        borderColor,
         "transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
         compact ? "h-48 w-32" : "h-64 w-40 sm:h-72 sm:w-48",
         selected ? "-translate-y-2" : "",

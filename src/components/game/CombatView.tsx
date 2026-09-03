@@ -22,8 +22,6 @@ export function CombatView() {
   const maxHp = useGame((s) => s.maxHp);
   const sanity = useGame((s) => s.sanity);
   const maxSanity = useGame((s) => s.maxSanity);
-  const toast = useGame((s) => s.toast);
-  const dismiss = useGame((s) => s.dismissToast);
   const fx = useCombatFx(hp, maxHp, sanity, maxSanity);
   const [pile, setPile] = useState<"draw" | "discard" | null>(null);
   const [drag, setDrag] = useState<{ uid: string; x: number; y: number } | null>(null);
@@ -120,15 +118,6 @@ export function CombatView() {
                 </PixelButton>
               </div>
             </div>
-            {toast ? (
-              <button
-                type="button"
-                onClick={dismiss}
-                className="border-2 border-white bg-black/80 px-3 py-2 text-left font-pixel text-sm text-white"
-              >
-                {toast}
-              </button>
-            ) : null}
           </div>
 
           <div className="min-h-0 flex-1" />
@@ -473,7 +462,7 @@ function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
       {cardIds.length > 0 ? (
         <div className="mb-1.5 flex justify-center gap-1">
           {cardIds.map((id, idx) => (
-            <div key={idx} className="[&>*]:!h-24 [&>*]:!w-16">
+            <div key={idx} className="[&>*]:!h-40 [&>*]:!w-28">
               <CardView card={makeCard(id)} compact />
             </div>
           ))}
