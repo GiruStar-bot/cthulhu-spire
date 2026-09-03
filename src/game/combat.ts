@@ -34,6 +34,10 @@ function floater(text: string, kind: Floater["kind"], who: Floater["who"]): Floa
   return { id: uid("f"), text, kind, who };
 }
 
+function applyHealBonus(n: number, healBonusPct: number): number {
+  return Math.round(n * (1 + healBonusPct / 100));
+}
+
 function scaleHp(base: number, floor: number) {
   return Math.round(base * (1 + Math.max(0, floor - 1) * 0.03));
 }
@@ -280,10 +284,12 @@ function runEffects(
       case "dexterity":
         c.dexterity += e.n;
         break;
-      case "heal":
-        player.hp = Math.min(player.maxHp, player.hp + e.n);
-        c.floaters.push(floater(`+${e.n}`, "heal", "player"));
+      case "heal": {
+        const healed = applyHealBonus(e.n, c.equipmentStats.healBonusPct);
+        player.hp = Math.min(player.maxHp, player.hp + healed);
+        c.floaters.push(floater(`+${healed}`, "heal", "player"));
         break;
+      }
       case "sanity":
         changeSanity(player, c, e.n);
         break;
@@ -385,8 +391,9 @@ function runEffects(
       case "healOnKill": {
         const tgt = living(c).find((x) => x.uid === targetId);
         if (!tgt) {
-          player.hp = Math.min(player.maxHp, player.hp + e.n);
-          c.floaters.push(floater(`+${e.n}`, "heal", "player"));
+          const healed = applyHealBonus(e.n, c.equipmentStats.healBonusPct);
+          player.hp = Math.min(player.maxHp, player.hp + healed);
+          c.floaters.push(floater(`+${healed}`, "heal", "player"));
         }
         break;
       }
@@ -649,7 +656,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
     c.floaters.push(floater(`毒${reduced}`, "dmg", "player"));
   }
 
-  const healN = Math.round(c.equipmentStats.healPerTurn);
+  const healN = applyHealBonus(c.equipmentStats.healPerTurn, c.equipmentStats.healBonusPct);
   if (healN > 0) {
     player.hp = Math.min(player.maxHp, player.hp + healN);
     c.floaters.push(floater(`+${healN}`, "heal", "player"));

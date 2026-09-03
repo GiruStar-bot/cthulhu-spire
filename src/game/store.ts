@@ -18,6 +18,7 @@ import { DEMO_MAX_FLOOR, generateRunTable, layerLabel } from "./floors";
 import {
   equipmentLabel,
   getEquipment,
+  hasFullSet,
   pickEquipmentTemplate,
   rollEquipment,
   rollEquipmentAtTier,
@@ -223,7 +224,7 @@ function presentCombat(
       if (cur.combat?.result !== "lose") return;
       stopBgm();
       const profile = markDefeat(cur);
-      if (cur.sanity <= 0 || cur.maxSanity <= 0) {
+      if ((cur.sanity <= 0 || cur.maxSanity <= 0) && !hasFullSet(cur.profile.equipped, "fanatic")) {
         set({
           scene: "shatter",
           profile: wipeProfile(),
@@ -480,15 +481,22 @@ export const useGame = create<GameStore>((set, get) => {
 
       const deck = loadoutDeck();
       const maxHp = vitals.maxHp;
-      const maxSanity = vitals.maxSanity;
+      const fanatic = hasFullSet(profile.equipped, "fanatic");
+      let maxSanity = vitals.maxSanity;
       if (maxSanity <= 0) {
-        set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [], floor: 0 });
-        return;
+        if (!fanatic) {
+          set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [], floor: 0 });
+          return;
+        }
+        maxSanity = 1;
       }
-      const sanity = profile.sanity == null ? maxSanity : Math.min(profile.sanity, maxSanity);
+      let sanity = profile.sanity == null ? maxSanity : Math.min(profile.sanity, maxSanity);
       if (sanity <= 0) {
-        set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [], floor: 0 });
-        return;
+        if (!fanatic) {
+          set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [], floor: 0 });
+          return;
+        }
+        sanity = Math.max(1, sanity);
       }
 
       unlockAudio();
@@ -891,11 +899,13 @@ export const useGame = create<GameStore>((set, get) => {
       const cur = s.profile.sanity == null ? prevMax : s.profile.sanity;
       const sanity = Math.max(0, Math.min(cur, maxSanity));
       if (maxSanity <= 0 || sanity <= 0) {
-        set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [] });
-        sfx.lose();
-        return;
+        if (!hasFullSet(s.profile.equipped, "fanatic")) {
+          set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [] });
+          sfx.lose();
+          return;
+        }
       }
-      const profile = { ...s.profile, madness, grimoireRead, sanity };
+      const profile = { ...s.profile, madness, grimoireRead, sanity: Math.max(1, sanity) };
       persist(profile);
       set({ profile });
       sfx.reward();

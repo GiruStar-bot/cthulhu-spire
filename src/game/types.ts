@@ -77,6 +77,7 @@ export interface CardDef {
   name: string;
   type: CardType;
   aiTag?: "attack" | "defense" | "effect";
+  archetype?: Archetype;
   cost: number;
   upgradedCost?: number;
   rarity: Rarity;
@@ -234,6 +235,7 @@ export interface EquipmentStats {
   strength: number;
   drawBonus: number;
   healPerTurn: number;
+  healBonusPct: number;
 }
 
 export interface PlayerProfile {

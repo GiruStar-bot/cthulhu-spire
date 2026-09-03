@@ -1,6 +1,7 @@
 import { asset } from "@/lib/asset";
 import { uid } from "./rng";
 import type {
+  Archetype,
   EquipmentDef,
   EquipmentInstance,
   EquipmentSlot,
@@ -57,6 +58,141 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     art: asset("art/pixel/cards/ward.jpg"),
     sockets: 1,
     basePoisonResistPct: 3,
+  },
+  blood_veil: {
+    id: "blood_veil",
+    name: "血に濡れた眼帯",
+    slot: "head",
+    archetype: "fanatic",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    baseStrength: 2,
+  },
+  sacrifice_plate: {
+    id: "sacrifice_plate",
+    name: "生贄の胸当て",
+    slot: "chest",
+    archetype: "fanatic",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 2,
+    baseStrength: 2,
+  },
+  fanatic_bangle: {
+    id: "fanatic_bangle",
+    name: "狂信の腕輪",
+    slot: "arms",
+    archetype: "fanatic",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    baseStrength: 2,
+  },
+  cursed_greaves: {
+    id: "cursed_greaves",
+    name: "呪われた脚甲",
+    slot: "legs",
+    archetype: "fanatic",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    baseStrength: 1,
+  },
+  bloodstained_boots: {
+    id: "bloodstained_boots",
+    name: "血染めの靴",
+    slot: "feet",
+    archetype: "fanatic",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    baseStrength: 1,
+  },
+  pilgrim_helm: {
+    id: "pilgrim_helm",
+    name: "巡礼の兜",
+    slot: "head",
+    archetype: "knight",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    baseDefensePct: 3,
+  },
+  pilgrim_mail: {
+    id: "pilgrim_mail",
+    name: "巡礼の鎧",
+    slot: "chest",
+    archetype: "knight",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 2,
+    baseDefensePct: 5,
+  },
+  pilgrim_gauntlets: {
+    id: "pilgrim_gauntlets",
+    name: "巡礼の篭手",
+    slot: "arms",
+    archetype: "knight",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    baseDefensePct: 3,
+  },
+  pilgrim_greaves: {
+    id: "pilgrim_greaves",
+    name: "巡礼の脚甲",
+    slot: "legs",
+    archetype: "knight",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    baseDefensePct: 3,
+  },
+  pilgrim_boots: {
+    id: "pilgrim_boots",
+    name: "巡礼の靴",
+    slot: "feet",
+    archetype: "knight",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    baseDefensePct: 2,
+  },
+  venom_hood: {
+    id: "venom_hood",
+    name: "猛毒の頭巾",
+    slot: "head",
+    archetype: "poison",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    basePoisonResistPct: 3,
+  },
+  venom_coat: {
+    id: "venom_coat",
+    name: "猛毒の外套",
+    slot: "chest",
+    archetype: "poison",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 2,
+    basePoisonResistPct: 4,
+  },
+  venom_bangle: {
+    id: "venom_bangle",
+    name: "猛毒の腕輪",
+    slot: "arms",
+    archetype: "poison",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    basePoisonResistPct: 3,
+  },
+  venom_leggings: {
+    id: "venom_leggings",
+    name: "猛毒の脚衣",
+    slot: "legs",
+    archetype: "poison",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    basePoisonResistPct: 3,
+  },
+  venom_boots: {
+    id: "venom_boots",
+    name: "猛毒の靴",
+    slot: "feet",
+    archetype: "poison",
+    art: asset("art/pixel/cards/ward.jpg"),
+    sockets: 1,
+    basePoisonResistPct: 2,
   },
 };
 
@@ -116,6 +252,16 @@ export function equipmentLabel(inst: EquipmentInstance): string {
   return `${def?.name ?? inst.defId} T${inst.tier}`;
 }
 
+export function hasFullSet(
+  equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>,
+  archetype: Archetype,
+): boolean {
+  return EQUIPMENT_SLOTS.every((slot) => {
+    const inst = equipped[slot];
+    return !!inst && EQUIPMENT[inst.defId]?.archetype === archetype;
+  });
+}
+
 export function computeEquipmentStats(
   equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>,
   peekRune: (id: string) => Rune | undefined,
@@ -127,6 +273,7 @@ export function computeEquipmentStats(
     strength: 0,
     drawBonus: 0,
     healPerTurn: 0,
+    healBonusPct: 0,
   };
 
   for (const inst of Object.values(equipped)) {
@@ -174,6 +321,15 @@ export function computeEquipmentStats(
   stats.defensePct = round(stats.defensePct);
   stats.sanResistPct = round(stats.sanResistPct);
   stats.poisonResistPct = round(stats.poisonResistPct);
+  stats.strength = round(stats.strength);
+  stats.drawBonus = round(stats.drawBonus);
+  stats.healPerTurn = round(stats.healPerTurn);
+
+  if (hasFullSet(equipped, "poison")) {
+    stats.poisonResistPct = 100;
+    stats.healBonusPct = 50;
+  }
+
   return stats;
 }
 
