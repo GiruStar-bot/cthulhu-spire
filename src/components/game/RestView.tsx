@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 export function RestView() {
   const room = useGame((s) => s.restMode);
   if (room === "inn") return <InnRoom />;
-  if (room === "pub") return <PubRoom />;
   if (room === "smith") return <SmithRoom />;
   if (room === "upgrade") return <ForgeRoom />;
   if (room === "deck") return <DeckEditRoom />;
@@ -123,7 +122,10 @@ function VillageStatus() {
 function InnRoom() {
   const stay = useGame((s) => s.innStay);
   const visit = useGame((s) => s.visitVillage);
+  const buyBeer = useGame((s) => s.buyBeer);
+  const village = useGame((s) => s.village);
   const shells = useGame((s) => s.shells);
+  const beerSold = !!village?.beerSold;
   return (
     <section className="relative h-dvh overflow-hidden bg-ink font-pixel">
       <img
@@ -151,79 +153,38 @@ function InnRoom() {
         いらっしゃい
       </div>
 
-      <div className="relative z-10 flex h-dvh flex-col items-center justify-center gap-3 px-5 text-center">
+      <div className="relative z-10 flex h-dvh flex-col items-center justify-center gap-4 px-5 text-center">
         {([10, 20, 30] as const).map((n) => (
           <button
             key={n}
             type="button"
             disabled={shells < n}
             onClick={() => stay(n)}
-            className="flex w-fit items-center gap-3 border-2 border-white bg-black/85 p-2 font-pixel text-left text-white disabled:opacity-40"
+            className="flex w-fit items-center gap-4 border-2 border-white bg-black/85 p-3 font-pixel text-left text-white disabled:opacity-40"
           >
             <img
               src={asset(`art/pixel/village/room-${n}.jpg`)}
               alt=""
-              className="h-16 w-24 border-2 border-white object-cover"
+              className="h-32 w-48 border-2 border-white object-cover"
             />
-            <span className="text-sm">
+            <span className="text-lg">
               {n}枚 · {n === 10 ? "体力2割 正気+10" : n === 20 ? "体力5割 正気+20" : "体力全快 正気+30"}
             </span>
           </button>
         ))}
       </div>
 
-      <div className="absolute right-3 bottom-3 z-20 flex flex-col items-end gap-2 sm:right-5 sm:bottom-5">
-        <PixelButton onClick={() => visit("pub")} className="w-fit">
-          パブへ
-        </PixelButton>
-        <PixelButton onClick={() => visit("hub")} className="w-fit">
-          戻る
-        </PixelButton>
-      </div>
-    </section>
-  );
-}
-
-function PubRoom() {
-  const buy = useGame((s) => s.buyBeer);
-  const visit = useGame((s) => s.visitVillage);
-  const village = useGame((s) => s.village);
-  const shells = useGame((s) => s.shells);
-  const sold = !!village?.beerSold;
-  return (
-    <section className="relative h-dvh overflow-hidden bg-ink font-pixel">
-      <img
-        src={asset("art/pixel/village/tavern-interior.jpg")}
-        alt=""
-        className="absolute inset-0 size-full object-cover"
-      />
-      <div className="absolute inset-0 bg-black/60" />
-
-      <div className="absolute top-3 left-3 z-20 flex flex-col gap-2 sm:top-5 sm:left-5">
-        <Vitals />
-        <Shells />
-      </div>
-
-      <div className="relative z-10 flex h-dvh flex-col items-center justify-center gap-4 px-5 text-center">
-        <div className="flex items-end gap-4">
-          <img
-            src={asset("art/pixel/village/landlady.png")}
-            alt=""
-            className="h-40 w-28 rounded-none border-2 border-white object-cover object-top"
-          />
-          <PixelWindow className="max-w-sm text-left">
-            <p className="text-[11px] tracking-widest text-accent">パブ</p>
-            <h2 className="text-3xl text-white">女将</h2>
-            <p className="mt-1 text-sm text-muted">冷えた瓶。気力が戻る。二度飲めば空だ。</p>
-          </PixelWindow>
-        </div>
-        <PixelButton disabled={sold || shells < 5} onClick={buy} className="w-fit">
-          {sold ? "売り切れ" : "ビール瓶 · 貝殻5"}
-        </PixelButton>
-        <PixelButton onClick={() => visit("hub")} className="w-fit">
-          戻る
+      <div className="absolute top-1/2 right-[5%] z-10 flex w-56 -translate-y-1/2 flex-col items-center gap-2 border-2 border-white bg-black/85 p-4 text-center">
+        <p className="text-[11px] tracking-widest text-accent">パブ</p>
+        <p className="text-sm text-white">冷えた瓶。気力が戻る。二度飲めば空だ。</p>
+        <PixelButton disabled={beerSold || shells < 5} onClick={buyBeer} className="w-fit">
+          {beerSold ? "売り切れ" : "ビール瓶 · 貝殻5"}
         </PixelButton>
       </div>
+
+      <PixelButton onClick={() => visit("hub")} className="fixed right-5 bottom-5 z-20">
+        戻る
+      </PixelButton>
     </section>
   );
 }
@@ -252,40 +213,44 @@ function SmithRoom() {
         ……
       </div>
       <div className="relative z-10 flex min-h-dvh flex-col gap-4 px-5 py-6 sm:px-12">
-        <Vitals />
-        <div className="flex items-center justify-between gap-3">
-          <PixelWindow>
+        <div className="flex flex-wrap items-center gap-3">
+          <Vitals />
+          <Shells />
+        </div>
+        <div className="flex flex-wrap items-start gap-4">
+          <PixelWindow className="shrink-0">
             <p className="text-[11px] tracking-widest text-accent">鍛冶屋</p>
             <h2 className="text-3xl text-white">鍛冶屋</h2>
             <p className="text-xs text-muted">{shop.taboo ? "受け取れ" : rankLabel(shop.rank)}</p>
           </PixelWindow>
-          <Shells />
-        </div>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-3">
-          {shop.goods.map((g) => {
-            const disabled = g.sold || shells < g.price;
-            return (
-              <button
-                key={g.uid}
-                type="button"
-                disabled={disabled}
-                onClick={() => buy(g.uid)}
-                className={cn("flex flex-col items-center gap-1", disabled && "opacity-40")}
-              >
-                <CardView card={makeCard(g.defId)} compact />
-                <span className="border-2 border-white bg-black px-2 py-0.5 font-pixel text-xs text-accent">
-                  {g.sold ? "売約" : shop.taboo ? "0" : `${g.price}枚`}
-                </span>
-              </button>
-            );
-          })}
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-3">
+            {shop.goods.map((g) => {
+              const disabled = g.sold || shells < g.price;
+              return (
+                <button
+                  key={g.uid}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => buy(g.uid)}
+                  className={cn("flex flex-col items-center gap-1", disabled && "opacity-40")}
+                >
+                  <CardView card={makeCard(g.defId)} compact />
+                  <span className="border-2 border-white bg-black px-2 py-0.5 font-pixel text-xs text-accent">
+                    {g.sold ? "売約" : shop.taboo ? "0" : `${g.price}枚`}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div className="mt-auto flex flex-wrap gap-3 pb-4">
           <PixelButton onClick={() => visit("deck")}>デッキ編成</PixelButton>
           <PixelButton onClick={() => visit("upgrade")}>焼く（強化）</PixelButton>
-          <PixelButton onClick={() => visit("hub")}>戻る</PixelButton>
         </div>
       </div>
+      <PixelButton onClick={() => visit("hub")} className="fixed right-5 bottom-5 z-20">
+        戻る
+      </PixelButton>
     </section>
   );
 }
