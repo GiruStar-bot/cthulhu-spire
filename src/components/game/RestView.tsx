@@ -223,7 +223,7 @@ function SmithRoom() {
             <h2 className="text-3xl text-white">鍛冶屋</h2>
             <p className="text-xs text-muted">{shop.taboo ? "受け取れ" : rankLabel(shop.rank)}</p>
           </PixelWindow>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-3">
+          <div className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-3">
             {shop.goods.map((g) => {
               const disabled = g.sold || shells < g.price;
               return (
