@@ -3,15 +3,13 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { CARDS, DECK_LIMIT } from "@/game/cards";
 import { RUNE_CATALOG } from "@/game/runes";
 import { uid } from "@/game/rng";
-import type { Rune } from "@/game/types";
+import type { EquipmentInstance, Rune } from "@/game/types";
 
 export type { Rune } from "@/game/types";
 
 export type CardInstance = {
   instanceId: string;
   baseCardId: string;
-  sockets: number;
-  socketedRunes: string[];
   origin: "starter" | "loot";
 };
 
@@ -20,6 +18,7 @@ export const COPY_LIMIT = 4;
 type Inventory = {
   cards: CardInstance[];
   runes: Rune[];
+  equipment: EquipmentInstance[];
 };
 
 type CollectionState = {
@@ -30,8 +29,9 @@ type CollectionState = {
   removeFromDeck: (instanceId: string) => void;
   addLootCard: (baseCardId: string) => void;
   addLootRune: (rune: Rune) => void;
-  socketRune: (cardInstanceId: string, runeId: string, socketIndex: number) => boolean;
-  unsocketRune: (cardInstanceId: string, socketIndex: number) => boolean;
+  addLootEquipment: (equipment: EquipmentInstance) => void;
+  socketRuneToEquipment: (equipmentUid: string, runeId: string, socketIndex: number) => boolean;
+  unsocketRuneFromEquipment: (equipmentUid: string, socketIndex: number) => boolean;
 };
 
 const STARTER_CARDS: { id: string; count: number }[] = [
@@ -45,21 +45,16 @@ const STARTER_CARDS: { id: string; count: number }[] = [
   { id: "sweep", count: 2 },
 ];
 
-function seedInventory(): { cards: CardInstance[]; runes: Rune[]; runeRegistry: Record<string, Rune> } {
+function seedInventory(): { cards: CardInstance[]; runes: Rune[]; equipment: EquipmentInstance[]; runeRegistry: Record<string, Rune> } {
   const cards: CardInstance[] = [];
-  let i = 0;
   for (const { id, count } of STARTER_CARDS) {
     if (!CARDS[id]) throw new Error(`unknown starter card: ${id}`);
     for (let n = 0; n < count; n++) {
-      const sockets = 1 + (i % 3);
       cards.push({
         instanceId: uid("ci"),
         baseCardId: id,
-        sockets,
-        socketedRunes: Array.from({ length: sockets }, () => ""),
         origin: "starter",
       });
-      i++;
     }
   }
   const runeRegistry: Record<string, Rune> = {};
@@ -70,7 +65,7 @@ function seedInventory(): { cards: CardInstance[]; runes: Rune[]; runeRegistry: 
       return rune;
     }),
   );
-  return { cards, runes, runeRegistry };
+  return { cards, runes, equipment: [], runeRegistry };
 }
 
 function cardById(cards: CardInstance[], instanceId: string) {
@@ -100,7 +95,7 @@ const seeded = seedInventory();
 export const useCollectionStore = create<CollectionState>()(
   persist(
     (set, get) => ({
-      inventory: { cards: seeded.cards, runes: seeded.runes },
+      inventory: { cards: seeded.cards, runes: seeded.runes, equipment: seeded.equipment },
       deck: [],
       runeRegistry: seeded.runeRegistry,
 
@@ -122,12 +117,9 @@ export const useCollectionStore = create<CollectionState>()(
       addLootCard: (baseCardId) => {
         if (!CARDS[baseCardId]) return;
         set((s) => {
-          const sockets = 1 + (s.inventory.cards.length % 3);
           const card: CardInstance = {
             instanceId: uid("ci"),
             baseCardId,
-            sockets,
-            socketedRunes: Array.from({ length: sockets }, () => ""),
             origin: "loot",
           };
           return { inventory: { ...s.inventory, cards: [...s.inventory.cards, card] } };
@@ -141,21 +133,27 @@ export const useCollectionStore = create<CollectionState>()(
         }));
       },
 
-      socketRune: (cardInstanceId, runeId, socketIndex) => {
+      addLootEquipment: (equipment) => {
+        set((s) => {
+          if (s.inventory.equipment.some((e) => e.uid === equipment.uid)) return s;
+          return { inventory: { ...s.inventory, equipment: [...s.inventory.equipment, equipment] } };
+        });
+      },
+
+      socketRuneToEquipment: (equipmentUid, runeId, socketIndex) => {
         const s = get();
-        const card = cardById(s.inventory.cards, cardInstanceId);
+        const gear = s.inventory.equipment.find((e) => e.uid === equipmentUid);
         const rune = s.inventory.runes.find((r) => r.id === runeId);
-        if (!card || !rune) return false;
-        if (socketIndex < 0 || socketIndex >= card.sockets) return false;
-        const filled = card.socketedRunes.slice();
-        while (filled.length < card.sockets) filled.push("");
+        if (!gear || !rune) return false;
+        if (socketIndex < 0 || socketIndex >= gear.socketedRunes.length) return false;
+        const filled = gear.socketedRunes.slice();
         if (filled[socketIndex]) return false;
         filled[socketIndex] = runeId;
         set({
           inventory: {
             ...s.inventory,
-            cards: s.inventory.cards.map((c) =>
-              c.instanceId === cardInstanceId ? { ...c, socketedRunes: filled } : c,
+            equipment: s.inventory.equipment.map((e) =>
+              e.uid === equipmentUid ? { ...e, socketedRunes: filled } : e,
             ),
             runes: s.inventory.runes.filter((r) => r.id !== runeId),
           },
@@ -164,21 +162,21 @@ export const useCollectionStore = create<CollectionState>()(
         return true;
       },
 
-      unsocketRune: (cardInstanceId, socketIndex) => {
+      unsocketRuneFromEquipment: (equipmentUid, socketIndex) => {
         const s = get();
-        const card = cardById(s.inventory.cards, cardInstanceId);
-        if (!card) return false;
-        if (socketIndex < 0 || socketIndex >= card.sockets) return false;
-        const filled = card.socketedRunes.slice();
+        const gear = s.inventory.equipment.find((e) => e.uid === equipmentUid);
+        if (!gear) return false;
+        if (socketIndex < 0 || socketIndex >= gear.socketedRunes.length) return false;
+        const filled = gear.socketedRunes.slice();
         const runeId = filled[socketIndex];
         if (!runeId) return false;
-        filled[socketIndex] = "";
-        const restored = s.runeRegistry[runeId] ?? { id: runeId, effect: "ATK+", value: 2 };
+        filled[socketIndex] = null;
+        const restored = s.runeRegistry[runeId] ?? { id: runeId, effect: "BLK+", value: 2 };
         set({
           inventory: {
             ...s.inventory,
-            cards: s.inventory.cards.map((c) =>
-              c.instanceId === cardInstanceId ? { ...c, socketedRunes: filled } : c,
+            equipment: s.inventory.equipment.map((e) =>
+              e.uid === equipmentUid ? { ...e, socketedRunes: filled } : e,
             ),
             runes: [...s.inventory.runes, restored],
           },
@@ -189,20 +187,29 @@ export const useCollectionStore = create<CollectionState>()(
     }),
     {
       name: "cthulhu-spire-collection-v1",
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const s = persisted as {
-          inventory?: { cards?: Array<CardInstance & { origin?: CardInstance["origin"] }>; runes?: Rune[] };
+          inventory?: {
+            cards?: Array<CardInstance & { origin?: CardInstance["origin"] }>;
+            runes?: Rune[];
+            equipment?: EquipmentInstance[];
+          };
           deck?: string[];
           runeRegistry?: Record<string, Rune>;
         };
         const cards = (s.inventory?.cards ?? []).map((c) => ({
-          ...c,
+          instanceId: c.instanceId,
+          baseCardId: c.baseCardId,
           origin: c.origin ?? "starter",
         }));
         return {
           ...s,
-          inventory: { cards, runes: s.inventory?.runes ?? [] },
+          inventory: {
+            cards,
+            runes: s.inventory?.runes ?? [],
+            equipment: s.inventory?.equipment ?? [],
+          },
         };
       },
       storage: createJSONStorage(() =>

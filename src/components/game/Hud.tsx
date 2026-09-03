@@ -1,7 +1,7 @@
 import { floorBand, layerLabel } from "@/game/floors";
 import { GRIMOIRE_ENABLED } from "@/game/profile";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
-import { relicLabel } from "@/game/relics";
+import { equipmentLabel } from "@/game/equipment";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
@@ -11,11 +11,12 @@ export function Vitals() {
   const maxHp = useGame((s) => s.maxHp);
   const sanity = useGame((s) => s.sanity);
   const maxSanity = useGame((s) => s.maxSanity);
-  const relics = useGame((s) => s.relics);
+  const equipped = useGame((s) => s.profile.equipped);
   const floor = useGame((s) => s.floor);
   const madness = useGame((s) => s.profile.madness);
   const playerName = useGame((s) => s.playerName);
   const shells = useGame((s) => s.shells);
+  const worn = Object.values(equipped).filter(Boolean);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -35,16 +36,18 @@ export function Vitals() {
         </span>
       </span>
       <div className="flex flex-wrap gap-1">
-        {relics.map((r) => (
-          <span
-            key={r.uid}
-            title={relicLabel(r)}
-            className="inline-flex items-center gap-1 border-2 border-gray-200 bg-black px-1 py-0.5 font-pixel text-[10px] text-parchment"
-          >
-            <PixelRelic defId={r.defId} className="size-4" />
-            {relicLabel(r)}
-          </span>
-        ))}
+        {worn.map((r) =>
+          r ? (
+            <span
+              key={r.uid}
+              title={equipmentLabel(r)}
+              className="inline-flex items-center gap-1 border-2 border-gray-200 bg-black px-1 py-0.5 font-pixel text-[10px] text-parchment"
+            >
+              <PixelRelic defId={r.defId} className="size-4" />
+              {equipmentLabel(r)}
+            </span>
+          ) : null,
+        )}
       </div>
     </div>
   );

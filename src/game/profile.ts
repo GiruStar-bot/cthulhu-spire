@@ -1,7 +1,6 @@
 import type { PlayerProfile, PlayerStats, StatKey } from "./types";
 
 export const STAT_MIN = 0;
-export const MAX_LOADOUT = 6;
 export const STAT_KEYS: StatKey[] = ["hp", "san", "intelligent", "strength", "energy"];
 const KEY = "cthulhu-spire-profile-v1";
 
@@ -13,8 +12,6 @@ export function emptyProfile(): PlayerProfile {
   return {
     playerName: "",
     stats: emptyStats(),
-    collection: [],
-    loadoutIds: [],
     bestFloor: 0,
     wins: 0,
     runs: 0,
@@ -125,8 +122,6 @@ export function loadProfile(): PlayerProfile {
       ...emptyProfile(),
       ...p,
       stats: fitted,
-      collection: Array.isArray(p.collection) ? p.collection : [],
-      loadoutIds: Array.isArray(p.loadoutIds) ? p.loadoutIds.slice(0, MAX_LOADOUT) : [],
       bestFloor,
       earnedPoints: budget,
       unspentPoints: Math.max(0, budget - statSum(fitted)),

@@ -1,9 +1,7 @@
 import { cardCost, cardText, getCard } from "@/game/cards";
-import { PixelRune } from "@/components/loadout/PixelRune";
 import { PixelSprite } from "@/components/ui/PixelSprite";
-import type { CardInst, Effect } from "@/game/types";
+import type { CardInst } from "@/game/types";
 import { cn } from "@/lib/utils";
-import { peekRune } from "@/store/useCollectionStore";
 
 export function CardView({
   card,
@@ -21,7 +19,6 @@ export function CardView({
   const d = getCard(card.defId);
   const cost = cardCost(card);
   const costLabel = d.xCost ? "X" : d.unplayable ? "—" : String(cost);
-  const runes = socketedRunes(card);
   const Tag = onClick ? "button" : "div";
   const borderColor =
     d.aiTag === "attack"
@@ -67,65 +64,10 @@ export function CardView({
       </div>
 
       <div className="shrink-0 bg-black px-1 py-1 text-left">
-        {runes.length ? (
-          <div className="mb-0.5 flex flex-wrap gap-0.5">
-            {runes.map((rune) => (
-              <span
-                key={rune.id}
-                title={rune.label}
-                className="inline-flex items-center gap-0.5 border-2 border-white bg-black px-0.5 py-px text-[8px] leading-none text-white"
-              >
-                <PixelRune effect={rune.effect} className="h-4 w-4" />
-                <span className="max-w-10 truncate">{rune.label}</span>
-              </span>
-            ))}
-          </div>
-        ) : null}
         <p className={cn("text-left text-white/80", compact ? "text-[9px] leading-snug" : "text-[10px] leading-snug")}>
           {cardText(card)}
         </p>
       </div>
     </Tag>
   );
-}
-
-function socketedRunes(card: CardInst): { id: string; effect: string; label: string }[] {
-  const ids = card.socketedRunes?.filter(Boolean) ?? [];
-  const fromPeek = ids
-    .map((id) => {
-      const rune = peekRune(id);
-      if (!rune) return null;
-      return { id: rune.id, effect: rune.effect, label: runeLabel(rune.effect, rune.value) };
-    })
-    .filter((r): r is { id: string; effect: string; label: string } => !!r);
-  if (fromPeek.length) return fromPeek;
-  const mods = card.runeMods;
-  if (!mods) return [];
-  const parts: { id: string; effect: string; label: string }[] = [];
-  if (mods.damage) parts.push({ id: "atk", effect: "ATK+", label: `ATK+${mods.damage}` });
-  if (mods.block) parts.push({ id: "blk", effect: "BLK+", label: `BLK+${mods.block}` });
-  if (mods.costDelta) parts.push({ id: "cost", effect: "COST-", label: `COST-${mods.costDelta}` });
-  mods.extra.forEach((e, i) => {
-    parts.push({ id: `extra-${i}`, effect: extraEffect(e.t), label: extraLabel(e) });
-  });
-  return parts;
-}
-
-function runeLabel(effect: string, value: number): string {
-  if (effect.endsWith("+") || effect.endsWith("-")) return `${effect}${value}`;
-  return `${effect}+${value}`;
-}
-
-function extraEffect(t: string): string {
-  if (t === "draw") return "DRAW";
-  if (t === "sanity") return "SAN+";
-  if (t === "strength") return "STR+";
-  if (t === "poison") return "POISON";
-  if (t === "heal") return "HEAL";
-  return "ATK+";
-}
-
-function extraLabel(e: Effect): string {
-  if ("n" in e && typeof e.n === "number") return runeLabel(extraEffect(e.t), e.n);
-  return e.t;
 }

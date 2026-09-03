@@ -1,11 +1,6 @@
 import { CollectionCard } from "@/components/loadout/CollectionCard";
-import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelButton } from "@/components/ui/PixelButton";
-import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DECK_LIMIT } from "@/game/cards";
-import { MAX_LOADOUT } from "@/game/profile";
-import { relicDesc, relicLabel } from "@/game/relics";
-import { useGame } from "@/game/store";
 import { cn } from "@/lib/utils";
 import { COPY_LIMIT, copiesOfBase, useCollectionStore, type CardInstance } from "@/store/useCollectionStore";
 import { useEffect, useRef, useState } from "react";
@@ -33,8 +28,7 @@ function ownedCountOf(cards: CardInstance[], baseCardId: string): number {
 function groupInventory(cards: CardInstance[]): CardGroup[] {
   const groups = new Map<string, CardGroup>();
   for (const card of cards) {
-    const isPlain = card.socketedRunes.every((r) => !r);
-    const key = isPlain ? `plain:${card.baseCardId}` : `unique:${card.instanceId}`;
+    const key = card.baseCardId;
     const existing = groups.get(key);
     if (existing) {
       existing.instanceIds.push(card.instanceId);
@@ -55,8 +49,6 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
   const deck = useCollectionStore((s) => s.deck);
   const addToDeck = useCollectionStore((s) => s.addToDeck);
   const removeFromDeck = useCollectionStore((s) => s.removeFromDeck);
-  const profile = useGame((s) => s.profile);
-  const toggleLoadout = useGame((s) => s.toggleLoadout);
   const [flight, setFlight] = useState<Flight | null>(null);
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
   const deckPanelRef = useRef<HTMLDivElement>(null);
@@ -160,58 +152,6 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
         </aside>
 
         <div className="flex min-h-0 flex-col lg:col-span-2">
-          <PixelWindow className="shrink-0 rounded-none border-0 border-b-2 border-gray-200">
-            <p className="mb-2 text-xs tracking-widest text-muted">
-              持込遺物 {profile.loadoutIds.length}/{MAX_LOADOUT}
-            </p>
-            <div className="grid grid-cols-6 gap-1">
-              {Array.from({ length: MAX_LOADOUT }, (_, i) => {
-                const uid = profile.loadoutIds[i];
-                const relic = uid ? profile.collection.find((r) => r.uid === uid) : null;
-                return (
-                  <button
-                    key={uid ?? `empty-${i}`}
-                    type="button"
-                    onClick={() => {
-                      if (relic) toggleLoadout(relic.uid);
-                    }}
-                    title={relic ? relicDesc(relic) : "空"}
-                    className={cn(
-                      "flex aspect-square flex-col items-center justify-center rounded-none border-2 bg-black p-1 text-[8px] leading-tight shadow-[2px_2px_0_0_#000]",
-                      relic ? "border-white text-white" : "border-gray-200/40 text-muted",
-                    )}
-                  >
-                    {relic ? <PixelRelic defId={relic.defId} className="size-8" /> : <span>{i + 1}</span>}
-                    <span className="mt-0.5 line-clamp-2 text-center">{relic ? relicLabel(relic) : "空"}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {profile.collection.length === 0 ? (
-                <p className="text-[9px] text-muted">魂に刻んだ遺物はまだない。潜航前点検でも選べる。</p>
-              ) : (
-                profile.collection.map((relic) => {
-                  const on = profile.loadoutIds.includes(relic.uid);
-                  return (
-                    <PixelButton
-                      key={relic.uid}
-                      onClick={() => toggleLoadout(relic.uid)}
-                      title={relicDesc(relic)}
-                      className={cn(
-                        "flex min-h-8 items-center gap-1 px-2 py-1 text-[9px]",
-                        on && "bg-white text-black",
-                      )}
-                    >
-                      <PixelRelic defId={relic.defId} className="size-5" />
-                      {relicLabel(relic)}
-                    </PixelButton>
-                  );
-                })
-              )}
-            </div>
-          </PixelWindow>
-
           <section ref={deckPanelRef} className="flex min-h-0 flex-1 flex-col p-3">
             <p className="mb-2 text-xs tracking-widest text-muted">編成中</p>
             <div className="min-h-0 flex-1 overflow-y-auto">

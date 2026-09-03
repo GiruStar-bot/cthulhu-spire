@@ -1,5 +1,4 @@
-import { PixelSprite } from "@/components/ui/PixelSprite";
-import { relicArt } from "@/game/relics";
+import { EQUIPMENT } from "@/game/equipment";
 import { cn } from "@/lib/utils";
 
 export function PixelRelic({
@@ -9,9 +8,7 @@ export function PixelRelic({
   defId: string;
   className?: string;
 }) {
-  const src = relicArt(defId);
-  if (!src) {
-    return <span className={cn("block size-8 bg-ink-2", className)} />;
-  }
-  return <PixelSprite src={src} tolerance={40} feather={24} className={cn("block object-contain", className)} />;
+  const src = EQUIPMENT[defId]?.art;
+  if (!src) return null;
+  return <img src={src} alt="" className={cn("object-contain", className)} />;
 }

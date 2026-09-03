@@ -1,13 +1,11 @@
 import { asset } from "@/lib/asset";
-import { tierFromFloor } from "./relics";
+import { tierFromFloor } from "./equipment";
 import { uid } from "./rng";
 import type { Rune } from "./types";
 
 const FILES: Record<string, string> = {
-  "ATK+": "atk.png",
   "BLK+": "blk.png",
   DRAW: "draw.png",
-  "COST-": "cost.png",
   "SAN+": "san.png",
   "STR+": "str.png",
   POISON: "poison.png",
@@ -15,10 +13,8 @@ const FILES: Record<string, string> = {
 };
 
 export const RUNE_CATALOG: Omit<Rune, "id">[] = [
-  { effect: "ATK+", value: 2 },
   { effect: "BLK+", value: 2 },
   { effect: "DRAW", value: 1 },
-  { effect: "COST-", value: 1 },
   { effect: "SAN+", value: 3 },
   { effect: "STR+", value: 1 },
   { effect: "POISON", value: 2 },

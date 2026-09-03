@@ -8,14 +8,12 @@ import type {
   Floater,
   Intent,
   PowerId,
-  RelicInstance,
 } from "./types";
 import { getCard, makeCard, scaleN } from "./cards";
 import { evaluateCardEffect } from "./cardEvaluator";
 import { applyDefensePct, computeEquipmentStats } from "./equipment";
 import { getEnemy } from "./enemies";
 import { cardToIntent, rollEnemyCard } from "./enemyAi";
-import { powerOf } from "./relics";
 import { pick, shuffle, uid } from "./rng";
 import { peekRune } from "@/store/useCollectionStore";
 
@@ -26,7 +24,6 @@ export interface PlayerHook {
   maxHp: number;
   sanity: number;
   maxSanity: number;
-  relics: RelicInstance[];
   extraStrength: number;
   extraEnergyNext: number;
   baseEnergy?: number;
@@ -178,9 +175,7 @@ export function startCombat(
     rand,
   );
   const enemies = enemyIds.map((id) => makeEnemy(id, floor, rand));
-  const energyBonus = powerOf(player.relics, "energy") > 0 ? 1 : 0;
-  const strBonus = powerOf(player.relics, "strength");
-  const drawBonus = powerOf(player.relics, "draw");
+  const eq = computeEquipmentStats(player.equipped ?? {}, peekRune);
   const baseEnergy = player.baseEnergy ?? 3;
   const c: CombatState = {
     floor,
@@ -189,10 +184,10 @@ export function startCombat(
     discard: [],
     exhaust: [],
     hand: [],
-    energy: baseEnergy + energyBonus + (player.extraEnergyNext || 0),
-    maxEnergy: baseEnergy + energyBonus,
+    energy: baseEnergy + (player.extraEnergyNext || 0),
+    maxEnergy: baseEnergy,
     block: 0,
-    strength: strBonus,
+    strength: Math.round(eq.strength),
     dexterity: 0,
     weak: 0,
     vulnerable: 0,
@@ -217,10 +212,10 @@ export function startCombat(
     result: "ongoing",
     log: ["空気が、厚くなる。"],
     floaters: [],
-    equipmentStats: computeEquipmentStats(player.equipped ?? {}, peekRune),
+    equipmentStats: eq,
   };
   c.strength += player.extraStrength;
-  drawCards(c, 5 + drawBonus, rand, player);
+  drawCards(c, 5 + Math.round(eq.drawBonus), rand, player);
   if (player.sanity <= 0) {
     addToDiscard(c, makeCard("dread"));
     c.log.push("恐怖がデッキに沈む。");
@@ -458,11 +453,6 @@ export function changeSanity(player: PlayerHook, c: CombatState, delta: number) 
     c.floaters.push(floater(`${delta > 0 ? "+" : ""}${delta}`, "sanity", "player"));
   }
   if (delta < 0) {
-    const idolBlock = powerOf(player.relics, "sanityBlock");
-    if (idolBlock > 0) {
-      c.block += idolBlock;
-      c.floaters.push(floater(`+${idolBlock}`, "block", "player"));
-    }
     if (c.powers.includes("bloodOath")) {
       c.strength += 2;
     }
@@ -657,6 +647,12 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
     const reduced = applyDefensePct(c.poison, c.equipmentStats.poisonResistPct);
     player.hp = Math.max(1, player.hp - reduced);
     c.floaters.push(floater(`毒${reduced}`, "dmg", "player"));
+  }
+
+  const healN = Math.round(c.equipmentStats.healPerTurn);
+  if (healN > 0) {
+    player.hp = Math.min(player.maxHp, player.hp + healN);
+    c.floaters.push(floater(`+${healN}`, "heal", "player"));
   }
 
   for (const e of living(c)) {

@@ -1,13 +1,12 @@
 import { PrepareView } from "@/components/game/PrepareView";
-import { CardForgeScreen } from "@/components/loadout/CardForgeScreen";
 import { CollectionCard } from "@/components/loadout/CollectionCard";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
+import { equipmentLabel, EQUIPMENT_SLOTS, getEquipment } from "@/game/equipment";
 import { layerLabel } from "@/game/floors";
 import { derivedVitals } from "@/game/profile";
-import { relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
@@ -15,12 +14,11 @@ import { loadoutError } from "@/game/cardEvaluator";
 import { useCollectionStore, type CardInstance } from "@/store/useCollectionStore";
 import { useState } from "react";
 
-type HubTab = "descend" | "deck" | "forge" | "stash";
+type HubTab = "descend" | "deck" | "stash";
 
 const NAV: { id: HubTab; label: string }[] = [
   { id: "descend", label: "探索開始" },
   { id: "deck", label: "デッキ編成" },
-  { id: "forge", label: "魔改造" },
   { id: "stash", label: "戦利品" },
 ];
 
@@ -84,7 +82,6 @@ export function HubScreen() {
         <div className="min-h-0 min-w-0 flex-1">
           {tab === "descend" ? checkpoint ? <CheckpointPanel /> : <PrepareView embedded /> : null}
           {tab === "deck" ? <DeckBuilderScreen embedded /> : null}
-          {tab === "forge" ? <CardForgeScreen embedded /> : null}
           {tab === "stash" ? <StashPanel /> : null}
         </div>
       </div>
@@ -110,7 +107,7 @@ function CheckpointPanel() {
         <p className="text-[11px] tracking-widest text-accent">中継点</p>
         <h2 className="mt-1 text-3xl text-white">{layerLabel(floor)}を越えた</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          デッキ編成と魔改造ができる。先へ沈むか、拠点へ戻るか。拾った遺物はすでに残っている。
+          デッキ編成ができる。先へ沈むか、拠点へ戻るか。拾った装備はすでに残っている。
         </p>
         <p className="mt-3 text-xs tabular-nums text-white">
           HP {hp}/{maxHp} · SAN {sanity}/{maxSanity} · 貝殻 {shells}
@@ -140,32 +137,74 @@ function groupLoot(cards: CardInstance[]): { baseCardId: string; representative:
 }
 
 function StashPanel() {
-  const profile = useGame((s) => s.profile);
   const inventory = useCollectionStore((s) => s.inventory);
+  const equipped = useGame((s) => s.profile.equipped);
+  const equipItem = useGame((s) => s.equipItem);
+  const unequipSlot = useGame((s) => s.unequipSlot);
   const lootGroups = groupLoot(inventory.cards);
+  const equippedUids = new Set(EQUIPMENT_SLOTS.map((slot) => equipped[slot]?.uid).filter(Boolean));
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-y-auto p-3">
       <PixelWindow className="mb-3 rounded-none">
         <p className="text-xs tracking-widest text-muted">STASH</p>
         <h2 className="mt-1 text-xl text-white">戦利品</h2>
-        <p className="mt-1 text-xs text-muted">所持している遺物と、これまでの潜航で得たカード。</p>
+        <p className="mt-1 text-xs text-muted">所持している装備と、これまでの潜航で得たカード。装備をクリックで装着。</p>
       </PixelWindow>
 
-      <p className="mb-2 text-xs tracking-widest text-muted">遺物 {profile.collection.length}</p>
-      {profile.collection.length === 0 ? (
-        <p className="mb-4 text-xs text-muted">まだ遺物はない。</p>
+      <p className="mb-2 text-xs tracking-widest text-muted">装着中</p>
+      <ul className="mb-4 grid grid-cols-5 gap-1">
+        {EQUIPMENT_SLOTS.map((slot) => {
+          const inst = equipped[slot];
+          return (
+            <li key={slot}>
+              <button
+                type="button"
+                onClick={() => inst && unequipSlot(slot)}
+                className="flex w-full flex-col items-center border-2 border-white bg-black p-1"
+              >
+                {inst ? (
+                  <>
+                    <PixelRelic defId={inst.defId} className="h-10 w-full" />
+                    <span className="mt-1 text-[9px] text-white">{equipmentLabel(inst)}</span>
+                  </>
+                ) : (
+                  <span className="py-4 text-[9px] text-muted">{slot}</span>
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      <p className="mb-2 text-xs tracking-widest text-muted">装備 {inventory.equipment.length}</p>
+      {inventory.equipment.length === 0 ? (
+        <p className="mb-4 text-xs text-muted">まだ装備はない。</p>
       ) : (
         <ul className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {profile.collection.map((inst) => (
-            <li key={inst.uid}>
-              <PixelWindow className="rounded-none p-2">
-                <PixelRelic defId={inst.defId} className="mx-auto h-12 w-full" />
-                <p className="mt-1 text-sm text-white">{relicLabel(inst)}</p>
-                <p className="mt-1 text-[10px] text-muted">{layerLabel(inst.obtainedFloor)}</p>
-              </PixelWindow>
-            </li>
-          ))}
+          {inventory.equipment.map((inst) => {
+            const on = equippedUids.has(inst.uid);
+            const def = getEquipment(inst.defId);
+            return (
+              <li key={inst.uid}>
+                <button
+                  type="button"
+                  onClick={() => (on ? unequipSlot(def.slot) : equipItem(inst.uid))}
+                  className={cn(
+                    "w-full border-2 bg-black p-2 text-left",
+                    on ? "border-accent" : "border-white",
+                  )}
+                >
+                  <PixelRelic defId={inst.defId} className="mx-auto h-12 w-full" />
+                  <p className="mt-1 text-sm text-white">{equipmentLabel(inst)}</p>
+                  <p className="mt-1 text-[10px] text-muted">
+                    {def.slot}
+                    {on ? " · 装着中" : ""}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -177,7 +216,7 @@ function StashPanel() {
           {lootGroups.map((g) => (
             <CollectionCard
               key={g.baseCardId}
-              instance={{ ...g.representative, sockets: 0, socketedRunes: [] }}
+              instance={g.representative}
               stackCount={g.count > 1 ? g.count : undefined}
             />
           ))}

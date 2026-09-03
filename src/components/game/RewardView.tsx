@@ -4,7 +4,7 @@ import { PixelRune } from "@/components/loadout/PixelRune";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DEMO_MAX_FLOOR, floorKindLabel, layerLabel } from "@/game/floors";
-import { relicDesc, relicLabel } from "@/game/relics";
+import { equipmentLabel } from "@/game/equipment";
 import { useGame } from "@/game/store";
 
 export function RewardView() {
@@ -39,14 +39,13 @@ export function RewardView() {
           </div>
         ) : null}
 
-        {reward.kind === "relic" ? (
+        {reward.kind === "equipment" ? (
           <div className="mt-5 flex items-center gap-3 border-2 border-white bg-black px-4 py-3">
-            <PixelRelic defId={reward.relic.defId} className="size-12 shrink-0" />
+            <PixelRelic defId={reward.equipment.defId} className="size-12 shrink-0" />
             <div>
-              <p className="text-[11px] tracking-widest text-accent">遺物</p>
-              <p className="mt-1 text-xl text-white">{relicLabel(reward.relic)}</p>
-              <p className="mt-1 text-sm text-muted">{relicDesc(reward.relic)}</p>
-              <p className="mt-2 text-xs text-muted">得た瞬間から魂に残る。死んでも失わない。</p>
+              <p className="text-[11px] tracking-widest text-accent">装備</p>
+              <p className="mt-1 text-xl text-white">{equipmentLabel(reward.equipment)}</p>
+              <p className="mt-2 text-xs text-muted">得た瞬間から所持に残る。死んでも失わない。</p>
             </div>
           </div>
         ) : null}
@@ -59,7 +58,7 @@ export function RewardView() {
               <p className="mt-1 text-xl text-white">
                 {reward.rune.effect} {reward.rune.value}
               </p>
-              <p className="mt-2 text-xs text-muted">魔改造でカードにソケットできる。</p>
+              <p className="mt-2 text-xs text-muted">装備のソケットに嵌めることができる。</p>
             </div>
           </div>
         ) : null}

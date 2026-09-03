@@ -27,14 +27,6 @@ export interface FloorSpec {
   enemyIds?: string[];
 }
 export type IntentKind = "attack" | "defend" | "buff" | "debuff" | "unknown";
-export type RelicKind =
-  | "draw"
-  | "maxHp"
-  | "sanityBlock"
-  | "energy"
-  | "postHeal"
-  | "strength"
-  | "maxSanity";
 
 export type Effect =
   | { t: "damage"; n: number }
@@ -107,21 +99,12 @@ export interface CardDef {
   upgradedEffects: Effect[];
 }
 
-export type RuneMods = {
-  costDelta: number;
-  damage: number;
-  block: number;
-  extra: Effect[];
-};
-
 export interface CardInst {
   uid: string;
   defId: string;
   upgraded: boolean;
   charges?: number;
   forge?: number;
-  socketedRunes?: string[];
-  runeMods?: RuneMods;
 }
 
 export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour" | "shrine";
@@ -190,22 +173,6 @@ export interface CharacterDef {
   starter: string[];
 }
 
-export interface RelicDef {
-  id: string;
-  name: string;
-  text: string;
-  kind: RelicKind;
-}
-
-export interface RelicInstance {
-  uid: string;
-  defId: string;
-  tier: number;
-  power: number;
-  obtainedFloor: number;
-  source: "drop" | "event" | "gift";
-}
-
 export interface Rune {
   id: string;
   effect: string;
@@ -272,8 +239,6 @@ export interface EquipmentStats {
 export interface PlayerProfile {
   playerName: string;
   stats: PlayerStats;
-  collection: RelicInstance[];
-  loadoutIds: string[];
   bestFloor: number;
   wins: number;
   runs: number;
@@ -342,7 +307,7 @@ export interface Floater {
 export type RewardOffer =
   | { kind: "none" }
   | { kind: "card"; card: CardInst }
-  | { kind: "relic"; relic: RelicInstance }
+  | { kind: "equipment"; equipment: EquipmentInstance }
   | { kind: "rune"; rune: Rune };
 
 export interface GameEvent {

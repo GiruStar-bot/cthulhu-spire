@@ -1,8 +1,7 @@
 import { CardView } from "@/components/game/CardView";
-import { PixelRune } from "@/components/loadout/PixelRune";
 import { instFromLoadout } from "@/game/cardEvaluator";
 import { cn } from "@/lib/utils";
-import { COPY_LIMIT, peekRune, type CardInstance } from "@/store/useCollectionStore";
+import { COPY_LIMIT, type CardInstance } from "@/store/useCollectionStore";
 
 export function CollectionCard({
   instance,
@@ -59,18 +58,6 @@ export function CollectionCard({
       {inDeck ? (
         <span className="pointer-events-none absolute top-0 left-0 z-10 border-2 border-white bg-black px-1 font-pixel text-[9px] text-accent shadow-[2px_2px_0_0_#000]">
           IN
-        </span>
-      ) : null}
-      {instance.sockets > 0 ? (
-        <span className="pointer-events-none absolute right-1 bottom-10 z-10 flex gap-px">
-          {Array.from({ length: instance.sockets }, (_, i) => {
-            const rune = instance.socketedRunes[i] ? peekRune(instance.socketedRunes[i]) : undefined;
-            return rune ? (
-              <PixelRune key={i} effect={rune.effect} className="size-3" />
-            ) : (
-              <span key={i} className="size-3 border border-black bg-ink-2" />
-            );
-          })}
         </span>
       ) : null}
       {typeof stackCount === "number" && stackCount > 1 ? (

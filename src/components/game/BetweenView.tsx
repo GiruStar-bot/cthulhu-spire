@@ -9,7 +9,7 @@ import { useGame } from "@/game/store";
 export function BetweenView() {
   const floor = useGame((s) => s.floor);
   const deck = useGame((s) => s.deck);
-  const relics = useGame((s) => s.relics);
+  const equipped = useGame((s) => s.profile.equipped);
   const advance = useGame((s) => s.continueClimb);
 
   return (
@@ -21,14 +21,14 @@ export function BetweenView() {
           <p className="text-[11px] tracking-widest text-accent">{layerLabel(floor)}まで沈んだ</p>
           <h2 className="mt-1 text-4xl text-white sm:text-5xl">都市は、まだ沈む</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            大ボスは倒した。肉体もデッキも遺物も、削れたまま連れていく。デモは第{DEMO_MAX_FLOOR}
+            大ボスは倒した。肉体もデッキも装備も、削れたまま連れていく。デモは第{DEMO_MAX_FLOOR}
             層まで。次の一歩で、ただちに次の層へ沈む。
           </p>
         </PixelWindow>
         <Vitals />
         <p className="text-[11px] text-muted">
           デッキ {deck.length}枚
-          {relics.length ? ` · 遺物 ${relics.length}` : ""} · 強化 {deck.filter((c) => c.upgraded).length}
+          {Object.values(equipped).some(Boolean) ? ` · 装備 ${Object.values(equipped).filter(Boolean).length}` : ""} · 強化 {deck.filter((c) => c.upgraded).length}
         </p>
         <ul className="max-w-md text-xs leading-relaxed text-muted">
           {deck.slice(0, 12).map((c) => (

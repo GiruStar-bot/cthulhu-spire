@@ -3,20 +3,24 @@ import type {
   CardInst,
   CharacterId,
   CombatState,
+  EquipmentSlot,
   FloorSpec,
   GameEvent,
   PlayerProfile,
   PlayerStats,
-  RelicInstance,
   RewardOffer,
   Scene,
   VillageState,
 } from "./types";
 import { cardText, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
-import { getEnemy } from "./enemies";
 import { DEMO_MAX_FLOOR, generateRunTable, layerLabel } from "./floors";
-import { pickRelicTemplate, powerOf, relicLabel, rollRelic } from "./relics";
+import {
+  equipmentLabel,
+  getEquipment,
+  pickEquipmentTemplate,
+  rollEquipment,
+} from "./equipment";
 import { RUNE_CATALOG, rollRune } from "./runes";
 import {
   canPlay,
@@ -27,7 +31,7 @@ import {
   startCombat,
   type PlayerHook,
 } from "./combat";
-import { mulberry32, pick, uid, weightedPick } from "./rng";
+import { mulberry32, pick, weightedPick } from "./rng";
 import { playBgm, playCues, sfx, stopBgm, unlockAudio } from "./audio";
 import {
   clampStats,
@@ -35,14 +39,13 @@ import {
   homeScene,
   loadProfile,
   MADNESS_STEP,
-  MAX_LOADOUT,
   saveProfile,
   STAT_MIN,
   statSum,
   totalPoints,
   wipeProfile,
 } from "./profile";
-import { equippedRelics, loadoutDeck, loadoutError } from "./cardEvaluator";
+import { loadoutDeck, loadoutError } from "./cardEvaluator";
 import { useCollectionStore } from "@/store/useCollectionStore";
 import { nextUnread } from "./grimoire";
 import { forgeCard, makeSmith, SHOP_PRICE } from "./smith";
@@ -54,7 +57,6 @@ function hookFrom(s: GameStore): PlayerHook {
     maxHp: s.maxHp,
     sanity: s.sanity,
     maxSanity: s.maxSanity,
-    relics: s.relics,
     extraStrength: s.runStrength,
     extraEnergyNext: s.extraEnergyNext,
     baseEnergy: vitals.energy,
@@ -88,7 +90,6 @@ export interface GameStore {
   sanity: number;
   maxSanity: number;
   deck: CardInst[];
-  relics: RelicInstance[];
   runStrength: number;
   extraEnergyNext: number;
   act: number;
@@ -108,7 +109,6 @@ export interface GameStore {
   toTitle: () => void;
   setPlayerName: (name: string) => void;
   setStat: (key: keyof PlayerStats, value: number) => void;
-  toggleLoadout: (uid: string) => void;
   startRun: () => void;
   play: (cardUid: string, targetId?: string | null) => void;
   setTargeting: (cardUid: string | null) => void;
@@ -134,7 +134,8 @@ export interface GameStore {
   finishPrologue: () => void;
   turnGrimoirePage: () => void;
   acceptShatter: () => void;
-  engraveRelic: (uid: string) => void;
+  equipItem: (equipmentUid: string) => void;
+  unequipSlot: (slot: EquipmentSlot) => void;
 }
 
 function weightedCard(owner: CharacterId, rand: () => number): CardInst {
@@ -150,26 +151,6 @@ function starterPath(stats: PlayerStats): CharacterId {
   return stats.hp >= stats.san ? "investigator" : "cultist";
 }
 
-function keepRunRelics(profile: PlayerProfile, relics: RelicInstance[]): PlayerProfile {
-  const have = new Set(profile.collection.map((r) => r.uid));
-  const extra = relics.filter((r) => !have.has(r.uid));
-  if (!extra.length) return profile;
-  const loadoutIds = profile.loadoutIds.slice();
-  for (const r of extra) {
-    if (loadoutIds.length < MAX_LOADOUT && !loadoutIds.includes(r.uid)) loadoutIds.push(r.uid);
-  }
-  return { ...profile, collection: [...profile.collection, ...extra], loadoutIds };
-}
-
-function acquireRelic(
-  profile: PlayerProfile,
-  relics: RelicInstance[],
-  inst: RelicInstance,
-): { profile: PlayerProfile; relics: RelicInstance[] } {
-  const nextRelics = relics.some((r) => r.uid === inst.uid) ? relics : [...relics, inst];
-  return { profile: keepRunRelics(profile, nextRelics), relics: nextRelics };
-}
-
 function isStatusCard(card: CardInst): boolean {
   const d = getCard(card.defId);
   return d.type === "status" || d.rarity === "status";
@@ -182,16 +163,13 @@ function mergeLoadoutDeck(current: CardInst[]): CardInst[] {
 function markDefeat(s: GameStore): PlayerProfile {
   const bestFloor = Math.max(s.profile.bestFloor, s.floor);
   const budget = totalPoints({ bestFloor });
-  const profile = keepRunRelics(
-    {
-      ...s.profile,
-      bestFloor,
-      earnedPoints: budget,
-      unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
-      sanity: s.sanity,
-    },
-    s.relics,
-  );
+  const profile = {
+    ...s.profile,
+    bestFloor,
+    earnedPoints: budget,
+    unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
+    sanity: s.sanity,
+  };
   persist(profile);
   return profile;
 }
@@ -228,12 +206,10 @@ function presentCombat(
       const cur = get();
       if (cur.combat?.result !== "win") return;
       playBgm("reward");
-      const heal = powerOf(cur.relics, "postHeal");
       const gained = rollShells(cur);
       set({
         scene: "reward",
         reward: makeReward(cur),
-        hp: heal > 0 ? Math.min(cur.maxHp, cur.hp + heal) : cur.hp,
         shells: cur.shells + gained,
         toast: gained ? `きれいな貝殻 +${gained}` : cur.toast,
       });
@@ -253,7 +229,6 @@ function presentCombat(
           runFloors: [],
           floor: 0,
           deck: [],
-          relics: [],
         });
         return;
       }
@@ -275,17 +250,14 @@ export const useGame = create<GameStore>((set, get) => {
     if (floor > (s.runFloors.length || DEMO_MAX_FLOOR)) {
       const bestFloor = Math.max(s.profile.bestFloor, s.floor);
       const budget = totalPoints({ bestFloor });
-      const profile = keepRunRelics(
-        {
-          ...s.profile,
-          bestFloor,
-          earnedPoints: budget,
-          unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
-          wins: s.profile.wins + 1,
-          sanity: s.sanity,
-        },
-        s.relics,
-      );
+      const profile = {
+        ...s.profile,
+        bestFloor,
+        earnedPoints: budget,
+        unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
+        wins: s.profile.wins + 1,
+        sanity: s.sanity,
+      };
       persist(profile);
       stopBgm();
       set({
@@ -344,16 +316,13 @@ export const useGame = create<GameStore>((set, get) => {
     if (spec?.type === "boss" && s.floor % 10 === 0 && s.floor < DEMO_MAX_FLOOR) {
       const bestFloor = Math.max(s.profile.bestFloor, s.floor);
       const budget = totalPoints({ bestFloor });
-      const profile = keepRunRelics(
-        {
-          ...s.profile,
-          bestFloor,
-          earnedPoints: budget,
-          unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
-          sanity: s.sanity,
-        },
-        s.relics,
-      );
+      const profile = {
+        ...s.profile,
+        bestFloor,
+        earnedPoints: budget,
+        unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
+        sanity: s.sanity,
+      };
       persist(profile);
       playBgm("rest");
       set({
@@ -370,15 +339,12 @@ export const useGame = create<GameStore>((set, get) => {
       return;
     }
     if (s.floor >= DEMO_MAX_FLOOR) {
-      const profile = keepRunRelics(
-        {
-          ...s.profile,
-          bestFloor: Math.max(s.profile.bestFloor, s.floor),
-          wins: s.profile.wins + 1,
-          sanity: s.sanity,
-        },
-        s.relics,
-      );
+      const profile = {
+        ...s.profile,
+        bestFloor: Math.max(s.profile.bestFloor, s.floor),
+        wins: s.profile.wins + 1,
+        sanity: s.sanity,
+      };
       persist(profile);
       stopBgm();
       set({
@@ -410,7 +376,6 @@ export const useGame = create<GameStore>((set, get) => {
     sanity: 0,
     maxSanity: 0,
     deck: [],
-    relics: [],
     runStrength: 0,
     extraEnergyNext: 0,
     act: 1,
@@ -474,26 +439,6 @@ export const useGame = create<GameStore>((set, get) => {
       sfx.select();
     },
 
-    toggleLoadout: (uid) => {
-      const profile = { ...get().profile };
-      const ids = profile.loadoutIds.slice();
-      const i = ids.indexOf(uid);
-      if (i >= 0) ids.splice(i, 1);
-      else {
-        if (ids.length >= MAX_LOADOUT) {
-          set({ toast: `持込は${MAX_LOADOUT}つまで。` });
-          sfx.hurt();
-          return;
-        }
-        if (!profile.collection.some((r) => r.uid === uid)) return;
-        ids.push(uid);
-      }
-      profile.loadoutIds = ids;
-      persist(profile);
-      set({ profile, toast: null });
-      sfx.select();
-    },
-
     startRun: () => {
       const s = get();
       const profile = { ...s.profile };
@@ -532,9 +477,8 @@ export const useGame = create<GameStore>((set, get) => {
       }
 
       const deck = loadoutDeck();
-      const loadout = equippedRelics(profile);
-      const maxHp = vitals.maxHp + powerOf(loadout, "maxHp");
-      const maxSanity = vitals.maxSanity + powerOf(loadout, "maxSanity");
+      const maxHp = vitals.maxHp;
+      const maxSanity = vitals.maxSanity;
       if (maxSanity <= 0) {
         set({ scene: "shatter", profile: wipeProfile(), combat: null, runFloors: [], floor: 0 });
         return;
@@ -560,8 +504,7 @@ export const useGame = create<GameStore>((set, get) => {
         sanity,
         maxSanity,
         deck,
-        relics: loadout,
-        runStrength: vitals.strength + powerOf(loadout, "strength"),
+        runStrength: vitals.strength,
         extraEnergyNext: 0,
         act: 1,
         combat: null,
@@ -628,34 +571,25 @@ export const useGame = create<GameStore>((set, get) => {
     claimReward: () => {
       const s = get();
       const reward = s.reward;
-      let hp = s.hp;
-      let maxHp = s.maxHp;
-      let maxSanity = s.maxSanity;
-      let sanity = s.sanity;
-      let relics = s.relics.slice();
-      let profile = { ...s.profile, collection: s.profile.collection.slice() };
+      const hp = s.hp;
+      const maxHp = s.maxHp;
+      const maxSanity = s.maxSanity;
+      const sanity = s.sanity;
+      let profile = s.profile;
       let toast: string | null = null;
 
       if (reward?.kind === "card") {
         useCollectionStore.getState().addLootCard(reward.card.defId);
         toast = `${getCard(reward.card.defId).name}を戦利品として持ち帰った。`;
-      } else if (reward?.kind === "relic") {
-        const got = acquireRelic(profile, relics, reward.relic);
-        profile = got.profile;
-        relics = got.relics;
-        const inst = reward.relic;
-        const hpGain = powerOf([inst], "maxHp");
-        if (hpGain) {
-          maxHp += hpGain;
-          hp += hpGain;
-        }
-        const sanGain = powerOf([inst], "maxSanity");
-        if (sanGain) {
-          maxSanity += sanGain;
-          sanity = Math.min(maxSanity, sanity + sanGain);
+      } else if (reward?.kind === "equipment") {
+        const inst = reward.equipment;
+        useCollectionStore.getState().addLootEquipment(inst);
+        const def = getEquipment(inst.defId);
+        if (!profile.equipped[def.slot]) {
+          profile = { ...profile, equipped: { ...profile.equipped, [def.slot]: inst } };
         }
         sfx.reward();
-        toast = `${relicLabel(inst)} を得た。魂に残った。`;
+        toast = `${equipmentLabel(inst)} を得た。`;
       } else if (reward?.kind === "rune") {
         useCollectionStore.getState().addLootRune(reward.rune);
         toast = `${reward.rune.effect}のルーンを見つけた。`;
@@ -664,7 +598,7 @@ export const useGame = create<GameStore>((set, get) => {
       }
 
       persist(profile);
-      afterGain({ relics, hp, maxHp, maxSanity, sanity, profile, toast });
+      afterGain({ hp, maxHp, maxSanity, sanity, profile, toast });
     },
 
     restHeal: () => get().innStay(10),
@@ -793,16 +727,13 @@ export const useGame = create<GameStore>((set, get) => {
       const s = get();
       const bestFloor = Math.max(s.profile.bestFloor, s.floor);
       const budget = totalPoints({ bestFloor });
-      const profile = keepRunRelics(
-        {
-          ...s.profile,
-          bestFloor,
-          earnedPoints: budget,
-          unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
-          sanity: s.sanity,
-        },
-        s.relics,
-      );
+      const profile = {
+        ...s.profile,
+        bestFloor,
+        earnedPoints: budget,
+        unspentPoints: Math.max(0, budget - statSum(s.profile.stats)),
+        sanity: s.sanity,
+      };
       persist(profile);
       sfx.ui();
       set({
@@ -812,7 +743,6 @@ export const useGame = create<GameStore>((set, get) => {
         runFloors: [],
         floor: 0,
         deck: [],
-        relics: [],
         reward: null,
         event: null,
         restMode: null,
@@ -829,11 +759,10 @@ export const useGame = create<GameStore>((set, get) => {
       let maxHp = s.maxHp;
       let sanity = s.sanity;
       const deck = s.deck.slice();
-      let relics = s.relics.slice();
       let runStrength = s.runStrength;
       let extraEnergyNext = s.extraEnergyNext;
       let toast = "";
-      let profile = { ...s.profile, collection: s.profile.collection.slice() };
+      let profile = s.profile;
 
       if (ev.id === "tome") {
         if (choiceId === "read") {
@@ -856,18 +785,13 @@ export const useGame = create<GameStore>((set, get) => {
       } else if (ev.id === "cult") {
         if (choiceId === "kneel") {
           sanity = Math.max(0, sanity - 10);
-          const ownedDefs = profile.collection.map((r) => r.defId);
-          const defId = pickRelicTemplate(ownedDefs, s.rand);
-          const inst = rollRelic(defId, s.floor, s.rand, "event");
-          const got = acquireRelic(profile, relics, inst);
-          profile = got.profile;
-          relics = got.relics;
-          const hpGain = powerOf([inst], "maxHp");
-          if (hpGain) {
-            maxHp += hpGain;
-            hp += hpGain;
+          const inst = rollEquipment(pickEquipmentTemplate(s.rand), s.floor, s.rand, "gift");
+          useCollectionStore.getState().addLootEquipment(inst);
+          const def = getEquipment(inst.defId);
+          if (!profile.equipped[def.slot]) {
+            profile = { ...profile, equipped: { ...profile.equipped, [def.slot]: inst } };
           }
-          toast = `${relicLabel(inst)}を渡された。正気-10。魂に残った。`;
+          toast = `${equipmentLabel(inst)}を渡された。正気-10。`;
         } else {
           hp = Math.max(1, hp - 8);
           sanity = Math.min(s.maxSanity, sanity + 6);
@@ -891,7 +815,6 @@ export const useGame = create<GameStore>((set, get) => {
         maxHp,
         sanity,
         deck,
-        relics,
         runStrength,
         extraEnergyNext,
         profile,
@@ -963,38 +886,35 @@ export const useGame = create<GameStore>((set, get) => {
         runFloors: [],
         floor: 0,
         deck: [],
-        relics: [],
         playerName: "",
       });
     },
-    engraveRelic: (uid) => {
+    equipItem: (equipmentUid) => {
       const s = get();
-      const inst = s.relics.find((r) => r.uid === uid);
+      const inst = useCollectionStore.getState().inventory.equipment.find((e) => e.uid === equipmentUid);
       if (!inst) return;
-      if (s.profile.collection.some((r) => r.uid === uid)) {
-        get().giveUp();
-        return;
-      }
-      const loadoutIds = s.profile.loadoutIds.slice();
-      if (loadoutIds.length < MAX_LOADOUT && !loadoutIds.includes(inst.uid)) loadoutIds.push(inst.uid);
-      const profile = {
-        ...s.profile,
-        collection: [...s.profile.collection, inst],
-        loadoutIds,
-        sanity: s.sanity,
-      };
+      const def = getEquipment(inst.defId);
+      const profile = { ...s.profile, equipped: { ...s.profile.equipped, [def.slot]: inst } };
       persist(profile);
       set({ profile });
-      sfx.reward();
-      get().giveUp();
+      sfx.select();
+    },
+    unequipSlot: (slot) => {
+      const s = get();
+      const equipped = { ...s.profile.equipped };
+      delete equipped[slot];
+      const profile = { ...s.profile, equipped };
+      persist(profile);
+      set({ profile });
+      sfx.select();
     },
   };
 });
 
 const DROP_RATES = {
-  combat: { chance: 0.5, weights: { card: 0.6, rune: 0.3, relic: 0.1 } },
-  elite: { chance: 0.9, weights: { card: 0.4, rune: 0.35, relic: 0.25 } },
-  boss: { chance: 1.0, weights: { card: 0.2, rune: 0.3, relic: 0.5 } },
+  combat: { chance: 0.5, weights: { card: 0.6, rune: 0.3, equipment: 0.1 } },
+  elite: { chance: 0.9, weights: { card: 0.4, rune: 0.35, equipment: 0.25 } },
+  boss: { chance: 1.0, weights: { card: 0.2, rune: 0.3, equipment: 0.5 } },
 } as const;
 
 function makeReward(s: GameStore): RewardOffer {
@@ -1008,21 +928,14 @@ function makeReward(s: GameStore): RewardOffer {
 
   if (category === "card") {
     const owner = s.character ?? "investigator";
-    const bossDef = s.combat?.enemies
-      .map((e) => getEnemy(e.defId))
-      .find((d) => d.signatureCardId);
-    if (bossDef?.signatureCardId && s.rand() < 0.2) {
-      return { kind: "card", card: makeCard(bossDef.signatureCardId) };
-    }
     return { kind: "card", card: weightedCard(owner, s.rand) };
   }
   if (category === "rune") {
     const effect = pick(RUNE_CATALOG, s.rand).effect;
     return { kind: "rune", rune: rollRune(effect, floorForRoll, s.rand) };
   }
-  const ownedDefs = s.profile.collection.map((r) => r.defId);
-  const defId = pickRelicTemplate(ownedDefs, s.rand);
-  return { kind: "relic", relic: rollRelic(defId, floorForRoll, s.rand, "drop") };
+  const defId = pickEquipmentTemplate(s.rand);
+  return { kind: "equipment", equipment: rollEquipment(defId, floorForRoll, s.rand, "drop") };
 }
 
 export { cardText, canPlay };

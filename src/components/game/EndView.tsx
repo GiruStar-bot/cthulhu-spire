@@ -1,24 +1,20 @@
 import { useGame } from "@/game/store";
 import { layerLabel } from "@/game/floors";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
-import { relicDesc, relicLabel } from "@/game/relics";
+import { equipmentLabel } from "@/game/equipment";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { asset } from "@/lib/asset";
-import type { RelicInstance } from "@/game/types";
-import { useMemo } from "react";
+import type { EquipmentInstance } from "@/game/types";
+import { useCollectionStore } from "@/store/useCollectionStore";
 
 export function EndView({ kind }: { kind: "victory" | "defeat" }) {
   const giveUp = useGame((s) => s.giveUp);
   const floor = useGame((s) => s.floor);
   const profile = useGame((s) => s.profile);
-  const relics = useGame((s) => s.relics);
   const playerName = useGame((s) => s.playerName);
+  const gained = useCollectionStore((s) => s.inventory.equipment);
   const win = kind === "victory";
-  const gained = useMemo(() => {
-    const have = new Set(profile.collection.map((r) => r.uid));
-    return relics.filter((r) => !have.has(r.uid));
-  }, [profile.collection, relics]);
 
   if (!win) {
     return (
@@ -43,9 +39,9 @@ export function EndView({ kind }: { kind: "victory" | "defeat" }) {
       <div className="relative z-10 mt-auto flex flex-col items-start gap-4 px-6 pb-16 sm:px-12">
         <p className="font-pixel text-xs tracking-widest text-muted">最深</p>
         <h2 className="font-pixel text-4xl text-white sm:text-6xl">見てしまった。</h2>
-        <p className="max-w-md text-sm text-muted">{playerName || "潜航者"}の記録は残る。遺物は次の人生へ。</p>
+        <p className="max-w-md text-sm text-muted">{playerName || "潜航者"}の記録は残る。装備は次の人生へ。</p>
         <p className="font-pixel text-xs tabular-nums text-muted">
-          最深 {profile.bestFloor ? layerLabel(profile.bestFloor) : "未潜航"} · 所持遺物 {profile.collection.length}
+          最深 {profile.bestFloor ? layerLabel(profile.bestFloor) : "未潜航"} · 所持装備 {gained.length}
         </p>
         <PixelButton onClick={giveUp} className="px-6">
           タイトルへ戻る
@@ -63,7 +59,7 @@ function DeathScreen({
 }: {
   name: string;
   floor: number;
-  gained: RelicInstance[];
+  gained: EquipmentInstance[];
   onSkip: () => void;
 }) {
   return (
@@ -80,26 +76,25 @@ function DeathScreen({
           <p className="font-pixel text-xs tracking-widest text-blood">器が砕ける</p>
           <h2 className="font-pixel mt-2 text-5xl tracking-widest text-white sm:text-6xl">死亡</h2>
           <p className="mt-3 max-w-md text-sm text-pretty text-muted">
-            {name}は{layerLabel(floor)}で止まった。この沈降で得た遺物は、すべて魂に残った。
+            {name}は{layerLabel(floor)}で止まった。この沈降で得た装備は、すべて残っている。
           </p>
         </div>
 
         <PixelWindow className="flex max-h-[42dvh] w-full flex-col overflow-hidden p-4 text-left">
-          <p className="shrink-0 text-xs tracking-widest text-muted">今世の遺物</p>
+          <p className="shrink-0 text-xs tracking-widest text-muted">今世の装備</p>
           {gained.length ? (
             <ul className="mt-2 min-h-0 flex-1 space-y-2 overflow-y-auto">
               {gained.map((r) => (
                 <li key={r.uid} className="border-2 border-gray-200 px-3 py-3 font-pixel text-white">
                   <span className="flex items-center gap-2">
                     <PixelRelic defId={r.defId} className="size-8 shrink-0" />
-                    <span className="block">{relicLabel(r)}</span>
+                    <span className="block">{equipmentLabel(r)}</span>
                   </span>
-                  <span className="mt-1 block text-sm text-muted">{relicDesc(r)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-3 text-sm text-muted">遺物はすでに魂に残っている。</p>
+            <p className="mt-3 text-sm text-muted">装備はまだない。</p>
           )}
         </PixelWindow>
 
