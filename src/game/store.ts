@@ -58,6 +58,7 @@ function hookFrom(s: GameStore): PlayerHook {
     extraStrength: s.runStrength,
     extraEnergyNext: s.extraEnergyNext,
     baseEnergy: vitals.energy,
+    equipped: s.profile.equipped ?? {},
   };
 }
 
@@ -827,7 +828,7 @@ export const useGame = create<GameStore>((set, get) => {
       let hp = s.hp;
       let maxHp = s.maxHp;
       let sanity = s.sanity;
-      let deck = s.deck.slice();
+      const deck = s.deck.slice();
       let relics = s.relics.slice();
       let runStrength = s.runStrength;
       let extraEnergyNext = s.extraEnergyNext;

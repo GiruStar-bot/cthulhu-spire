@@ -222,6 +222,52 @@ export interface PlayerStats {
 
 export type StatKey = keyof PlayerStats;
 
+export type EquipmentSlot = "head" | "chest" | "arms" | "legs" | "feet";
+
+export type Archetype =
+  | "fanatic"
+  | "knight"
+  | "poison"
+  | "outer"
+  | "elder"
+  | "deep"
+  | "offering"
+  | "shadow"
+  | "generic";
+
+export interface EquipmentDef {
+  id: string;
+  name: string;
+  slot: EquipmentSlot;
+  archetype: Archetype;
+  art: string;
+  sockets: number;
+  baseDefensePct?: number;
+  baseSanResistPct?: number;
+  basePoisonResistPct?: number;
+  baseStrength?: number;
+  baseDraw?: number;
+  baseHeal?: number;
+}
+
+export interface EquipmentInstance {
+  uid: string;
+  defId: string;
+  tier: number;
+  power: number;
+  socketedRunes: (string | null)[];
+  obtainedFloor: number;
+  source: "drop" | "smith" | "gift";
+}
+
+export interface EquipmentStats {
+  defensePct: number;
+  sanResistPct: number;
+  poisonResistPct: number;
+  strength: number;
+  drawBonus: number;
+  healPerTurn: number;
+}
 
 export interface PlayerProfile {
   playerName: string;
@@ -237,6 +283,7 @@ export interface PlayerProfile {
   sanity: number | null;
   seenRlyeh: boolean;
   grimoireRead: string[];
+  equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>;
 }
 
 export interface MapNode {
@@ -282,6 +329,7 @@ export interface CombatState {
   result: "ongoing" | "win" | "lose";
   log: string[];
   floaters: Floater[];
+  equipmentStats: EquipmentStats;
 }
 
 export interface Floater {

@@ -24,6 +24,7 @@ export function emptyProfile(): PlayerProfile {
     sanity: null,
     seenRlyeh: false,
     grimoireRead: [],
+    equipped: {},
   };
 }
 
@@ -133,6 +134,7 @@ export function loadProfile(): PlayerProfile {
       sanity: typeof p.sanity === "number" ? Math.max(0, p.sanity) : null,
       seenRlyeh: !!p.seenRlyeh,
       grimoireRead: Array.isArray(p.grimoireRead) ? p.grimoireRead.filter((id) => typeof id === "string") : [],
+      equipped: p.equipped ?? {},
     };
   } catch {
     return emptyProfile();

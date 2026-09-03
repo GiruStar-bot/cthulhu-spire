@@ -3,6 +3,8 @@ import type {
   CombatEnemy,
   CombatState,
   Effect,
+  EquipmentInstance,
+  EquipmentSlot,
   Floater,
   Intent,
   PowerId,
@@ -10,10 +12,12 @@ import type {
 } from "./types";
 import { getCard, makeCard, scaleN } from "./cards";
 import { evaluateCardEffect } from "./cardEvaluator";
+import { applyDefensePct, computeEquipmentStats } from "./equipment";
 import { getEnemy } from "./enemies";
 import { cardToIntent, rollEnemyCard } from "./enemyAi";
 import { powerOf } from "./relics";
 import { pick, shuffle, uid } from "./rng";
+import { peekRune } from "@/store/useCollectionStore";
 
 export type CombatSfx = "attack" | "skill" | "block" | "hurt";
 
@@ -26,6 +30,7 @@ export interface PlayerHook {
   extraStrength: number;
   extraEnergyNext: number;
   baseEnergy?: number;
+  equipped?: Partial<Record<EquipmentSlot, EquipmentInstance>>;
 }
 
 function floater(text: string, kind: Floater["kind"], who: Floater["who"]): Floater {
@@ -212,6 +217,7 @@ export function startCombat(
     result: "ongoing",
     log: ["空気が、厚くなる。"],
     floaters: [],
+    equipmentStats: computeEquipmentStats(player.equipped ?? {}, peekRune),
   };
   c.strength += player.extraStrength;
   drawCards(c, 5 + drawBonus, rand, player);
@@ -569,7 +575,8 @@ function applyEnemyIntent(
       c.block -= blocked;
       if (blocked > 0) c.blockLost += blocked;
       const hp = n - blocked;
-      player.hp = Math.max(0, player.hp - hp);
+      const reducedHp = applyDefensePct(hp, c.equipmentStats.defensePct);
+      player.hp = Math.max(0, player.hp - reducedHp);
       c.floaters.push(floater(`-${n}`, "dmg", "player"));
       if (hp > 0) sfx.push("hurt");
       if (blocked > 0) sfx.push("block");
@@ -583,8 +590,9 @@ function applyEnemyIntent(
   if (intent.vulnerable) c.vulnerable += intent.vulnerable;
   if (intent.poison) c.poison += intent.poison;
   if (intent.sanityDrain) {
-    player.sanity = Math.max(0, player.sanity - intent.sanityDrain);
-    c.floaters.push(floater(`-${intent.sanityDrain}`, "sanity", "player"));
+    const reduced = applyDefensePct(intent.sanityDrain, c.equipmentStats.sanResistPct);
+    player.sanity = Math.max(0, player.sanity - reduced);
+    c.floaters.push(floater(`-${reduced}`, "sanity", "player"));
   }
   if (intent.dread) {
     for (let i = 0; i < intent.dread; i++) insertIntoDraw(c, makeCard("dread"), rand);
@@ -646,8 +654,9 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   }
 
   if (c.poison > 0) {
-    player.hp = Math.max(1, player.hp - c.poison);
-    c.floaters.push(floater(`毒${c.poison}`, "dmg", "player"));
+    const reduced = applyDefensePct(c.poison, c.equipmentStats.poisonResistPct);
+    player.hp = Math.max(1, player.hp - reduced);
+    c.floaters.push(floater(`毒${reduced}`, "dmg", "player"));
   }
 
   for (const e of living(c)) {
