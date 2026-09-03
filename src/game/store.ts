@@ -574,7 +574,12 @@ export const useGame = create<GameStore>((set, get) => {
         inspectDeck: false,
       });
       if (!profile.seenRlyeh) {
-        set({ scene: "prologue", floor: 0 });
+        const nextProfile = { ...profile, seenRlyeh: true };
+        persist(nextProfile);
+        const rf = get().runFloors.slice();
+        if (rf[0]) rf[0] = { floor: 1, type: "combat", enemyIds: ["drowned"] };
+        set({ profile: nextProfile, runFloors: rf });
+        enterFloor(1, { profile: nextProfile, runFloors: rf });
         return;
       }
       enterFloor(1);
