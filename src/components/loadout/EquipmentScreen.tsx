@@ -7,6 +7,8 @@ import { useGame } from "@/game/store";
 import { peekRune, useCollectionStore } from "@/store/useCollectionStore";
 import { cn } from "@/lib/utils";
 
+const USABLE_RUNE_EFFECTS = new Set(["BLK+", "DRAW", "SAN+", "STR+", "POISON", "HEAL"]);
+
 export function EquipmentScreen() {
   const inventory = useCollectionStore((s) => s.inventory);
   const equipped = useGame((s) => s.profile.equipped);
@@ -21,6 +23,7 @@ export function EquipmentScreen() {
   );
   const active = inventory.equipment.find((e) => e.uid === activeUid) ?? null;
   const activeDef = active ? EQUIPMENT[active.defId] : null;
+  const usableRunes = inventory.runes.filter((rune) => USABLE_RUNE_EFFECTS.has(rune.effect));
 
   return (
     <div className="grid h-full min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-6">
@@ -142,9 +145,9 @@ export function EquipmentScreen() {
       </section>
 
       <aside className="min-h-0 overflow-y-auto p-3 lg:col-span-2">
-        <p className="mb-2 text-xs tracking-widest text-muted">ルーン {inventory.runes.length}</p>
+        <p className="mb-2 text-xs tracking-widest text-muted">ルーン {usableRunes.length}</p>
         <div className="grid grid-cols-3 gap-2">
-          {inventory.runes.map((rune) => (
+          {usableRunes.map((rune) => (
             <button
               key={rune.id}
               type="button"
