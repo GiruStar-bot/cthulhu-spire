@@ -292,7 +292,7 @@ function ForgeRoom() {
             </button>
           ))}
         </div>
-        <PixelButton className="mt-8 w-fit" onClick={() => visit("smith")}>
+        <PixelButton className="fixed right-5 bottom-5 z-20" onClick={() => visit("smith")}>
           戻る
         </PixelButton>
       </div>
