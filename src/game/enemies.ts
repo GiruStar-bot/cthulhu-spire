@@ -37,6 +37,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     ...still("byakhee"),
     biome: "reef",
     maxHp: 38,
+    tier: "elite",
     pattern: [
       { kind: "debuff", weak: 2 },
       { kind: "attack", damage: 13 },
@@ -49,6 +50,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     ...still("coral"),
     biome: "reef",
     maxHp: 48,
+    tier: "elite",
     pattern: [
       { kind: "defend", block: 10 },
       { kind: "attack", damage: 10 },
@@ -61,6 +63,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     ...still("starveling"),
     biome: "reef",
     maxHp: 86,
+    tier: "elite",
     pattern: [
       { kind: "buff", strength: 2 },
       { kind: "attack", damage: 16 },
@@ -125,6 +128,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     ...still("starvamp"),
     biome: "void",
     maxHp: 56,
+    tier: "elite",
     pattern: [
       { kind: "attack", damage: 14 },
       { kind: "attack", damage: 7, hits: 2 },

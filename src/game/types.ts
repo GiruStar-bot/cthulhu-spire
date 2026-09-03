@@ -137,6 +137,7 @@ export interface EnemyDef {
   pattern?: Intent[];
   trait?: EnemyTrait;
   biome: BiomeId;
+  tier?: "mob" | "elite";
   deck?: string[];
   signatureCardId?: string;
 }

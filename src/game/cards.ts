@@ -799,14 +799,21 @@ function hasTranslatableEffect(card: CardDef): boolean {
   );
 }
 
-export function aiCardPool(tag: "attack" | "defense" | "effect"): CardDef[] {
+const AI_EXCLUDED_IDS = new Set(["precise", "tome"]);
+
+export function aiCardPool(
+  tag: "attack" | "defense" | "effect",
+  maxRarities?: readonly string[],
+): CardDef[] {
   return Object.values(CARDS).filter(
     (c) =>
       c.type !== "status" &&
       c.type !== "power" &&
       !c.enemyOnly &&
       c.aiTag === tag &&
-      hasTranslatableEffect(c),
+      hasTranslatableEffect(c) &&
+      !AI_EXCLUDED_IDS.has(c.id) &&
+      (!maxRarities || maxRarities.includes(c.rarity)),
   );
 }
 
@@ -815,7 +822,12 @@ export function aiCardPoolFrom(deckIds: string[], tag: "attack" | "defense" | "e
     .map((id) => CARDS[id])
     .filter(
       (c): c is CardDef =>
-        !!c && c.type !== "status" && c.type !== "power" && c.aiTag === tag && hasTranslatableEffect(c),
+        !!c &&
+        c.type !== "status" &&
+        c.type !== "power" &&
+        c.aiTag === tag &&
+        hasTranslatableEffect(c) &&
+        !AI_EXCLUDED_IDS.has(c.id),
     );
 }
 

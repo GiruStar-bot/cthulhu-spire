@@ -9,8 +9,15 @@ export const AI_CATEGORY_WEIGHTS: Record<"attack" | "defense" | "effect", number
   effect: 0.2,
 };
 
+const TIER_RARITIES: Record<"mob" | "elite", readonly string[]> = {
+  mob: ["starter", "common"],
+  elite: ["starter", "common", "uncommon"],
+};
+
 export function rollEnemyCard(defId: string, rand: () => number): CardDef {
   const def = getEnemy(defId);
+  const rarities = def.deck ? undefined : TIER_RARITIES[def.tier ?? "mob"];
+
   const pools: Record<"attack" | "defense" | "effect", CardDef[]> = def.deck
     ? {
         attack: aiCardPoolFrom(def.deck, "attack"),
@@ -18,19 +25,21 @@ export function rollEnemyCard(defId: string, rand: () => number): CardDef {
         effect: aiCardPoolFrom(def.deck, "effect"),
       }
     : {
-        attack: aiCardPool("attack"),
-        defense: aiCardPool("defense"),
-        effect: aiCardPool("effect"),
+        attack: aiCardPool("attack", rarities),
+        defense: aiCardPool("defense", rarities),
+        effect: aiCardPool("effect", rarities),
       };
 
   const activeWeights = Object.fromEntries(
     (Object.entries(AI_CATEGORY_WEIGHTS) as ["attack" | "defense" | "effect", number][]).filter(
       ([tag]) => pools[tag].length > 0,
     ),
-  ) as Record<"attack" | "defense" | "effect", number>;
+  ) as Partial<Record<"attack" | "defense" | "effect", number>>;
 
-  if (!Object.keys(activeWeights).length) return pick(aiCardPool("attack"), rand);
-  const category = weightedPick(activeWeights, rand);
+  if (!Object.keys(activeWeights).length) {
+    return pick(aiCardPool("attack", rarities ?? TIER_RARITIES.mob), rand);
+  }
+  const category = weightedPick(activeWeights as Record<"attack" | "defense" | "effect", number>, rand);
   return pick(pools[category], rand);
 }
 
