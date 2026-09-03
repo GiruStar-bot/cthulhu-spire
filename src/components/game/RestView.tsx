@@ -3,7 +3,7 @@ import { Vitals } from "@/components/game/Hud";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
-import { getCard } from "@/game/cards";
+import { getCard, makeCard } from "@/game/cards";
 import { rankLabel } from "@/game/smith";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
@@ -58,7 +58,7 @@ function VillageHub() {
       <button
         type="button"
         onClick={() => visit("inn")}
-        className="group absolute bottom-[30%] left-[6%] z-10 w-[40vw] max-w-80 min-w-36 transition-transform hover:-translate-y-1"
+        className="group absolute bottom-[26%] left-[4%] z-10 w-[52vw] max-w-[34rem] min-w-48 transition-transform hover:-translate-y-1"
       >
         <img
           src={asset("art/pixel/village/tavern.png")}
@@ -74,7 +74,7 @@ function VillageHub() {
       <button
         type="button"
         onClick={() => visit("smith")}
-        className="group absolute bottom-[32%] right-[8%] z-[9] w-[30vw] max-w-64 min-w-28 transition-transform hover:-translate-y-1"
+        className="group absolute bottom-[28%] right-[4%] z-[9] w-[44vw] max-w-[28rem] min-w-40 transition-transform hover:-translate-y-1"
       >
         <img
           src={asset("art/pixel/village/smith.png")}
@@ -113,11 +113,19 @@ function InnRoom() {
   const shells = useGame((s) => s.shells);
   return (
     <section className="relative h-dvh overflow-hidden bg-ink font-pixel">
-      <img src={asset("art/inn.jpg")} alt="" className="absolute inset-0 size-full object-cover" />
+      <img
+        src={asset("art/pixel/village/tavern-interior.jpg")}
+        alt=""
+        className="absolute inset-0 size-full object-cover"
+      />
       <div className="absolute inset-0 bg-black/55" />
-      <div className="relative z-10 flex h-dvh flex-col justify-end gap-3 px-5 pb-10 sm:px-12">
+
+      <div className="absolute top-3 left-3 z-20 flex flex-col gap-2 sm:top-5 sm:left-5">
         <Vitals />
         <Shells />
+      </div>
+
+      <div className="relative z-10 flex h-dvh flex-col items-center justify-center gap-3 px-5 text-center">
         <PixelWindow className="max-w-md">
           <h2 className="text-3xl text-white">酒場</h2>
           <p className="mt-1 text-sm text-muted">貝殻で部屋を取る。高いほど、傷が閉じる。</p>
@@ -146,18 +154,26 @@ function PubRoom() {
   const sold = !!village?.beerSold;
   return (
     <section className="relative h-dvh overflow-hidden bg-ink font-pixel">
-      <img src={asset("art/inn.jpg")} alt="" className="absolute inset-0 size-full object-cover" />
+      <img
+        src={asset("art/pixel/village/tavern-interior.jpg")}
+        alt=""
+        className="absolute inset-0 size-full object-cover"
+      />
       <div className="absolute inset-0 bg-black/60" />
-      <div className="relative z-10 flex h-dvh flex-col justify-end gap-4 px-5 pb-10 sm:px-12">
+
+      <div className="absolute top-3 left-3 z-20 flex flex-col gap-2 sm:top-5 sm:left-5">
         <Vitals />
         <Shells />
+      </div>
+
+      <div className="relative z-10 flex h-dvh flex-col items-center justify-center gap-4 px-5 text-center">
         <div className="flex items-end gap-4">
           <img
             src={asset("art/landlady.jpg")}
             alt=""
             className="h-40 w-28 rounded-none border-2 border-white object-cover object-top"
           />
-          <PixelWindow className="max-w-sm">
+          <PixelWindow className="max-w-sm text-left">
             <p className="text-[11px] tracking-widest text-accent">パブ</p>
             <h2 className="text-3xl text-white">女将</h2>
             <p className="mt-1 text-sm text-muted">冷えた瓶。気力が戻る。二度飲めば空だ。</p>
@@ -183,7 +199,11 @@ function SmithRoom() {
   if (!shop) return null;
   return (
     <section className={cn("relative min-h-dvh overflow-hidden bg-ink font-pixel", shop.taboo && "smith-taboo")}>
-      <img src={asset("art/smith.jpg")} alt="" className="absolute inset-0 size-full object-cover" />
+      <img
+        src={asset("art/pixel/village/smith-interior.jpg")}
+        alt=""
+        className="absolute inset-0 size-full object-cover"
+      />
       <div className="absolute inset-0 bg-black/70" />
       <div className="relative z-10 flex min-h-dvh flex-col gap-4 px-5 py-6 sm:px-12">
         <Vitals />
@@ -195,22 +215,21 @@ function SmithRoom() {
           </PixelWindow>
           <Shells />
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-3">
           {shop.goods.map((g) => {
-            const d = getCard(g.defId);
+            const disabled = g.sold || shells < g.price;
             return (
               <button
                 key={g.uid}
                 type="button"
-                disabled={g.sold || shells < g.price}
+                disabled={disabled}
                 onClick={() => buy(g.uid)}
-                className="border-2 border-white bg-black px-3 py-3 text-left font-pixel disabled:opacity-40"
+                className={cn("flex flex-col items-center gap-1", disabled && "opacity-40")}
               >
-                <p className="text-white">{d.name}</p>
-                <p className="mt-1 text-xs text-muted">{d.text}</p>
-                <p className="mt-2 text-xs text-accent">
+                <CardView card={makeCard(g.defId)} compact />
+                <span className="border-2 border-white bg-black px-2 py-0.5 font-pixel text-xs text-accent">
                   {g.sold ? "売約" : shop.taboo ? "0" : `${g.price}枚`}
-                </p>
+                </span>
               </button>
             );
           })}

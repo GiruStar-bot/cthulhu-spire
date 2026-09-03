@@ -1,4 +1,3 @@
-import { CHARACTERS } from "@/game/characters";
 import { floorBand, layerLabel } from "@/game/floors";
 import { GRIMOIRE_ENABLED } from "@/game/profile";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
@@ -12,24 +11,14 @@ export function Vitals() {
   const maxHp = useGame((s) => s.maxHp);
   const sanity = useGame((s) => s.sanity);
   const maxSanity = useGame((s) => s.maxSanity);
-  const character = useGame((s) => s.character);
   const relics = useGame((s) => s.relics);
   const floor = useGame((s) => s.floor);
   const madness = useGame((s) => s.profile.madness);
   const playerName = useGame((s) => s.playerName);
   const shells = useGame((s) => s.shells);
-  const ch = character ? CHARACTERS[character] : null;
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {ch ? (
-        <img
-          src={ch.art}
-          alt=""
-          className="size-16 rounded-[var(--radius-sm)] object-cover border border-border"
-          crossOrigin="anonymous"
-        />
-      ) : null}
       <div className="min-w-0">
         <p className="truncate font-display text-sm text-parchment">{playerName || "無名"}</p>
         <Bar label="肉体" value={hp} max={maxHp} tone="hp" />
