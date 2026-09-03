@@ -183,6 +183,7 @@ export function startCombat(
     dexterity: 0,
     weak: 0,
     vulnerable: 0,
+    poison: 0,
     powers: [],
     cardsPlayed: 0,
     sealed: null,
@@ -567,6 +568,7 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
   if (intent.strength) e.strength += intent.strength;
   if (intent.weak) c.weak += intent.weak;
   if (intent.vulnerable) c.vulnerable += intent.vulnerable;
+  if (intent.poison) c.poison += intent.poison;
   if (intent.sanityDrain) {
     player.sanity = Math.max(0, player.sanity - intent.sanityDrain);
     c.floaters.push(floater(`-${intent.sanityDrain}`, "sanity", "player"));
@@ -615,6 +617,11 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   if (c.cold > 0) {
     player.hp = Math.max(1, player.hp - c.cold);
     c.floaters.push(floater(`-${c.cold}`, "dmg", "player"));
+  }
+
+  if (c.poison > 0) {
+    player.hp = Math.max(1, player.hp - c.poison);
+    c.floaters.push(floater(`毒${c.poison}`, "dmg", "player"));
   }
 
   for (const e of living(c)) {

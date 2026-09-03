@@ -108,6 +108,7 @@ export function CombatView() {
                 block={combat.block}
                 strength={combat.strength}
                 weak={combat.weak}
+                poison={combat.poison}
                 sealed={combat.sealed}
               />
               <div className="mt-2 flex flex-row gap-2">
@@ -253,6 +254,7 @@ function CombatHud({
   block,
   strength,
   weak,
+  poison,
   sealed,
 }: {
   hp: number;
@@ -264,6 +266,7 @@ function CombatHud({
   block: number;
   strength: number;
   weak: number;
+  poison: number;
   sealed: "attack" | "skill" | null;
 }) {
   const playerName = useGame((s) => s.playerName);
@@ -292,6 +295,7 @@ function CombatHud({
         </span>
         {strength ? <span className="text-accent">筋 {strength}</span> : null}
         {weak ? <span className="text-blood">弱 {weak}</span> : null}
+        {poison ? <span className="text-accent">毒 {poison}</span> : null}
         {sealed ? <span className="text-blood">{sealed === "attack" ? "攻撃封印" : "技能封印"}</span> : null}
       </div>
     </PixelWindow>

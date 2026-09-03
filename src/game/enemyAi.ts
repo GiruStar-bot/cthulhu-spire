@@ -58,6 +58,10 @@ export function cardToIntent(card: CardDef): Intent {
         intent.vulnerable = (intent.vulnerable ?? 0) + eff.n;
         if (intent.kind === "unknown") intent.kind = "debuff";
       }
+      if (eff.t === "poison") {
+        intent.poison = (intent.poison ?? 0) + eff.n;
+        if (intent.kind === "unknown") intent.kind = "debuff";
+      }
       if (eff.t === "addDread") {
         intent.dread = (intent.dread ?? 0) + eff.n;
         if (intent.kind === "unknown") intent.kind = "debuff";

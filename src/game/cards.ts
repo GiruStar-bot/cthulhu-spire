@@ -786,6 +786,7 @@ const AI_TRANSLATABLE = new Set([
   "strength",
   "weak",
   "vulnerable",
+  "poison",
   "addDread",
 ]);
 

@@ -151,6 +151,7 @@ export interface Intent {
   strength?: number;
   weak?: number;
   vulnerable?: number;
+  poison?: number;
   dread?: number;
   sanityDrain?: number;
   seal?: "attack" | "skill";
@@ -257,6 +258,7 @@ export interface CombatState {
   dexterity: number;
   weak: number;
   vulnerable: number;
+  poison: number;
   powers: PowerId[];
   cardsPlayed: number;
   sealed: "attack" | "skill" | null;
