@@ -338,6 +338,7 @@ export interface SmithShop {
   kind: ShopSub;
   taboo: boolean;
   goods: ShopGood[];
+  equipmentGoods: { uid: string; defId: string; tier: number; price: number; sold: boolean }[];
 }
 
 export interface VillageState {

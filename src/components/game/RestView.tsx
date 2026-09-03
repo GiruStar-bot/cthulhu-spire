@@ -4,6 +4,7 @@ import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
 import { getCard, makeCard } from "@/game/cards";
+import { EQUIPMENT } from "@/game/equipment";
 import { rankLabel } from "@/game/smith";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
@@ -192,6 +193,7 @@ function InnRoom() {
 function SmithRoom() {
   const village = useGame((s) => s.village);
   const buy = useGame((s) => s.buyGood);
+  const buyEquipmentGood = useGame((s) => s.buyEquipmentGood);
   const visit = useGame((s) => s.visitVillage);
   const shells = useGame((s) => s.shells);
   const shop = village?.smith;
@@ -243,6 +245,37 @@ function SmithRoom() {
             })}
           </div>
         </div>
+        {shop.equipmentGoods.length > 0 ? (
+          <div className="mt-4">
+            <p className="mb-2 text-xs tracking-widest text-muted">装備</p>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-3">
+              {shop.equipmentGoods.map((g) => {
+                const def = EQUIPMENT[g.defId];
+                const disabled = g.sold || shells < g.price;
+                return (
+                  <button
+                    key={g.uid}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => buyEquipmentGood(g.uid)}
+                    className={cn(
+                      "flex w-32 flex-col items-center gap-1 border-2 border-white bg-black/85 p-2 text-center",
+                      disabled && "opacity-40",
+                    )}
+                  >
+                    <img src={def.art} alt="" className="h-20 w-20 border-2 border-white object-cover" />
+                    <span className="text-xs text-white">
+                      {def.name} T{g.tier}
+                    </span>
+                    <span className="border-2 border-white bg-black px-2 py-0.5 text-xs text-accent">
+                      {g.sold ? "売約" : `${g.price}枚`}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
         <div className="mt-auto flex flex-wrap gap-3 pb-4">
           <PixelButton onClick={() => visit("deck")}>デッキ編成</PixelButton>
           <PixelButton onClick={() => visit("upgrade")}>焼く（強化）</PixelButton>

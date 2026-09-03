@@ -78,23 +78,32 @@ export function rollEquipmentPower(tier: number, rand: () => number): number {
   return Math.max(0.5, base * roll);
 }
 
-export function rollEquipment(
+export function rollEquipmentAtTier(
   defId: string,
-  floor: number,
+  tier: number,
   rand: () => number,
   source: EquipmentInstance["source"],
 ): EquipmentInstance {
   const def = getEquipment(defId);
-  const tier = tierFromFloor(floor);
   return {
     uid: uid("eq"),
     defId,
     tier,
     power: rollEquipmentPower(tier, rand),
     socketedRunes: Array.from({ length: def.sockets }, () => null),
-    obtainedFloor: floor,
+    obtainedFloor: 0,
     source,
   };
+}
+
+export function rollEquipment(
+  defId: string,
+  floor: number,
+  rand: () => number,
+  source: EquipmentInstance["source"],
+): EquipmentInstance {
+  const inst = rollEquipmentAtTier(defId, tierFromFloor(floor), rand, source);
+  return { ...inst, obtainedFloor: floor };
 }
 
 export function pickEquipmentTemplate(rand: () => number): string {

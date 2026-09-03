@@ -1,5 +1,6 @@
 import type { CardDef, CardInst, ItemRank, ShopGood, SmithShop, ShopSub } from "./types";
 import { asset } from "@/lib/asset";
+import { EQUIPMENT, rollEquipmentAtTier } from "./equipment";
 import { pick, uid } from "./rng";
 
 const blade = asset("art/card-blade.jpg");
@@ -389,6 +390,31 @@ export function rollShopRank(rand: () => number): ItemRank {
   return "normal";
 }
 
+const EQUIPMENT_TIER_BY_RANK: Record<ItemRank, number> = {
+  normal: 1,
+  mid: 2,
+  genius: 3,
+  god: 4,
+  taboo: 5,
+};
+
+function makeEquipmentGoods(rank: ItemRank, rand: () => number) {
+  const tier = EQUIPMENT_TIER_BY_RANK[rank];
+  const ids = Object.keys(EQUIPMENT);
+  const count = 2;
+  return Array.from({ length: count }, () => {
+    const defId = pick(ids, rand);
+    const inst = rollEquipmentAtTier(defId, tier, rand, "smith");
+    return {
+      uid: inst.uid,
+      defId,
+      tier,
+      price: rank === "taboo" ? 0 : tier * 15,
+      sold: false,
+    };
+  });
+}
+
 export function makeSmith(rand: () => number): SmithShop {
   const weapon = rand() < 0.5;
   const kind: ShopSub = weapon ? (rand() < 0.5 ? "sword" : "bow") : rand() < 0.5 ? "heavy" : "light";
@@ -405,7 +431,7 @@ export function makeSmith(rand: () => number): SmithShop {
       sold: false,
     };
   });
-  return { rank, kind, taboo, goods };
+  return { rank, kind, taboo, goods, equipmentGoods: makeEquipmentGoods(rank, rand) };
 }
 
 export function shopLabel(_shop: SmithShop) {

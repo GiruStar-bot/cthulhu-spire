@@ -20,6 +20,7 @@ import {
   getEquipment,
   pickEquipmentTemplate,
   rollEquipment,
+  rollEquipmentAtTier,
 } from "./equipment";
 import { RUNE_CATALOG, rollRune } from "./runes";
 import {
@@ -120,6 +121,7 @@ export interface GameStore {
   innStay: (tier: 10 | 20 | 30) => void;
   buyBeer: () => void;
   buyGood: (uid: string) => void;
+  buyEquipmentGood: (goodUid: string) => void;
   forgeAtSmith: (uid: string) => void;
   leaveVillage: () => void;
   setInspectDeck: (on: boolean) => void;
@@ -658,6 +660,28 @@ export const useGame = create<GameStore>((set, get) => {
         shells: s.shells - good.price,
         village: { ...s.village, smith: { ...shop, goods } },
         toast: `${getCard(good.defId).name}を戦利品として持ち帰った。`,
+      });
+    },
+
+    buyEquipmentGood: (goodUid) => {
+      const s = get();
+      const shop = s.village?.smith;
+      if (!s.village || !shop) return;
+      const good = shop.equipmentGoods.find((g) => g.uid === goodUid);
+      if (!good || good.sold || s.shells < good.price) {
+        if (good && !good.sold && s.shells < good.price) set({ toast: "貝殻が足りない。" });
+        return;
+      }
+      const inst = rollEquipmentAtTier(good.defId, good.tier, s.rand, "smith");
+      useCollectionStore.getState().addLootEquipment(inst);
+      const equipmentGoods = shop.equipmentGoods.map((g) =>
+        g.uid === goodUid ? { ...g, sold: true } : g,
+      );
+      sfx.reward();
+      set({
+        shells: s.shells - good.price,
+        village: { ...s.village, smith: { ...shop, equipmentGoods } },
+        toast: `${equipmentLabel(inst)} を購入した。`,
       });
     },
 
