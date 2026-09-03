@@ -38,11 +38,11 @@ function VillageHub() {
       <img src={asset("art/pixel/village/bg.jpg")} alt="" className="absolute inset-0 size-full object-cover" />
       <div className="absolute inset-0 bg-black/25" />
 
-      {/* 酒場：左手前、大きく */}
+      {/* 酒場 */}
       <button
         type="button"
         onClick={() => visit("inn")}
-        className="group absolute bottom-[18%] left-[1%] z-10 w-[46vw] max-w-96 min-w-40 transition-transform hover:-translate-y-1"
+        className="group absolute bottom-[30%] left-[6%] z-10 w-[40vw] max-w-80 min-w-36 transition-transform hover:-translate-y-1"
       >
         <img
           src={asset("art/pixel/village/tavern.png")}
@@ -54,16 +54,16 @@ function VillageHub() {
         </span>
       </button>
 
-      {/* 鍛冶屋：桟橋の奥、小さく */}
+      {/* 鍛冶屋 */}
       <button
         type="button"
         onClick={() => visit("smith")}
-        className="group absolute bottom-[44%] right-[16%] z-[9] w-[18vw] max-w-40 min-w-24 transition-transform hover:-translate-y-1"
+        className="group absolute bottom-[32%] right-[8%] z-[9] w-[30vw] max-w-64 min-w-28 transition-transform hover:-translate-y-1"
       >
         <img
           src={asset("art/pixel/village/smith.png")}
           alt="鍛冶屋"
-          className="w-full select-none drop-shadow-[2px_2px_0_rgba(0,0,0,0.6)]"
+          className="w-full select-none drop-shadow-[3px_3px_0_rgba(0,0,0,0.6)]"
         />
         <span className="absolute inset-x-0 -bottom-6 border-2 border-white bg-black px-1.5 py-0.5 text-center text-[10px] text-white">
           鍛冶屋
@@ -71,7 +71,7 @@ function VillageHub() {
       </button>
 
       <div className="relative z-20 flex h-dvh flex-col justify-end gap-3 px-5 pb-8 sm:px-12 pointer-events-none">
-        <div className="pointer-events-auto flex flex-col gap-3">
+        <div className="pointer-events-auto flex w-fit max-w-[min(100%,22rem)] flex-col gap-3">
           <Vitals />
           <Shells />
           {toast ? (
