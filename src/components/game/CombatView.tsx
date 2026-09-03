@@ -458,9 +458,9 @@ function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
   const i = enemy.shownIntent ?? enemy.intent;
 
   return (
-    <div data-enemy-plate="" className="w-full text-left">
+    <div className="flex flex-col items-center">
       {cardIds.length > 0 ? (
-        <div className="mb-1.5 flex justify-center gap-1">
+        <div className="mb-1 flex justify-center gap-1">
           {cardIds.map((id, idx) => (
             <div key={idx} className="[&>*]:!h-40 [&>*]:!w-28">
               <CardView card={makeCard(id)} compact />
@@ -468,21 +468,27 @@ function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
           ))}
         </div>
       ) : i.seal ? (
-        <div className="mb-1.5 border-2 border-white bg-black px-2 py-1 text-center font-pixel text-[10px] text-blood">
+        <div className="mb-1 border-2 border-white bg-black px-2 py-1 text-center font-pixel text-[10px] text-blood">
           {i.seal === "attack" ? "攻撃封印" : "技能封印"}
         </div>
       ) : null}
-      <p className="font-pixel text-sm text-white">{def.name}</p>
-      <p className="font-pixel text-xs text-accent">{intent}</p>
-      <div className="mt-1 h-1.5 overflow-hidden bg-black">
-        <div className="h-full bg-blood" style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} />
+
+      <div
+        data-enemy-plate=""
+        className="w-full min-w-[9.25rem] border-2 border-white bg-black/90 px-2 py-1.5 text-left"
+      >
+        <p className="font-pixel text-sm text-white">{def.name}</p>
+        <p className="font-pixel text-xs text-accent">{intent}</p>
+        <div className="mt-1 h-1.5 overflow-hidden bg-black">
+          <div className="h-full bg-blood" style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} />
+        </div>
+        <p className="font-pixel text-xs text-muted tabular-nums">
+          {enemy.hp}/{enemy.maxHp}
+          {enemy.block ? ` · 防 ${enemy.block}` : ""}
+          {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
+          {enemy.poison ? ` · 毒 ${enemy.poison}` : ""}
+        </p>
       </div>
-      <p className="font-pixel text-xs text-muted tabular-nums">
-        {enemy.hp}/{enemy.maxHp}
-        {enemy.block ? ` · 防 ${enemy.block}` : ""}
-        {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
-        {enemy.poison ? ` · 毒 ${enemy.poison}` : ""}
-      </p>
     </div>
   );
 }

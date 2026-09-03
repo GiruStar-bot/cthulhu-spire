@@ -431,10 +431,10 @@
   transform: translate(3.4rem, 0);
   pointer-events: auto;
   width: max-content;
-  min-width: 16rem;
-  padding: 0.45rem 0.65rem;
-  border: 2px solid #e5e7eb;
-  background: rgb(0 0 0 / 0.8);
+  min-width: 9.25rem;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
 .combat-foe:has(.enemy-stage:nth-child(2)) {
