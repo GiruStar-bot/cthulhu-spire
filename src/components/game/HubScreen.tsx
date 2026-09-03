@@ -11,6 +11,7 @@ import { relicLabel } from "@/game/relics";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
+import { loadoutError } from "@/game/cardEvaluator";
 import { useCollectionStore, type CardInstance } from "@/store/useCollectionStore";
 import { useState } from "react";
 
@@ -28,9 +29,12 @@ export function HubScreen() {
   const playerName = useGame((s) => s.playerName);
   const shells = useGame((s) => s.shells);
   const toTitle = useGame((s) => s.toTitle);
+  const extractToHub = useGame((s) => s.extractToHub);
+  const floor = useGame((s) => s.floor);
   const deckCount = useCollectionStore((s) => s.deck.length);
   const [tab, setTab] = useState<HubTab>("descend");
   const vitals = derivedVitals(profile.stats, profile.madness);
+  const checkpoint = floor > 0;
 
   return (
     <section className="relative flex h-dvh w-full flex-col overflow-hidden bg-ink font-pixel text-parchment">
@@ -48,11 +52,17 @@ export function HubScreen() {
           HP {vitals.maxHp} · SAN {vitals.maxSanity} · 貝殻 {shells}
         </span>
         <span className="ml-auto text-xs tabular-nums text-muted">
-          最深 {profile.bestFloor ? layerLabel(profile.bestFloor) : "—"} · デッキ {deckCount}/20
+          {checkpoint ? layerLabel(floor) : `最深 ${profile.bestFloor ? layerLabel(profile.bestFloor) : "—"}`} · デッキ {deckCount}/20
         </span>
-        <PixelButton onClick={toTitle} className="min-h-9 px-3 py-1 text-xs">
-          タイトル
-        </PixelButton>
+        {checkpoint ? (
+          <PixelButton onClick={extractToHub} className="min-h-9 px-3 py-1 text-xs">
+            帰還
+          </PixelButton>
+        ) : (
+          <PixelButton onClick={toTitle} className="min-h-9 px-3 py-1 text-xs">
+            タイトル
+          </PixelButton>
+        )}
       </header>
 
       <div className="relative z-10 flex min-h-0 flex-1">
@@ -66,19 +76,55 @@ export function HubScreen() {
                 tab === item.id && "bg-white text-black",
               )}
             >
-              {item.label}
+              {item.id === "descend" && checkpoint ? "中継" : item.label}
             </PixelButton>
           ))}
         </nav>
 
         <div className="min-h-0 min-w-0 flex-1">
-          {tab === "descend" ? <PrepareView embedded /> : null}
+          {tab === "descend" ? checkpoint ? <CheckpointPanel /> : <PrepareView embedded /> : null}
           {tab === "deck" ? <DeckBuilderScreen embedded /> : null}
           {tab === "forge" ? <CardForgeScreen embedded /> : null}
           {tab === "stash" ? <StashPanel /> : null}
         </div>
       </div>
     </section>
+  );
+}
+
+function CheckpointPanel() {
+  const floor = useGame((s) => s.floor);
+  const hp = useGame((s) => s.hp);
+  const maxHp = useGame((s) => s.maxHp);
+  const sanity = useGame((s) => s.sanity);
+  const maxSanity = useGame((s) => s.maxSanity);
+  const shells = useGame((s) => s.shells);
+  const toast = useGame((s) => s.toast);
+  const resume = useGame((s) => s.resumeDescent);
+  const extract = useGame((s) => s.extractToHub);
+  const deckErr = loadoutError();
+
+  return (
+    <div className="flex h-full items-center justify-center p-4">
+      <PixelWindow className="w-full max-w-lg p-5">
+        <p className="text-[11px] tracking-widest text-accent">中継点</p>
+        <h2 className="mt-1 text-3xl text-white">{layerLabel(floor)}を越えた</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          デッキ編成と魔改造ができる。先へ沈むか、拠点へ戻るか。拾った遺物はすでに残っている。
+        </p>
+        <p className="mt-3 text-xs tabular-nums text-white">
+          HP {hp}/{maxHp} · SAN {sanity}/{maxSanity} · 貝殻 {shells}
+        </p>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <PixelButton disabled={!!deckErr} onClick={resume}>
+            次の層へ沈む
+          </PixelButton>
+          <PixelButton onClick={extract}>拠点へ帰還</PixelButton>
+        </div>
+        {deckErr ? <p className="mt-3 text-xs text-blood">{deckErr}</p> : null}
+        {toast ? <p className="mt-3 text-xs text-muted">{toast}</p> : null}
+      </PixelWindow>
+    </div>
   );
 }
 
@@ -103,12 +149,12 @@ function StashPanel() {
       <PixelWindow className="mb-3 rounded-none">
         <p className="text-xs tracking-widest text-muted">STASH</p>
         <h2 className="mt-1 text-xl text-white">戦利品</h2>
-        <p className="mt-1 text-xs text-muted">魂に刻んだ遺物と、これまでの潜航で得たカード。</p>
+        <p className="mt-1 text-xs text-muted">所持している遺物と、これまでの潜航で得たカード。</p>
       </PixelWindow>
 
       <p className="mb-2 text-xs tracking-widest text-muted">遺物 {profile.collection.length}</p>
       {profile.collection.length === 0 ? (
-        <p className="mb-4 text-xs text-muted">まだ魂に刻んだ遺物はない。</p>
+        <p className="mb-4 text-xs text-muted">まだ遺物はない。</p>
       ) : (
         <ul className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {profile.collection.map((inst) => (

@@ -3,6 +3,7 @@ import { DeckInspect } from "@/components/game/DeckInspect";
 import { Vitals } from "@/components/game/Hud";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
+import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
 import { getCard } from "@/game/cards";
 import { rankLabel } from "@/game/smith";
 import { useGame } from "@/game/store";
@@ -15,6 +16,7 @@ export function RestView() {
   if (room === "pub") return <PubRoom />;
   if (room === "smith") return <SmithRoom />;
   if (room === "upgrade") return <ForgeRoom />;
+  if (room === "deck") return <DeckEditRoom />;
   return <VillageHub />;
 }
 
@@ -88,12 +90,27 @@ function VillageHub() {
             <h2 className="text-4xl text-white">灯の見える岸</h2>
           </PixelWindow>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <PixelButton onClick={() => visit("deck")}>デッキ編成</PixelButton>
             <PixelButton onClick={() => visit("pub")}>パブ</PixelButton>
             <PixelButton onClick={leave}>次の層へ</PixelButton>
           </div>
         </div>
       </div>
       <DeckInspect />
+    </section>
+  );
+}
+
+function DeckEditRoom() {
+  const visit = useGame((s) => s.visitVillage);
+  const apply = useGame((s) => s.applyLoadoutToRun);
+  return (
+    <section className="h-dvh overflow-hidden bg-ink font-pixel">
+      <DeckBuilderScreen
+        onClose={() => {
+          if (apply()) visit("hub");
+        }}
+      />
     </section>
   );
 }

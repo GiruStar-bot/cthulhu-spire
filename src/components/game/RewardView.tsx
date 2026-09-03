@@ -29,8 +29,8 @@ export function RewardView() {
         <p className="mt-2 max-w-lg text-sm text-pretty text-muted">
           {bossGate && floor >= DEMO_MAX_FLOOR
             ? "最深の戦利。次に進むと、この沈降は終わる。"
-            : bossGate && floor === 50
-              ? "大ボスを沈めた。次に進むと、都市はさらに沈む。"
+            : bossGate && floor % 10 === 0
+              ? "中ボスを越えた。次に進むと中継点で編成できる。"
               : "次の層へ沈む。"}
         </p>
 
@@ -47,7 +47,7 @@ export function RewardView() {
               <p className="text-[11px] tracking-widest text-accent">遺物</p>
               <p className="mt-1 text-xl text-white">{relicLabel(reward.relic)}</p>
               <p className="mt-1 text-sm text-muted">{relicDesc(reward.relic)}</p>
-              <p className="mt-2 text-xs text-muted">この沈降のあいだ持つ。死んだとき、一つだけ魂に刻める。</p>
+              <p className="mt-2 text-xs text-muted">得た瞬間から魂に残る。死んでも失わない。</p>
             </div>
           </div>
         ) : null}

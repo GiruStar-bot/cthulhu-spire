@@ -5,13 +5,11 @@ import { relicDesc, relicLabel } from "@/game/relics";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { asset } from "@/lib/asset";
-import { cn } from "@/lib/utils";
 import type { RelicInstance } from "@/game/types";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 export function EndView({ kind }: { kind: "victory" | "defeat" }) {
   const giveUp = useGame((s) => s.giveUp);
-  const engrave = useGame((s) => s.engraveRelic);
   const floor = useGame((s) => s.floor);
   const profile = useGame((s) => s.profile);
   const relics = useGame((s) => s.relics);
@@ -28,7 +26,6 @@ export function EndView({ kind }: { kind: "victory" | "defeat" }) {
         name={playerName || "潜航者"}
         floor={floor}
         gained={gained}
-        onEngrave={engrave}
         onSkip={giveUp}
       />
     );
@@ -62,17 +59,13 @@ function DeathScreen({
   name,
   floor,
   gained,
-  onEngrave,
   onSkip,
 }: {
   name: string;
   floor: number;
   gained: RelicInstance[];
-  onEngrave: (uid: string) => void;
   onSkip: () => void;
 }) {
-  const [picked, setPicked] = useState<string | null>(gained[0]?.uid ?? null);
-
   return (
     <section className="relative flex h-dvh flex-col overflow-hidden bg-ink">
       <img
@@ -87,53 +80,31 @@ function DeathScreen({
           <p className="font-pixel text-xs tracking-widest text-blood">器が砕ける</p>
           <h2 className="font-pixel mt-2 text-5xl tracking-widest text-white sm:text-6xl">死亡</h2>
           <p className="mt-3 max-w-md text-sm text-pretty text-muted">
-            {name}は{layerLabel(floor)}で止まった。この沈降で得た遺物のうち、一つだけ魂に刻める。
+            {name}は{layerLabel(floor)}で止まった。この沈降で得た遺物は、すべて魂に残った。
           </p>
         </div>
 
         <PixelWindow className="flex max-h-[42dvh] w-full flex-col overflow-hidden p-4 text-left">
           <p className="shrink-0 text-xs tracking-widest text-muted">今世の遺物</p>
           {gained.length ? (
-            <>
-              <ul className="mt-2 min-h-0 flex-1 space-y-2 overflow-y-auto">
-                {gained.map((r) => (
-                  <li key={r.uid}>
-                    <button
-                      type="button"
-                      onClick={() => setPicked(r.uid)}
-                      className={cn(
-                        "min-h-11 w-full border-2 px-3 py-3 text-left font-pixel",
-                        picked === r.uid
-                          ? "border-white bg-white text-black"
-                          : "border-gray-200 bg-transparent text-white",
-                      )}
-                    >
-                      <span className="flex items-center gap-2">
-                        <PixelRelic defId={r.defId} className="size-8 shrink-0" />
-                        <span className="block">{relicLabel(r)}</span>
-                      </span>
-                      <span className={cn("mt-1 block text-sm", picked === r.uid ? "text-black/70" : "text-muted")}>
-                        {relicDesc(r)}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <PixelButton
-                disabled={!picked}
-                onClick={() => picked && onEngrave(picked)}
-                className="mt-3 w-full"
-              >
-                魂に刻む
-              </PixelButton>
-            </>
+            <ul className="mt-2 min-h-0 flex-1 space-y-2 overflow-y-auto">
+              {gained.map((r) => (
+                <li key={r.uid} className="border-2 border-gray-200 px-3 py-3 font-pixel text-white">
+                  <span className="flex items-center gap-2">
+                    <PixelRelic defId={r.defId} className="size-8 shrink-0" />
+                    <span className="block">{relicLabel(r)}</span>
+                  </span>
+                  <span className="mt-1 block text-sm text-muted">{relicDesc(r)}</span>
+                </li>
+              ))}
+            </ul>
           ) : (
-            <p className="mt-3 text-sm text-muted">この沈降では、刻む遺物がなかった。</p>
+            <p className="mt-3 text-sm text-muted">遺物はすでに魂に残っている。</p>
           )}
         </PixelWindow>
 
         <PixelButton onClick={onSkip} className="px-8">
-          タイトルへ戻る
+          拠点へ戻る
         </PixelButton>
       </div>
     </section>
