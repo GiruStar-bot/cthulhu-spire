@@ -438,7 +438,7 @@
 }
 
 .combat-foe:has(.enemy-stage:nth-child(2)) {
-  gap: 0.5rem;
+  gap: 0;
   bottom: 14%;
 }
 
@@ -469,8 +469,8 @@
 }
 
 .combat-foe:has(.enemy-stage:nth-child(2)) .enemy-figure.is-cutout {
-  width: min(57vw, 27rem);
-  height: min(65dvh, 32rem);
+  width: min(80vw, 40rem);
+  height: min(70dvh, 38rem);
 }
 
 .enemy-figure img {
