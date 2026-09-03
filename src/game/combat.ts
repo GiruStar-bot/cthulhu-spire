@@ -130,7 +130,8 @@ function incoming(raw: number, c: CombatState) {
 }
 
 export function drawCards(c: CombatState, n: number, rand: () => number, player?: PlayerHook) {
-  for (let i = 0; i < n; i++) {
+  let drawn = 0;
+  while (drawn < n) {
     if (c.hand.length >= 10) break;
     if (c.draw.length === 0) {
       if (c.discard.length === 0) break;
@@ -147,6 +148,7 @@ export function drawCards(c: CombatState, n: number, rand: () => number, player?
       continue;
     }
     c.hand.push(card);
+    drawn++;
   }
 }
 
