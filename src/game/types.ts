@@ -124,7 +124,7 @@ export interface CardInst {
   runeMods?: RuneMods;
 }
 
-export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour";
+export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour" | "shrine";
 
 export interface EnemyDef {
   id: string;
