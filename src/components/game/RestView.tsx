@@ -147,12 +147,28 @@ function InnRoom() {
         alt=""
         className="pointer-events-none absolute bottom-0 left-[8%] z-10 h-[55dvh] max-h-96 select-none object-contain object-bottom drop-shadow-[4px_4px_0_rgba(0,0,0,0.6)]"
       />
+      <div className="absolute bottom-[54dvh] left-[8%] z-10 border-2 border-white bg-black px-3 py-1.5 font-pixel text-sm text-white">
+        いらっしゃい
+      </div>
 
       <div className="relative z-10 flex h-dvh flex-col items-center justify-center gap-3 px-5 text-center">
         {([10, 20, 30] as const).map((n) => (
-          <PixelButton key={n} disabled={shells < n} onClick={() => stay(n)} className="w-fit">
-            {n}枚 · {n === 10 ? "体力2割 正気+10" : n === 20 ? "体力5割 正気+20" : "体力全快 正気+30"}
-          </PixelButton>
+          <button
+            key={n}
+            type="button"
+            disabled={shells < n}
+            onClick={() => stay(n)}
+            className="flex w-fit items-center gap-3 border-2 border-white bg-black/85 p-2 font-pixel text-left text-white disabled:opacity-40"
+          >
+            <img
+              src={asset(`art/pixel/village/room-${n}.jpg`)}
+              alt=""
+              className="h-16 w-24 border-2 border-white object-cover"
+            />
+            <span className="text-sm">
+              {n}枚 · {n === 10 ? "体力2割 正気+10" : n === 20 ? "体力5割 正気+20" : "体力全快 正気+30"}
+            </span>
+          </button>
         ))}
       </div>
 
@@ -232,6 +248,9 @@ function SmithRoom() {
         alt=""
         className="pointer-events-none absolute bottom-0 left-[4%] z-[5] h-[50dvh] max-h-80 select-none object-contain object-bottom object-left opacity-90"
       />
+      <div className="absolute bottom-[48dvh] left-[4%] z-10 border-2 border-white bg-black px-3 py-1.5 font-pixel text-sm text-white">
+        ……
+      </div>
       <div className="relative z-10 flex min-h-dvh flex-col gap-4 px-5 py-6 sm:px-12">
         <Vitals />
         <div className="flex items-center justify-between gap-3">
