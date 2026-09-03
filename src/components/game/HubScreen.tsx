@@ -29,7 +29,10 @@ export function HubScreen() {
   const toTitle = useGame((s) => s.toTitle);
   const extractToHub = useGame((s) => s.extractToHub);
   const floor = useGame((s) => s.floor);
-  const deckCount = useCollectionStore((s) => s.deck.length);
+  const deckCount = useCollectionStore((s) => {
+    const counts = s.decks[s.activeDeck] ?? {};
+    return Object.values(counts).reduce((a, b) => a + b, 0);
+  });
   const [tab, setTab] = useState<HubTab>("descend");
   const vitals = derivedVitals(profile.stats, profile.madness);
   const checkpoint = floor > 0;

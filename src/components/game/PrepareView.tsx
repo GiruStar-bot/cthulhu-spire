@@ -40,7 +40,10 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
   const remain = Math.max(0, budget - spent);
   const features = useMemo(() => unlockedFeatures(profile.stats), [profile.stats]);
   const tally = useMemo(() => tallyFloors(runFloors), [runFloors]);
-  const deckCount = useCollectionStore((s) => s.deck.length);
+  const decks = useCollectionStore((s) => s.decks);
+  const activeDeck = useCollectionStore((s) => s.activeDeck);
+  const setActiveDeck = useCollectionStore((s) => s.setActiveDeck);
+  const deckCount = Object.values(decks[activeDeck] ?? {}).reduce((a, b) => a + b, 0);
   const deckErr = loadoutError();
   const canStart = playerName.trim().length > 0 && !deckErr;
 
@@ -118,8 +121,23 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
         {toast ? <p className="text-sm text-blood">{toast}</p> : null}
         {!playerName.trim() ? <p className="text-xs text-muted">名前を入れてください。</p> : null}
         {deckErr ? <p className="text-xs text-blood">{deckErr}</p> : null}
+        <div className="flex max-w-xs flex-wrap justify-end gap-2">
+          {Object.keys(decks).map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => setActiveDeck(name)}
+              className={cn(
+                "border-2 px-3 py-1.5 font-pixel text-xs",
+                name === activeDeck ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+              )}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
         <p className="text-xs tabular-nums text-muted">
-          ロードアウト {deckCount}/{MIN_RUN_DECK}〜20
+          {activeDeck} {deckCount}/{MIN_RUN_DECK}〜20
         </p>
         <PixelButton disabled={!canStart} onClick={startRun} className="min-h-12 px-8">
           潜航開始

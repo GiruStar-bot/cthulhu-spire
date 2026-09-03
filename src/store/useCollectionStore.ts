@@ -13,7 +13,10 @@ export type CardInstance = {
   origin: "starter" | "loot";
 };
 
+export type DeckCounts = Record<string, number>;
+
 export const COPY_LIMIT = 4;
+const DEFAULT_DECK = "デッキ1";
 
 type Inventory = {
   cards: CardInstance[];
@@ -23,10 +26,15 @@ type Inventory = {
 
 type CollectionState = {
   inventory: Inventory;
-  deck: string[];
+  decks: Record<string, DeckCounts>;
+  activeDeck: string;
   runeRegistry: Record<string, Rune>;
-  addToDeck: (instanceId: string) => boolean;
-  removeFromDeck: (instanceId: string) => void;
+  createDeck: (name: string) => boolean;
+  deleteDeck: (name: string) => void;
+  renameDeck: (oldName: string, newName: string) => boolean;
+  setActiveDeck: (name: string) => void;
+  addToDeck: (cardId: string) => boolean;
+  removeFromDeck: (cardId: string) => void;
   addLootCard: (baseCardId: string) => void;
   addLootRune: (rune: Rune) => void;
   addLootEquipment: (equipment: EquipmentInstance) => void;
@@ -45,7 +53,12 @@ const STARTER_CARDS: { id: string; count: number }[] = [
   { id: "sweep", count: 2 },
 ];
 
-function seedInventory(): { cards: CardInstance[]; runes: Rune[]; equipment: EquipmentInstance[]; runeRegistry: Record<string, Rune> } {
+function seedInventory(): {
+  cards: CardInstance[];
+  runes: Rune[];
+  equipment: EquipmentInstance[];
+  runeRegistry: Record<string, Rune>;
+} {
   const cards: CardInstance[] = [];
   for (const { id, count } of STARTER_CARDS) {
     if (!CARDS[id]) throw new Error(`unknown starter card: ${id}`);
@@ -68,26 +81,31 @@ function seedInventory(): { cards: CardInstance[]; runes: Rune[]; equipment: Equ
   return { cards, runes, equipment: [], runeRegistry };
 }
 
-function cardById(cards: CardInstance[], instanceId: string) {
-  return cards.find((c) => c.instanceId === instanceId);
-}
-
-function copiesInDeck(state: Pick<CollectionState, "inventory" | "deck">, baseCardId: string) {
-  return state.deck.reduce((n, id) => {
-    const card = cardById(state.inventory.cards, id);
-    return card?.baseCardId === baseCardId ? n + 1 : n;
-  }, 0);
-}
-
 export function peekRune(id: string): Rune | undefined {
   return useCollectionStore.getState().runeRegistry[id];
 }
 
-export function copiesOfBase(deck: string[], cards: CardInstance[], baseCardId: string) {
-  return deck.reduce((n, id) => {
-    const card = cards.find((c) => c.instanceId === id);
-    return card?.baseCardId === baseCardId ? n + 1 : n;
-  }, 0);
+export function copiesOfBase(deck: DeckCounts, baseCardId: string): number {
+  return deck[baseCardId] ?? 0;
+}
+
+export function deckSize(deck: DeckCounts): number {
+  return Object.values(deck).reduce((a, b) => a + b, 0);
+}
+
+function countsFromLegacyDeck(
+  deck: string[] | undefined,
+  cards: CardInstance[],
+): DeckCounts {
+  if (!Array.isArray(deck) || !deck.length) return {};
+  const byId = new Map(cards.map((c) => [c.instanceId, c.baseCardId]));
+  const counts: DeckCounts = {};
+  for (const id of deck) {
+    const base = byId.get(id);
+    if (!base) continue;
+    counts[base] = (counts[base] ?? 0) + 1;
+  }
+  return counts;
 }
 
 const seeded = seedInventory();
@@ -96,22 +114,64 @@ export const useCollectionStore = create<CollectionState>()(
   persist(
     (set, get) => ({
       inventory: { cards: seeded.cards, runes: seeded.runes, equipment: seeded.equipment },
-      deck: [],
+      decks: { [DEFAULT_DECK]: {} },
+      activeDeck: DEFAULT_DECK,
       runeRegistry: seeded.runeRegistry,
 
-      addToDeck: (instanceId) => {
+      createDeck: (name) => {
         const s = get();
-        const card = cardById(s.inventory.cards, instanceId);
-        if (!card) return false;
-        if (s.deck.includes(instanceId)) return false;
-        if (s.deck.length >= DECK_LIMIT) return false;
-        if (copiesInDeck(s, card.baseCardId) >= COPY_LIMIT) return false;
-        set({ deck: [...s.deck, instanceId] });
+        const trimmed = name.trim();
+        if (!trimmed || s.decks[trimmed]) return false;
+        set({ decks: { ...s.decks, [trimmed]: {} }, activeDeck: trimmed });
         return true;
       },
 
-      removeFromDeck: (instanceId) => {
-        set((s) => ({ deck: s.deck.filter((id) => id !== instanceId) }));
+      deleteDeck: (name) => {
+        const s = get();
+        const names = Object.keys(s.decks);
+        if (names.length <= 1) return;
+        if (!s.decks[name]) return;
+        const next = { ...s.decks };
+        delete next[name];
+        const nextActive = s.activeDeck === name ? Object.keys(next)[0]! : s.activeDeck;
+        set({ decks: next, activeDeck: nextActive });
+      },
+
+      renameDeck: (oldName, newName) => {
+        const s = get();
+        const trimmed = newName.trim();
+        if (!trimmed || s.decks[trimmed] || !s.decks[oldName]) return false;
+        const next = { ...s.decks };
+        next[trimmed] = next[oldName]!;
+        delete next[oldName];
+        set({ decks: next, activeDeck: s.activeDeck === oldName ? trimmed : s.activeDeck });
+        return true;
+      },
+
+      setActiveDeck: (name) => {
+        if (get().decks[name]) set({ activeDeck: name });
+      },
+
+      addToDeck: (cardId) => {
+        const s = get();
+        const deck = s.decks[s.activeDeck] ?? {};
+        const total = deckSize(deck);
+        const current = deck[cardId] ?? 0;
+        const owned = s.inventory.cards.filter((c) => c.baseCardId === cardId).length;
+        if (total >= DECK_LIMIT || current >= COPY_LIMIT || current >= owned) return false;
+        set({ decks: { ...s.decks, [s.activeDeck]: { ...deck, [cardId]: current + 1 } } });
+        return true;
+      },
+
+      removeFromDeck: (cardId) => {
+        const s = get();
+        const deck = s.decks[s.activeDeck] ?? {};
+        const current = deck[cardId] ?? 0;
+        if (current <= 0) return;
+        const next = { ...deck };
+        if (current - 1 <= 0) delete next[cardId];
+        else next[cardId] = current - 1;
+        set({ decks: { ...s.decks, [s.activeDeck]: next } });
       },
 
       addLootCard: (baseCardId) => {
@@ -187,7 +247,7 @@ export const useCollectionStore = create<CollectionState>()(
     }),
     {
       name: "cthulhu-spire-collection-v1",
-      version: 3,
+      version: 4,
       migrate: (persisted) => {
         const s = persisted as {
           inventory?: {
@@ -196,6 +256,8 @@ export const useCollectionStore = create<CollectionState>()(
             equipment?: EquipmentInstance[];
           };
           deck?: string[];
+          decks?: Record<string, DeckCounts>;
+          activeDeck?: string;
           runeRegistry?: Record<string, Rune>;
         };
         const cards = (s.inventory?.cards ?? []).map((c) => ({
@@ -203,6 +265,10 @@ export const useCollectionStore = create<CollectionState>()(
           baseCardId: c.baseCardId,
           origin: c.origin ?? "starter",
         }));
+        const hasNamed =
+          s.decks && typeof s.decks === "object" && Object.keys(s.decks).length > 0;
+        const decks = hasNamed ? s.decks! : { [DEFAULT_DECK]: countsFromLegacyDeck(s.deck, cards) };
+        const activeDeck = s.activeDeck && decks[s.activeDeck] ? s.activeDeck : Object.keys(decks)[0] ?? DEFAULT_DECK;
         return {
           ...s,
           inventory: {
@@ -210,6 +276,8 @@ export const useCollectionStore = create<CollectionState>()(
             runes: s.inventory?.runes ?? [],
             equipment: s.inventory?.equipment ?? [],
           },
+          decks,
+          activeDeck,
         };
       },
       storage: createJSONStorage(() =>
@@ -223,7 +291,8 @@ export const useCollectionStore = create<CollectionState>()(
       ),
       partialize: (s) => ({
         inventory: s.inventory,
-        deck: s.deck,
+        decks: s.decks,
+        activeDeck: s.activeDeck,
         runeRegistry: s.runeRegistry,
       }),
     },
