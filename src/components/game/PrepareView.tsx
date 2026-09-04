@@ -34,10 +34,6 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
   const remain = Math.max(0, budget - spent);
   const features = useMemo(() => unlockedFeatures(profile.stats), [profile.stats]);
   const tally = useMemo(() => tallyFloors(runFloors), [runFloors]);
-  const decks = useCollectionStore((s) => s.decks);
-  const activeDeck = useCollectionStore((s) => s.activeDeck);
-  const setActiveDeck = useCollectionStore((s) => s.setActiveDeck);
-  const deckCount = Object.values(decks[activeDeck] ?? {}).reduce((a, b) => a + b, 0);
   const deckErr = loadoutError();
   const canStart = playerName.trim().length > 0 && !deckErr;
 
@@ -55,7 +51,7 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
         </>
       )}
 
-      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col items-center justify-center gap-3 px-3 py-4 lg:flex-row lg:items-stretch">
+      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col items-center justify-center gap-3 px-3 py-4 lg:flex-row lg:items-stretch">
         <PixelWindow className="flex max-h-full min-h-0 w-full flex-1 flex-col overflow-hidden p-4 sm:p-5">
           <div className="flex shrink-0 items-baseline justify-between gap-3">
             <h2 className="text-xl text-white sm:text-2xl">探索準備</h2>
@@ -110,35 +106,53 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
           ) : null}
         </PixelWindow>
         <EquipmentSummaryPanel />
+        <DeckSelectPanel />
       </div>
 
       <div className="absolute right-4 bottom-4 z-10 flex flex-col items-end gap-2">
         {toast ? <p className="text-sm text-blood">{toast}</p> : null}
         {!playerName.trim() ? <p className="text-xs text-muted">名前を入れてください。</p> : null}
         {deckErr ? <p className="text-xs text-blood">{deckErr}</p> : null}
-        <div className="flex max-w-xs flex-wrap justify-end gap-2">
-          {Object.keys(decks).map((name) => (
-            <button
-              key={name}
-              type="button"
-              onClick={() => setActiveDeck(name)}
-              className={cn(
-                "border-2 px-3 py-1.5 font-pixel text-xs",
-                name === activeDeck ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
-              )}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-        <p className="text-xs tabular-nums text-muted">
-          {activeDeck} {deckCount}/{MIN_RUN_DECK}〜20
-        </p>
         <PixelButton disabled={!canStart} onClick={startRun} className="min-h-12 px-8">
           潜航開始
         </PixelButton>
       </div>
     </section>
+  );
+}
+
+function DeckSelectPanel() {
+  const decks = useCollectionStore((s) => s.decks);
+  const activeDeck = useCollectionStore((s) => s.activeDeck);
+  const setActiveDeck = useCollectionStore((s) => s.setActiveDeck);
+  const activeCount = Object.values(decks[activeDeck] ?? {}).reduce((a, b) => a + b, 0);
+
+  return (
+    <PixelWindow className="w-full max-w-xs shrink-0">
+      <p className="mb-2 text-[11px] tracking-widest text-accent">使用デッキ</p>
+      <div className="flex flex-col gap-2">
+        {Object.keys(decks).map((name) => {
+          const count = Object.values(decks[name] ?? {}).reduce((a, b) => a + b, 0);
+          return (
+            <button
+              key={name}
+              type="button"
+              onClick={() => setActiveDeck(name)}
+              className={cn(
+                "flex items-center justify-between border-2 px-3 py-2 text-left font-pixel text-xs",
+                name === activeDeck ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+              )}
+            >
+              <span>{name}</span>
+              <span className="tabular-nums">{count}/20</span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-xs tabular-nums text-muted">
+        選択中: {activeDeck}（{activeCount}/{MIN_RUN_DECK}〜20）
+      </p>
+    </PixelWindow>
   );
 }
 

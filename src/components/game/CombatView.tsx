@@ -79,6 +79,8 @@ export function CombatView() {
       <ShakeRoot tick={fx.tick} traumaRef={fx.traumaRef} className="relative h-dvh w-full overflow-hidden">
         <StageBack />
 
+        <CombatLogPanel log={combat.log} />
+
         <div className="fx-blood" style={{ "--blood": blood } as CSSProperties} />
         <div className={cn("fx-vertigo", fx.vertigo ? "is-on" : "")} />
 
@@ -127,11 +129,6 @@ export function CombatView() {
               {combat.powers.map((p) => (
                 <span key={p} className="border-2 border-gray-200 bg-black/80 px-2 py-1 font-pixel text-xs text-muted">
                   {POWER_TEXT[p]}
-                </span>
-              ))}
-              {combat.log.slice(-1).map((l) => (
-                <span key={l} className="font-pixel text-xs text-muted italic">
-                  {l}
                 </span>
               ))}
             </div>
@@ -202,6 +199,64 @@ export function CombatView() {
         ) : null}
       </ShakeRoot>
     </section>
+  );
+}
+
+function CombatLogPanel({ log }: { log: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const recent = log.slice(-5);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className="absolute top-3 right-3 z-20 max-w-[14rem] border-2 border-white bg-black/85 px-2 py-1.5 text-left font-pixel text-[10px] leading-tight text-muted sm:top-5 sm:right-5"
+      >
+        {recent.length === 0 ? (
+          <p className="italic">まだ記録がない。</p>
+        ) : (
+          recent.map((l, i) => (
+            <p key={i} className="italic">
+              {l}
+            </p>
+          ))
+        )}
+      </button>
+      {expanded ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={() => setExpanded(false)}
+        >
+          <div
+            className="max-h-[70dvh] w-full max-w-md overflow-y-auto border-2 border-white bg-ink p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-pixel text-sm text-white">戦闘ログ</p>
+              <button
+                type="button"
+                onClick={() => setExpanded(false)}
+                className="border-2 border-white bg-black px-2 py-1 font-pixel text-xs text-white"
+              >
+                閉じる
+              </button>
+            </div>
+            <div className="space-y-1">
+              {log.length === 0 ? (
+                <p className="font-pixel text-xs text-muted">まだ記録がない。</p>
+              ) : (
+                log.map((l, i) => (
+                  <p key={i} className="font-pixel text-xs text-muted italic">
+                    {l}
+                  </p>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 
