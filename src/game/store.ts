@@ -292,7 +292,8 @@ export const useGame = create<GameStore>((set, get) => {
       playBgm(spec.type === "boss" ? "boss" : "combat");
       const ids = spec.enemyIds?.length ? spec.enemyIds : encounterIds(spec.type, floor, s.rand);
       const hook = hookFrom(s as GameStore);
-      const combat = startCombat(s.deck, ids, hook, floor, s.rand);
+      const runDeck = s.deck.filter((c) => getCard(c.defId).type !== "status");
+      const combat = startCombat(runDeck, ids, hook, floor, s.rand);
       set({
         ...base,
         scene: "combat",
