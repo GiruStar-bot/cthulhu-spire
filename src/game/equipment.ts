@@ -208,9 +208,67 @@ function round(n: number): number {
   return Math.round(n);
 }
 
+type BonusStatKey = "strength" | "defensePct" | "poisonResistPct" | "sanResistPct";
+
+const TIER_BONUS_CONFIG: Record<
+  number,
+  { rangePct: number; bonusChance: number; secondBonusChance: number }
+> = {
+  1: { rangePct: 0.15, bonusChance: 0, secondBonusChance: 0 },
+  2: { rangePct: 0.2, bonusChance: 0.25, secondBonusChance: 0 },
+  3: { rangePct: 0.25, bonusChance: 0.5, secondBonusChance: 0 },
+  4: { rangePct: 0.3, bonusChance: 0.75, secondBonusChance: 0.25 },
+  5: { rangePct: 0.35, bonusChance: 1, secondBonusChance: 0.5 },
+};
+
+const BONUS_STAT_BASE: Record<BonusStatKey, number> = {
+  strength: 1,
+  defensePct: 2,
+  poisonResistPct: 2,
+  sanResistPct: 2,
+};
+
+const ALL_BONUS_KEYS: BonusStatKey[] = ["strength", "defensePct", "poisonResistPct", "sanResistPct"];
+
+function statKeysOf(def: EquipmentDef): BonusStatKey[] {
+  const keys: BonusStatKey[] = [];
+  if (def.baseStrength) keys.push("strength");
+  if (def.baseDefensePct) keys.push("defensePct");
+  if (def.basePoisonResistPct) keys.push("poisonResistPct");
+  if (def.baseSanResistPct) keys.push("sanResistPct");
+  return keys;
+}
+
+function rollBonusStats(
+  def: EquipmentDef,
+  tier: number,
+  power: number,
+  rand: () => number,
+): Partial<Record<BonusStatKey, number>> {
+  const cfg = TIER_BONUS_CONFIG[Math.min(5, Math.max(1, tier))] ?? TIER_BONUS_CONFIG[1];
+  const ownKeys = new Set(statKeysOf(def));
+  const pool = ALL_BONUS_KEYS.filter((k) => !ownKeys.has(k));
+  const bonus: Partial<Record<BonusStatKey, number>> = {};
+  if (pool.length === 0) return bonus;
+
+  if (rand() < cfg.bonusChance) {
+    const idx = Math.floor(rand() * pool.length);
+    const key = pool[idx];
+    bonus[key] = Math.max(1, Math.round(BONUS_STAT_BASE[key] * power));
+
+    const remaining = pool.filter((k) => k !== key);
+    if (remaining.length > 0 && rand() < cfg.secondBonusChance) {
+      const key2 = remaining[Math.floor(rand() * remaining.length)];
+      bonus[key2] = Math.max(1, Math.round(BONUS_STAT_BASE[key2] * power));
+    }
+  }
+  return bonus;
+}
+
 export function rollEquipmentPower(tier: number, rand: () => number): number {
+  const cfg = TIER_BONUS_CONFIG[Math.min(5, Math.max(1, tier))] ?? TIER_BONUS_CONFIG[1];
   const base = 1 + tier * 0.15;
-  const roll = 1 + (rand() * 2 - 1) * 0.25;
+  const roll = 1 + (rand() * 2 - 1) * cfg.rangePct;
   return Math.max(0.5, base * roll);
 }
 
@@ -221,12 +279,14 @@ export function rollEquipmentAtTier(
   source: EquipmentInstance["source"],
 ): EquipmentInstance {
   const def = getEquipment(defId);
+  const power = rollEquipmentPower(tier, rand);
   return {
     uid: uid("eq"),
     defId,
     tier,
-    power: rollEquipmentPower(tier, rand),
+    power,
     socketedRunes: Array.from({ length: def.sockets }, () => null),
+    bonusStats: rollBonusStats(def, tier, power, rand),
     obtainedFloor: 0,
     source,
   };
@@ -249,7 +309,8 @@ export function pickEquipmentTemplate(rand: () => number): string {
 
 export function equipmentLabel(inst: EquipmentInstance): string {
   const def = EQUIPMENT[inst.defId];
-  return `${def?.name ?? inst.defId} T${inst.tier}`;
+  const bonusCount = Object.keys(inst.bonusStats ?? {}).length;
+  return `${def?.name ?? inst.defId} T${inst.tier}${bonusCount > 0 ? ` +${bonusCount}` : ""}`;
 }
 
 export function hasFullSet(
@@ -288,6 +349,12 @@ export function computeEquipmentStats(
     stats.strength += (def.baseStrength ?? 0) * power;
     stats.drawBonus += (def.baseDraw ?? 0) * power;
     stats.healPerTurn += (def.baseHeal ?? 0) * power;
+
+    const bonus = inst.bonusStats ?? {};
+    if (bonus.strength) stats.strength += bonus.strength;
+    if (bonus.defensePct) stats.defensePct += bonus.defensePct;
+    if (bonus.poisonResistPct) stats.poisonResistPct += bonus.poisonResistPct;
+    if (bonus.sanResistPct) stats.sanResistPct += bonus.sanResistPct;
 
     for (const runeId of inst.socketedRunes) {
       if (!runeId) continue;

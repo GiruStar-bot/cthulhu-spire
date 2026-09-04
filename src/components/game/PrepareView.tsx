@@ -1,20 +1,14 @@
 import { useMemo } from "react";
 import { DEMO_MAX_FLOOR, layerLabel, tallyFloors } from "@/game/floors";
-import {
-  STAT_MIN,
-  statBase,
-  statFinal,
-  statSum,
-  totalPoints,
-  unlockedFeatures,
-} from "@/game/profile";
+import { STAT_MIN, derivedVitals, statBase, statFinal, statSum, totalPoints, unlockedFeatures } from "@/game/profile";
 import { useGame } from "@/game/store";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
 import { MIN_RUN_DECK, loadoutError } from "@/game/cardEvaluator";
-import { useCollectionStore } from "@/store/useCollectionStore";
+import { peekRune, useCollectionStore } from "@/store/useCollectionStore";
+import { computeEquipmentStats } from "@/game/equipment";
 import type { StatKey } from "@/game/types";
 
 const STAT_UI: { key: StatKey; name: string; tag: string }[] = [
@@ -61,8 +55,8 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
         </>
       )}
 
-      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col items-center justify-center px-3 py-4">
-        <PixelWindow className="flex max-h-full min-h-0 w-full flex-col overflow-hidden p-4 sm:p-5">
+      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col items-center justify-center gap-3 px-3 py-4 lg:flex-row lg:items-stretch">
+        <PixelWindow className="flex max-h-full min-h-0 w-full flex-1 flex-col overflow-hidden p-4 sm:p-5">
           <div className="flex shrink-0 items-baseline justify-between gap-3">
             <h2 className="text-xl text-white sm:text-2xl">探索準備</h2>
             <p className="text-sm tabular-nums text-white">
@@ -115,6 +109,7 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
             </p>
           ) : null}
         </PixelWindow>
+        <EquipmentSummaryPanel />
       </div>
 
       <div className="absolute right-4 bottom-4 z-10 flex flex-col items-end gap-2">
@@ -144,6 +139,25 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
         </PixelButton>
       </div>
     </section>
+  );
+}
+
+function EquipmentSummaryPanel() {
+  const profile = useGame((s) => s.profile);
+  const eq = computeEquipmentStats(profile.equipped ?? {}, peekRune);
+  const vitals = derivedVitals(profile.stats, profile.madness ?? 0);
+
+  return (
+    <PixelWindow className="w-full max-w-xs shrink-0">
+      <p className="mb-2 text-[11px] tracking-widest text-accent">装備込みステータス</p>
+      <ul className="space-y-1 text-sm text-white">
+        <li>体力 {vitals.maxHp}</li>
+        <li>筋力 {eq.strength}</li>
+        <li>防御 {Math.round(eq.defensePct)}%</li>
+        <li>毒耐性 {Math.round(eq.poisonResistPct)}%</li>
+        <li>狂気耐性 {Math.round(eq.sanResistPct)}%</li>
+      </ul>
+    </PixelWindow>
   );
 }
 

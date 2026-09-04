@@ -119,6 +119,30 @@ export function EquipmentScreen() {
                   装着する
                 </button>
               )}
+              {Object.keys(active.bonusStats ?? {}).length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {active.bonusStats?.strength ? (
+                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                      筋力+{active.bonusStats.strength}
+                    </span>
+                  ) : null}
+                  {active.bonusStats?.defensePct ? (
+                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                      防御+{active.bonusStats.defensePct}%
+                    </span>
+                  ) : null}
+                  {active.bonusStats?.poisonResistPct ? (
+                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                      毒耐性+{active.bonusStats.poisonResistPct}%
+                    </span>
+                  ) : null}
+                  {active.bonusStats?.sanResistPct ? (
+                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                      狂気耐性+{active.bonusStats.sanResistPct}%
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
             </PixelWindow>
             <p className="mb-2 text-xs tracking-widest text-muted">ソケット</p>
             <div className="flex flex-wrap gap-2">

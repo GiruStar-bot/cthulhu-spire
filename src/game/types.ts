@@ -224,6 +224,7 @@ export interface EquipmentInstance {
   tier: number;
   power: number;
   socketedRunes: (string | null)[];
+  bonusStats: Partial<Record<"strength" | "defensePct" | "poisonResistPct" | "sanResistPct", number>>;
   obtainedFloor: number;
   source: "drop" | "smith" | "gift";
 }
