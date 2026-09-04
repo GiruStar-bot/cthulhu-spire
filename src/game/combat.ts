@@ -105,7 +105,7 @@ function dmgTaken(raw: number, vulnerable: number) {
   return vulnerable > 0 ? Math.floor(raw * 1.5) : raw;
 }
 
-function applyToEnemy(e: CombatEnemy, raw: number, c: CombatState, rand?: () => number) {
+function applyToEnemy(e: CombatEnemy, raw: number, c: CombatState, rand?: () => number): number {
   let n = dmgTaken(raw, e.vulnerable);
   if (getEnemy(e.defId).trait === "nurse" && e.block > 0) n = Math.floor(n * 0.5);
   const blocked = Math.min(e.block, n);
@@ -114,6 +114,7 @@ function applyToEnemy(e: CombatEnemy, raw: number, c: CombatState, rand?: () => 
   e.hp = Math.max(0, e.hp - hp);
   c.floaters.push(floater(`-${n}`, "dmg", e.uid));
   maybeSplit(e, c, rand);
+  return n;
 }
 
 function maybeSplit(e: CombatEnemy, c: CombatState, rand?: () => number) {
@@ -245,7 +246,8 @@ function runEffects(
           n = Math.floor(n * c.nextAttackMul);
           c.nextAttackMul = 1;
         }
-        applyToEnemy(tgt, n, c, rand);
+        const dealt = applyToEnemy(tgt, n, c, rand);
+        c.log.push(`${card ? getCard(card.defId).name : "攻撃"}で${getEnemy(tgt.defId).name}に${dealt}ダメージ。`);
         if (c.attackSelfHurt > 0) {
           player.hp = Math.max(1, player.hp - c.attackSelfHurt);
           c.floaters.push(floater(`-${c.attackSelfHurt}`, "dmg", "player"));
@@ -259,6 +261,7 @@ function runEffects(
           c.nextAttackMul = 1;
         }
         for (const tgt of living(c)) applyToEnemy(tgt, n, c, rand);
+        c.log.push(`${card ? getCard(card.defId).name : "攻撃"}が敵全体を襲った。`);
         if (c.attackSelfHurt > 0) {
           player.hp = Math.max(1, player.hp - c.attackSelfHurt);
           c.floaters.push(floater(`-${c.attackSelfHurt}`, "dmg", "player"));
@@ -269,6 +272,7 @@ function runEffects(
         const n = scaleN(e.n, card) + c.dexterity;
         c.block += n;
         c.floaters.push(floater(`+${n}`, "block", "player"));
+        c.log.push(`${card ? getCard(card.defId).name : "防御"}でブロック${n}を得た。`);
         break;
       }
       case "draw":
@@ -287,6 +291,7 @@ function runEffects(
         const healed = applyHealBonus(e.n, c.equipmentStats.healBonusPct);
         player.hp = Math.min(player.maxHp, player.hp + healed);
         c.floaters.push(floater(`+${healed}`, "heal", "player"));
+        c.log.push(`体力を${healed}回復した。`);
         break;
       }
       case "sanity":
@@ -295,6 +300,7 @@ function runEffects(
       case "hpCost":
         player.hp = Math.max(1, player.hp - e.n);
         c.floaters.push(floater(`-${e.n}`, "dmg", "player"));
+        c.log.push(`体力を${e.n}失った。`);
         break;
       case "weak": {
         const live = living(c);
@@ -304,6 +310,7 @@ function runEffects(
         } else {
           for (const tgt of live) tgt.weak += e.n;
         }
+        c.log.push(targetId ? `敵に弱体${e.n}を付与した。` : `敵全体に弱体${e.n}を付与した。`);
         break;
       }
       case "vulnerable": {
@@ -314,6 +321,7 @@ function runEffects(
         } else {
           for (const tgt of live) tgt.vulnerable += e.n;
         }
+        c.log.push(targetId ? `敵に脆弱${e.n}を付与した。` : `敵全体に脆弱${e.n}を付与した。`);
         break;
       }
       case "gainPower":
@@ -321,6 +329,7 @@ function runEffects(
         break;
       case "addDread":
         for (let i = 0; i < e.n; i++) insertIntoDraw(c, makeCard("dread"), rand);
+        c.log.push(`恐怖を${e.n}枚差し込んだ。`);
         break;
       case "ifIntentAttack": {
         const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
@@ -457,6 +466,7 @@ export function changeSanity(player: PlayerHook, c: CombatState, delta: number) 
   player.sanity = Math.max(0, Math.min(player.maxSanity, player.sanity + delta));
   if (delta !== 0) {
     c.floaters.push(floater(`${delta > 0 ? "+" : ""}${delta}`, "sanity", "player"));
+    c.log.push(`正気が${delta > 0 ? "+" : ""}${delta}した。`);
   }
   if (delta < 0) {
     if (c.powers.includes("bloodOath")) {
@@ -562,6 +572,7 @@ function applyEnemyIntent(
     e.hadAttackThisTurn = true;
     const hits = intent.hits ?? 1;
     const base = intent.damage ?? 0;
+    let totalDealt = 0;
     for (let i = 0; i < hits; i++) {
       let n = dmgDealt(base, e.strength, e.weak);
       n = dmgTaken(n, c.vulnerable);
@@ -573,22 +584,35 @@ function applyEnemyIntent(
       const hp = n - blocked;
       const reducedHp = applyDefensePct(hp, c.equipmentStats.defensePct);
       player.hp = Math.max(0, player.hp - reducedHp);
+      totalDealt += reducedHp;
       c.floaters.push(floater(`-${n}`, "dmg", "player"));
       if (hp > 0) sfx.push("hurt");
       if (blocked > 0) sfx.push("block");
     }
+    c.log.push(`${getEnemy(e.defId).name}が${totalDealt}ダメージ。`);
   }
   if (intent.kind === "defend" || intent.block) {
     e.block += intent.block ?? 0;
+    if (intent.block) c.log.push(`${getEnemy(e.defId).name}がブロック${intent.block}を得た。`);
   }
   if (intent.strength) e.strength += intent.strength;
-  if (intent.weak) c.weak += intent.weak;
-  if (intent.vulnerable) c.vulnerable += intent.vulnerable;
-  if (intent.poison) c.poison += intent.poison;
+  if (intent.weak) {
+    c.weak += intent.weak;
+    c.log.push(`${getEnemy(e.defId).name}に弱体${intent.weak}を仕掛けられた。`);
+  }
+  if (intent.vulnerable) {
+    c.vulnerable += intent.vulnerable;
+    c.log.push(`${getEnemy(e.defId).name}に脆弱${intent.vulnerable}を仕掛けられた。`);
+  }
+  if (intent.poison) {
+    c.poison += intent.poison;
+    c.log.push(`${getEnemy(e.defId).name}に毒${intent.poison}を付与された。`);
+  }
   if (intent.sanityDrain) {
     const reduced = applyDefensePct(intent.sanityDrain, c.equipmentStats.sanResistPct);
     player.sanity = Math.max(0, player.sanity - reduced);
     c.floaters.push(floater(`-${reduced}`, "sanity", "player"));
+    c.log.push(`${getEnemy(e.defId).name}に正気を${reduced}奪われた。`);
   }
   if (intent.dread) {
     for (let i = 0; i < intent.dread; i++) insertIntoDraw(c, makeCard("dread"), rand);
