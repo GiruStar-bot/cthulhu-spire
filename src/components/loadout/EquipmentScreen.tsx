@@ -126,9 +126,9 @@ export function EquipmentScreen() {
                       筋力+{active.bonusStats.strength}
                     </span>
                   ) : null}
-                  {active.bonusStats?.defensePct ? (
+                  {active.bonusStats?.defense ? (
                     <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
-                      防御+{active.bonusStats.defensePct}%
+                      防御+{active.bonusStats.defense}
                     </span>
                   ) : null}
                   {active.bonusStats?.poisonResistPct ? (

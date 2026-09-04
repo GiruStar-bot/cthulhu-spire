@@ -167,7 +167,7 @@ function EquipmentSummaryPanel() {
       <ul className="space-y-1 text-sm text-white">
         <li>体力 {vitals.maxHp}</li>
         <li>筋力 {eq.strength}</li>
-        <li>防御 {Math.round(eq.defensePct)}%</li>
+        <li>防御 {Math.round(eq.defense)}</li>
         <li>毒耐性 {Math.round(eq.poisonResistPct)}%</li>
         <li>狂気耐性 {Math.round(eq.sanResistPct)}%</li>
       </ul>

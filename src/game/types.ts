@@ -210,7 +210,7 @@ export interface EquipmentDef {
   archetype: Archetype;
   art: string;
   sockets: number;
-  baseDefensePct?: number;
+  baseDefense?: number;
   baseSanResistPct?: number;
   basePoisonResistPct?: number;
   baseStrength?: number;
@@ -224,13 +224,13 @@ export interface EquipmentInstance {
   tier: number;
   power: number;
   socketedRunes: (string | null)[];
-  bonusStats: Partial<Record<"strength" | "defensePct" | "poisonResistPct" | "sanResistPct", number>>;
+  bonusStats: Partial<Record<"strength" | "defense" | "poisonResistPct" | "sanResistPct", number>>;
   obtainedFloor: number;
   source: "drop" | "smith" | "gift";
 }
 
 export interface EquipmentStats {
-  defensePct: number;
+  defense: number;
   sanResistPct: number;
   poisonResistPct: number;
   strength: number;

@@ -11,7 +11,7 @@ import type {
 } from "./types";
 import { getCard, makeCard, scaleN } from "./cards";
 import { evaluateCardEffect } from "./cardEvaluator";
-import { applyDefensePct, computeEquipmentStats } from "./equipment";
+import { applyFlatDefense, applyPctReduction, computeEquipmentStats } from "./equipment";
 import { getEnemy } from "./enemies";
 import { cardToIntent, rollEnemyCard } from "./enemyAi";
 import { pick, shuffle, uid } from "./rng";
@@ -582,7 +582,7 @@ function applyEnemyIntent(
       c.block -= blocked;
       if (blocked > 0) c.blockLost += blocked;
       const hp = n - blocked;
-      const reducedHp = applyDefensePct(hp, c.equipmentStats.defensePct);
+      const reducedHp = applyFlatDefense(hp, c.equipmentStats.defense);
       player.hp = Math.max(0, player.hp - reducedHp);
       totalDealt += reducedHp;
       c.floaters.push(floater(`-${n}`, "dmg", "player"));
@@ -609,7 +609,7 @@ function applyEnemyIntent(
     c.log.push(`${getEnemy(e.defId).name}に毒${intent.poison}を付与された。`);
   }
   if (intent.sanityDrain) {
-    const reduced = applyDefensePct(intent.sanityDrain, c.equipmentStats.sanResistPct);
+    const reduced = applyPctReduction(intent.sanityDrain, c.equipmentStats.sanResistPct);
     player.sanity = Math.max(0, player.sanity - reduced);
     c.floaters.push(floater(`-${reduced}`, "sanity", "player"));
     c.log.push(`${getEnemy(e.defId).name}に正気を${reduced}奪われた。`);
@@ -674,7 +674,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   }
 
   if (c.poison > 0) {
-    const reduced = applyDefensePct(c.poison, c.equipmentStats.poisonResistPct);
+    const reduced = applyPctReduction(c.poison, c.equipmentStats.poisonResistPct);
     player.hp = Math.max(1, player.hp - reduced);
     c.floaters.push(floater(`毒${reduced}`, "dmg", "player"));
   }
