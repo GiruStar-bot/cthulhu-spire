@@ -172,7 +172,7 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     name: "猛毒の腕輪",
     slot: "arms",
     archetype: "poison",
-    art: asset("art/pixel/cards/ward.jpg"),
+    art: asset("art/pixel/equipment/venom_bangle.jpg"),
     sockets: 1,
     basePoisonResistPct: 3,
   },
