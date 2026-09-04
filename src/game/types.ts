@@ -38,6 +38,7 @@ export type Effect =
   | { t: "dexterity"; n: number }
   | { t: "heal"; n: number }
   | { t: "sanity"; n: number }
+  | { t: "sanityDamage"; n: number }
   | { t: "hpCost"; n: number }
   | { t: "weak"; n: number }
   | { t: "vulnerable"; n: number }
@@ -211,8 +212,8 @@ export interface EquipmentDef {
   art: string;
   sockets: number;
   baseDefense?: number;
-  baseSanResistPct?: number;
-  basePoisonResistPct?: number;
+  baseSanResist?: number;
+  basePoisonResist?: number;
   baseStrength?: number;
   baseDraw?: number;
   baseHeal?: number;
@@ -224,15 +225,16 @@ export interface EquipmentInstance {
   tier: number;
   power: number;
   socketedRunes: (string | null)[];
-  bonusStats: Partial<Record<"strength" | "defense" | "poisonResistPct" | "sanResistPct", number>>;
+  bonusStats: Partial<Record<"strength" | "defense" | "poisonResist" | "sanResist", number>>;
   obtainedFloor: number;
   source: "drop" | "smith" | "gift";
 }
 
 export interface EquipmentStats {
   defense: number;
-  sanResistPct: number;
-  poisonResistPct: number;
+  sanResist: number;
+  poisonResist: number;
+  poisonImmune: boolean;
   strength: number;
   drawBonus: number;
   healPerTurn: number;

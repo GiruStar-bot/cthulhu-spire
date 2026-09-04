@@ -425,7 +425,7 @@ export const CARDS: Record<string, CardDef> = {
     art: asset("art/pixel/cards/dread.jpg"),
     target: "none",
     unplayable: true,
-    onDraw: [{ t: "sanity", n: -2 }],
+    onDraw: [{ t: "sanityDamage", n: 2 }],
     effects: [],
     upgradedEffects: [],
   },

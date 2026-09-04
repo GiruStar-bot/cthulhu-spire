@@ -48,7 +48,7 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     archetype: "generic",
     art: asset("art/pixel/equipment/patched_legs.jpg"),
     sockets: 1,
-    baseSanResistPct: 3,
+    baseSanResist: 3,
   },
   worn_boots: {
     id: "worn_boots",
@@ -57,7 +57,7 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     archetype: "generic",
     art: asset("art/pixel/equipment/worn_boots.jpg"),
     sockets: 1,
-    basePoisonResistPct: 3,
+    basePoisonResist: 3,
   },
   blood_veil: {
     id: "blood_veil",
@@ -156,7 +156,7 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     archetype: "poison",
     art: asset("art/pixel/equipment/venom_hood.jpg"),
     sockets: 1,
-    basePoisonResistPct: 3,
+    basePoisonResist: 3,
   },
   venom_coat: {
     id: "venom_coat",
@@ -165,7 +165,7 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     archetype: "poison",
     art: asset("art/pixel/equipment/venom_coat.jpg"),
     sockets: 2,
-    basePoisonResistPct: 4,
+    basePoisonResist: 4,
   },
   venom_bangle: {
     id: "venom_bangle",
@@ -174,7 +174,7 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     archetype: "poison",
     art: asset("art/pixel/equipment/venom_bangle.jpg"),
     sockets: 1,
-    basePoisonResistPct: 3,
+    basePoisonResist: 3,
   },
   venom_leggings: {
     id: "venom_leggings",
@@ -183,7 +183,7 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     archetype: "poison",
     art: asset("art/pixel/equipment/venom_leggings.jpg"),
     sockets: 1,
-    basePoisonResistPct: 3,
+    basePoisonResist: 3,
   },
   venom_boots: {
     id: "venom_boots",
@@ -192,7 +192,7 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     archetype: "poison",
     art: asset("art/pixel/equipment/venom_boots.jpg"),
     sockets: 1,
-    basePoisonResistPct: 2,
+    basePoisonResist: 2,
   },
 };
 
@@ -208,7 +208,7 @@ function round(n: number): number {
   return Math.round(n);
 }
 
-type BonusStatKey = "strength" | "defense" | "poisonResistPct" | "sanResistPct";
+type BonusStatKey = "strength" | "defense" | "poisonResist" | "sanResist";
 
 const TIER_BONUS_CONFIG: Record<
   number,
@@ -224,18 +224,18 @@ const TIER_BONUS_CONFIG: Record<
 const BONUS_STAT_BASE: Record<BonusStatKey, number> = {
   strength: 1,
   defense: 2,
-  poisonResistPct: 2,
-  sanResistPct: 2,
+  poisonResist: 2,
+  sanResist: 2,
 };
 
-const ALL_BONUS_KEYS: BonusStatKey[] = ["strength", "defense", "poisonResistPct", "sanResistPct"];
+const ALL_BONUS_KEYS: BonusStatKey[] = ["strength", "defense", "poisonResist", "sanResist"];
 
 function statKeysOf(def: EquipmentDef): BonusStatKey[] {
   const keys: BonusStatKey[] = [];
   if (def.baseStrength) keys.push("strength");
   if (def.baseDefense) keys.push("defense");
-  if (def.basePoisonResistPct) keys.push("poisonResistPct");
-  if (def.baseSanResistPct) keys.push("sanResistPct");
+  if (def.basePoisonResist) keys.push("poisonResist");
+  if (def.baseSanResist) keys.push("sanResist");
   return keys;
 }
 
@@ -329,8 +329,9 @@ export function computeEquipmentStats(
 ): EquipmentStats {
   const stats: EquipmentStats = {
     defense: 0,
-    sanResistPct: 0,
-    poisonResistPct: 0,
+    sanResist: 0,
+    poisonResist: 0,
+    poisonImmune: false,
     strength: 0,
     drawBonus: 0,
     healPerTurn: 0,
@@ -344,8 +345,8 @@ export function computeEquipmentStats(
     const power = inst.power || 1;
 
     stats.defense += (def.baseDefense ?? 0) * power;
-    stats.sanResistPct += (def.baseSanResistPct ?? 0) * power;
-    stats.poisonResistPct += (def.basePoisonResistPct ?? 0) * power;
+    stats.sanResist += (def.baseSanResist ?? 0) * power;
+    stats.poisonResist += (def.basePoisonResist ?? 0) * power;
     stats.strength += (def.baseStrength ?? 0) * power;
     stats.drawBonus += (def.baseDraw ?? 0) * power;
     stats.healPerTurn += (def.baseHeal ?? 0) * power;
@@ -353,8 +354,8 @@ export function computeEquipmentStats(
     const bonus = inst.bonusStats ?? {};
     if (bonus.strength) stats.strength += bonus.strength;
     if (bonus.defense) stats.defense += bonus.defense;
-    if (bonus.poisonResistPct) stats.poisonResistPct += bonus.poisonResistPct;
-    if (bonus.sanResistPct) stats.sanResistPct += bonus.sanResistPct;
+    if (bonus.poisonResist) stats.poisonResist += bonus.poisonResist;
+    if (bonus.sanResist) stats.sanResist += bonus.sanResist;
 
     for (const runeId of inst.socketedRunes) {
       if (!runeId) continue;
@@ -365,10 +366,10 @@ export function computeEquipmentStats(
           stats.defense += rune.value;
           break;
         case "SAN+":
-          stats.sanResistPct += rune.value;
+          stats.sanResist += rune.value;
           break;
         case "POISON":
-          stats.poisonResistPct += rune.value;
+          stats.poisonResist += rune.value;
           break;
         case "STR+":
           stats.strength += rune.value;
@@ -386,14 +387,14 @@ export function computeEquipmentStats(
   }
 
   stats.defense = round(stats.defense);
-  stats.sanResistPct = round(stats.sanResistPct);
-  stats.poisonResistPct = round(stats.poisonResistPct);
+  stats.sanResist = round(stats.sanResist);
+  stats.poisonResist = round(stats.poisonResist);
   stats.strength = round(stats.strength);
   stats.drawBonus = round(stats.drawBonus);
   stats.healPerTurn = round(stats.healPerTurn);
 
   if (hasFullSet(equipped, "poison")) {
-    stats.poisonResistPct = 100;
+    stats.poisonImmune = true;
     stats.healBonusPct = 50;
   }
 
@@ -412,4 +413,9 @@ export function applyFlatDefense(damage: number, defense: number): number {
   if (damage <= 0) return damage;
   const reduced = damage - defense;
   return Math.max(MIN_CHIP_DAMAGE, round(reduced));
+}
+
+export function applyFlatResist(amount: number, resist: number): number {
+  if (amount <= 0) return amount;
+  return Math.max(0, round(amount - resist));
 }

@@ -11,7 +11,7 @@ import type {
 } from "./types";
 import { getCard, makeCard, scaleN } from "./cards";
 import { evaluateCardEffect } from "./cardEvaluator";
-import { applyFlatDefense, applyPctReduction, computeEquipmentStats } from "./equipment";
+import { applyFlatDefense, applyFlatResist, computeEquipmentStats } from "./equipment";
 import { getEnemy } from "./enemies";
 import { cardToIntent, rollEnemyCard } from "./enemyAi";
 import { pick, shuffle, uid } from "./rng";
@@ -297,6 +297,12 @@ function runEffects(
       case "sanity":
         changeSanity(player, c, e.n);
         break;
+      case "sanityDamage": {
+        const reduced = applyFlatResist(e.n, c.equipmentStats.sanResist);
+        changeSanity(player, c, -reduced);
+        c.log.push(`恐怖に苛まれ、正気を${reduced}失った。`);
+        break;
+      }
       case "hpCost":
         player.hp = Math.max(1, player.hp - e.n);
         c.floaters.push(floater(`-${e.n}`, "dmg", "player"));
@@ -609,7 +615,7 @@ function applyEnemyIntent(
     c.log.push(`${getEnemy(e.defId).name}に毒${intent.poison}を付与された。`);
   }
   if (intent.sanityDrain) {
-    const reduced = applyPctReduction(intent.sanityDrain, c.equipmentStats.sanResistPct);
+    const reduced = applyFlatResist(intent.sanityDrain, c.equipmentStats.sanResist);
     player.sanity = Math.max(0, player.sanity - reduced);
     c.floaters.push(floater(`-${reduced}`, "sanity", "player"));
     c.log.push(`${getEnemy(e.defId).name}に正気を${reduced}奪われた。`);
@@ -673,8 +679,8 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
     c.floaters.push(floater(`-${c.cold}`, "dmg", "player"));
   }
 
-  if (c.poison > 0) {
-    const reduced = applyPctReduction(c.poison, c.equipmentStats.poisonResistPct);
+  if (!c.equipmentStats.poisonImmune && c.poison > 0) {
+    const reduced = applyFlatResist(c.poison, c.equipmentStats.poisonResist);
     player.hp = Math.max(1, player.hp - reduced);
     c.floaters.push(floater(`毒${reduced}`, "dmg", "player"));
   }

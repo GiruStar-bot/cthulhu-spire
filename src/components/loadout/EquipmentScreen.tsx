@@ -131,14 +131,14 @@ export function EquipmentScreen() {
                       防御+{active.bonusStats.defense}
                     </span>
                   ) : null}
-                  {active.bonusStats?.poisonResistPct ? (
+                  {active.bonusStats?.poisonResist ? (
                     <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
-                      毒耐性+{active.bonusStats.poisonResistPct}%
+                      毒耐性+{active.bonusStats.poisonResist}
                     </span>
                   ) : null}
-                  {active.bonusStats?.sanResistPct ? (
+                  {active.bonusStats?.sanResist ? (
                     <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
-                      狂気耐性+{active.bonusStats.sanResistPct}%
+                      狂気耐性+{active.bonusStats.sanResist}
                     </span>
                   ) : null}
                 </div>
