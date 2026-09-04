@@ -202,6 +202,15 @@ export function CombatView() {
   );
 }
 
+function logLineColor(line: string): string {
+  if (line.includes("ダメージ")) return "text-blood";
+  if (line.includes("ブロック")) return "text-sky-300";
+  if (line.includes("回復")) return "text-green-300";
+  if (line.includes("正気")) return "text-cyan-300";
+  if (line.includes("弱体") || line.includes("脆弱") || line.includes("毒") || line.includes("恐怖")) return "text-purple-300";
+  return "text-muted";
+}
+
 function CombatLogPanel({ log }: { log: string[] }) {
   const [expanded, setExpanded] = useState(false);
   const recent = log.slice(-5);
@@ -211,13 +220,13 @@ function CombatLogPanel({ log }: { log: string[] }) {
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="absolute top-3 right-3 z-20 max-w-[14rem] border-2 border-white bg-black/85 px-2 py-1.5 text-left font-pixel text-[10px] leading-tight text-muted sm:top-5 sm:right-5"
+        className="absolute top-3 right-3 z-20 max-w-[14rem] border-2 border-white bg-black/85 px-2 py-1.5 text-left font-pixel leading-tight sm:top-5 sm:right-5"
       >
         {recent.length === 0 ? (
-          <p className="italic">まだ記録がない。</p>
+          <p className="text-[11px] text-muted">まだ記録がない。</p>
         ) : (
           recent.map((l, i) => (
-            <p key={i} className="italic">
+            <p key={i} className={cn("text-[11px] leading-snug", logLineColor(l))}>
               {l}
             </p>
           ))
@@ -247,7 +256,7 @@ function CombatLogPanel({ log }: { log: string[] }) {
                 <p className="font-pixel text-xs text-muted">まだ記録がない。</p>
               ) : (
                 log.map((l, i) => (
-                  <p key={i} className="font-pixel text-xs text-muted italic">
+                  <p key={i} className={cn("font-pixel text-xs leading-snug", logLineColor(l))}>
                     {l}
                   </p>
                 ))
