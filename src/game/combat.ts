@@ -149,9 +149,8 @@ export function drawCards(c: CombatState, n: number, rand: () => number, player?
     const d = getCard(card.defId);
     if (d.onDraw && player) {
       runEffects(d.onDraw, c, player, null, rand, card);
-      c.exhaust.push(card);
       c.floaters.push(floater(d.name, "info", "player"));
-      continue;
+      c.log.push(`${d.name}を引いた。`);
     }
     c.hand.push(card);
     drawn++;
