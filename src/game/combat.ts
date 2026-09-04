@@ -136,6 +136,10 @@ function incoming(raw: number, c: CombatState) {
   return c.intangible > 0 ? Math.min(1, Math.max(0, raw)) : raw;
 }
 
+function baseDrawCount(c: CombatState): number {
+  return 5 + Math.round(c.equipmentStats.drawBonus);
+}
+
 export function drawCards(c: CombatState, n: number, rand: () => number, player?: PlayerHook) {
   let drawn = 0;
   while (drawn < n) {
@@ -219,7 +223,7 @@ export function startCombat(
     equipmentStats: eq,
   };
   c.strength += player.extraStrength;
-  drawCards(c, 5 + Math.round(eq.drawBonus), rand, player);
+  drawCards(c, baseDrawCount(c), rand, player);
   if (player.sanity <= 0) {
     addToDiscard(c, makeCard("dread"));
     c.log.push("恐怖がデッキに沈む。");
@@ -723,7 +727,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   else c.block = 0;
   c.energy = Math.max(0, c.maxEnergy + c.energyNext);
   c.energyNext = 0;
-  const drawN = Math.max(0, 5 - c.skipDraw);
+  const drawN = Math.max(0, baseDrawCount(c) - c.skipDraw);
   c.skipDraw = 0;
   if (c.powers.includes("echo")) {
     const tgt = pick(living(c), rand);
