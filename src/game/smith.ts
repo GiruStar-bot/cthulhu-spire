@@ -71,11 +71,11 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "damage", n: 9 },
     { t: "vulnerable", n: 1 },
   ], { archetype: "deep" }),
-  star_sword: atk("star_sword", "忌まわしき星の剣", 2, "16ダメージ。デッキに負傷を加える。", blade, [
+  star_sword: atk("star_sword", "忌まわしき星の剣", 2, "16ダメージ。デッキに負傷を加える。", shopArt("star_sword"), [
     { t: "damage", n: 16 },
     { t: "addCurse", id: "wound" },
   ], { archetype: "elder" }),
-  spawn_blade: atk("spawn_blade", "星の落とし子の触手刃", 3, "24ダメージ。拘束。幻覚が混入する。", blade, [
+  spawn_blade: atk("spawn_blade", "星の落とし子の触手刃", 3, "24ダメージ。拘束。幻覚が混入する。", shopArt("spawn_blade"), [
     { t: "damage", n: 24 },
     { t: "bind" },
     { t: "addCurse", id: "hallucination" },
@@ -110,7 +110,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "damage", n: 8 },
     { t: "draw", n: 1 },
   ], { archetype: "outer" }),
-  hastur_bow: atk("hastur_bow", "ハスターの風弓", 2, "敵全体に18ダメージ。弱体1。", bow, [
+  hastur_bow: atk("hastur_bow", "ハスターの風弓", 2, "敵全体に18ダメージ。弱体1。", shopArt("hastur_bow"), [
     { t: "damageAll", n: 18 },
     { t: "weak", n: 1 },
   ], { target: "all", archetype: "elder" }),
@@ -140,11 +140,11 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "block", n: 16 },
     { t: "selfVulnerable", n: 1 },
   ], { archetype: "deep" }),
-  shoggoth_plate: skl("shoggoth_plate", "ショゴスの粘液装甲", 1, "ブロック10。粘液が混入する。", mail, [
+  shoggoth_plate: skl("shoggoth_plate", "ショゴスの粘液装甲", 1, "ブロック10。粘液が混入する。", shopArt("shoggoth_plate"), [
     { t: "block", n: 10 },
     { t: "addCurse", id: "slime" },
   ], { archetype: "outer" }),
-  yith_shell: skl("yith_shell", "イスの金属殻", 2, "ブロック18。手札1枚を残す。", mail, [
+  yith_shell: skl("yith_shell", "イスの金属殻", 2, "ブロック18。手札1枚を残す。", shopArt("yith_shell"), [
     { t: "block", n: 18 },
     { t: "retainCards", n: 1 },
   ], { archetype: "outer" }),
@@ -152,19 +152,19 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "block", n: 22 },
     { t: "heal", n: 3 },
   ], { archetype: "deep" }),
-  cthulhu_mail: skl("cthulhu_mail", "クトゥルフの夢装甲", 3, "ブロック30。睡眠が混入する。", mail, [
+  cthulhu_mail: skl("cthulhu_mail", "クトゥルフの夢装甲", 3, "ブロック30。睡眠が混入する。", shopArt("cthulhu_mail"), [
     { t: "block", n: 30 },
     { t: "addCurse", id: "sleep" },
   ], { archetype: "elder" }),
-  tsathoggua_shield: skl("tsathoggua_shield", "ツァトゥグァの怠惰盾", 2, "ブロック22。次のドロー-1。", mail, [
+  tsathoggua_shield: skl("tsathoggua_shield", "ツァトゥグァの怠惰盾", 2, "ブロック22。次のドロー-1。", shopArt("tsathoggua_shield"), [
     { t: "block", n: 22 },
     { t: "skipDraw", n: 1 },
   ], { archetype: "elder" }),
-  yog_gate: skl("yog_gate", "ヨグ＝ソトースの門", 3, "ブロック45。廃棄。次ターンエネルギー-2。", mail, [
+  yog_gate: skl("yog_gate", "ヨグ＝ソトースの門", 3, "ブロック45。廃棄。次ターンエネルギー-2。", shopArt("yog_gate"), [
     { t: "block", n: 45 },
     { t: "energyNext", n: -2 },
   ], { exhaust: true, archetype: "outer" }),
-  plateau_mail: skl("plateau_mail", "狂気山脈の凍てつく鎧", 2, "ブロック35。毎ターン開始時1ダメージ。", mail, [
+  plateau_mail: skl("plateau_mail", "狂気山脈の凍てつく鎧", 2, "ブロック35。毎ターン開始時1ダメージ。", shopArt("plateau_mail"), [
     { t: "block", n: 35 },
     { t: "cold", n: 1 },
   ], { archetype: "outer" }),
@@ -183,7 +183,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "block", n: 9 },
     { t: "discardRandom", n: 1 },
   ]),
-  yith_coat: skl("yith_coat", "偉大なる種族の外套", 1, "ブロック10。手札を2枚まで残す。", cloak, [
+  yith_coat: skl("yith_coat", "偉大なる種族の外套", 1, "ブロック10。手札を2枚まで残す。", shopArt("yith_coat"), [
     { t: "block", n: 10 },
     { t: "retainCards", n: 2 },
   ], { archetype: "outer" }),
@@ -204,7 +204,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "block", n: 15 },
     { t: "endTurnMaybe", p: 0.5 },
   ], { archetype: "outer" }),
-  colour_robe: skl("colour_robe", "宇宙の色彩の衣", 2, "ブロック25。5回復。最大体力-1。", cloak, [
+  colour_robe: skl("colour_robe", "宇宙の色彩の衣", 2, "ブロック25。5回復。最大体力-1。", shopArt("colour_robe"), [
     { t: "block", n: 25 },
     { t: "heal", n: 5 },
     { t: "loseMaxHp", n: 1 },
