@@ -3,6 +3,7 @@ import type {
   CardInst,
   CombatEnemy,
   CombatState,
+  DeckSynergy,
   Effect,
   EquipmentInstance,
   EquipmentSlot,
@@ -172,8 +173,6 @@ function insertIntoDraw(c: CombatState, card: CardInst, rand: () => number) {
   c.draw.splice(idx, 0, card);
 }
 
-export type DeckSynergy = { archetype: Archetype; tier: 1 | 2 | 3 } | null;
-
 export function computeDeckSynergy(deck: CardInst[]): DeckSynergy {
   const counts: Partial<Record<Archetype, number>> = {};
   for (const c of deck) {
@@ -240,16 +239,13 @@ export function startCombat(
     log: ["空気が、厚くなる。"],
     floaters: [],
     equipmentStats: eq,
+    synergy: computeDeckSynergy(deck),
   };
   c.strength += player.extraStrength;
-  const synergy = computeDeckSynergy(deck);
-  if (synergy) {
-    const { archetype, tier } = synergy;
+  if (c.synergy) {
+    const { archetype, tier } = c.synergy;
     if (archetype === "fanatic") {
       c.strength += tier;
-    }
-    if (archetype === "knight") {
-      c.block += tier === 1 ? 3 : tier === 2 ? 6 : 10;
     }
     if (archetype === "poison") {
       for (const e of c.enemies) e.poison += tier;
@@ -269,7 +265,7 @@ export function startCombat(
       c.intangible += 1;
     }
   }
-  const outerBonus = synergy?.archetype === "outer" ? synergy.tier : 0;
+  const outerBonus = c.synergy?.archetype === "outer" ? c.synergy.tier : 0;
   drawCards(c, baseDrawCount(c) + outerBonus, rand, player);
   if (player.sanity <= 0) {
     addToDiscard(c, makeCard("dread"));
@@ -320,7 +316,13 @@ function runEffects(
         break;
       }
       case "block": {
-        const n = scaleN(e.n, card) + c.dexterity;
+        let n = scaleN(e.n, card) + c.dexterity;
+        if (card) {
+          const cardDef = getCard(card.defId);
+          if (cardDef.aiTag === "defense" && c.synergy?.archetype === "knight") {
+            n += c.synergy.tier;
+          }
+        }
         c.block += n;
         c.floaters.push(floater(`+${n}`, "block", "player"));
         c.log.push(`${card ? getCard(card.defId).name : "防御"}でブロック${n}を得た。`);

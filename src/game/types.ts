@@ -204,6 +204,8 @@ export type Archetype =
   | "shadow"
   | "generic";
 
+export type DeckSynergy = { archetype: Archetype; tier: 1 | 2 | 3 } | null;
+
 export interface EquipmentDef {
   id: string;
   name: string;
@@ -301,6 +303,7 @@ export interface CombatState {
   log: string[];
   floaters: Floater[];
   equipmentStats: EquipmentStats;
+  synergy: DeckSynergy;
 }
 
 export interface Floater {
