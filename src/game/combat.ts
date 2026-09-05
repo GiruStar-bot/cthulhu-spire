@@ -361,6 +361,17 @@ function runEffects(
         c.floaters.push(floater(`-${e.n}`, "dmg", "player"));
         c.log.push(`体力を${e.n}失った。`);
         break;
+      case "hpCostHalf": {
+        const lost = Math.max(1, Math.floor(player.hp / 2));
+        player.hp = Math.max(1, player.hp - lost);
+        c.floaters.push(floater(`-${lost}`, "dmg", "player"));
+        c.log.push(`体力を${lost}失った。`);
+        break;
+      }
+      case "curePoison":
+        c.poison = 0;
+        c.log.push("毒が浄化された。");
+        break;
       case "weak": {
         const live = living(c);
         if (targetId) {

@@ -69,7 +69,9 @@ export type Effect =
   | { t: "selfVulnerable"; n: number }
   | { t: "retainCards"; n: number }
   | { t: "thornsVulnerable"; n: number }
-  | { t: "loseMaxHpHalf" };
+  | { t: "loseMaxHpHalf" }
+  | { t: "curePoison" }
+  | { t: "hpCostHalf" };
 
 export type PowerId = "resolve" | "echo" | "bloodOath";
 
