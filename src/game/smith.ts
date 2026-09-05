@@ -11,6 +11,10 @@ const beerArt = asset("art/card-beer.jpg");
 const study = asset("art/card-study.jpg");
 const ward = asset("art/card-ward.jpg");
 
+function shopArt(id: string) {
+  return asset(`art/pixel/cards/${id}.jpg`);
+}
+
 function atk(
   id: string,
   name: string,
@@ -52,14 +56,14 @@ function skl(
 }
 
 export const SHOP_CARDS: Record<string, CardDef> = {
-  iron_sword: atk("iron_sword", "鉄剣", 1, "8ダメージ。", blade, [{ t: "damage", n: 8 }]),
-  iron_axe: atk("iron_axe", "鉄斧", 2, "12ダメージ。", blade, [{ t: "damage", n: 12 }]),
-  knife: atk("knife", "ナイフ", 0, "4ダメージ。", blade, [{ t: "damage", n: 4 }]),
+  iron_sword: atk("iron_sword", "鉄剣", 1, "8ダメージ。", shopArt("iron_sword"), [{ t: "damage", n: 8 }]),
+  iron_axe: atk("iron_axe", "鉄斧", 2, "12ダメージ。", shopArt("iron_axe"), [{ t: "damage", n: 12 }]),
+  knife: atk("knife", "ナイフ", 0, "4ダメージ。", shopArt("knife"), [{ t: "damage", n: 4 }]),
   ritual_dagger: atk("ritual_dagger", "祭祀の短剣", 1, "10ダメージ。このカードで倒すと2回復。", blade, [
     { t: "damage", n: 10 },
     { t: "healOnKill", n: 2 },
   ], { archetype: "fanatic" }),
-  ghoul_claw: atk("ghoul_claw", "グールの爪剣", 0, "5ダメージ。毒2。", blade, [
+  ghoul_claw: atk("ghoul_claw", "グールの爪剣", 0, "5ダメージ。毒2。", shopArt("ghoul_claw"), [
     { t: "damage", n: 5 },
     { t: "poison", n: 2 },
   ]),
@@ -89,10 +93,10 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "loseMaxHpHalf" },
   ], { xCost: true, archetype: "outer" }),
 
-  short_bow: atk("short_bow", "ショートボウ", 0, "3ダメージ。", bow, [{ t: "damage", n: 3 }]),
-  hunter_bow: atk("hunter_bow", "狩人の弓", 1, "7ダメージ。", bow, [{ t: "damage", n: 7 }]),
-  crossbow: atk("crossbow", "クロスボウ", 2, "11ダメージ。", bow, [{ t: "damage", n: 11 }]),
-  bone_bow: atk("bone_bow", "骨削りの弓", 1, "5ダメージを2回。", bow, [
+  short_bow: atk("short_bow", "ショートボウ", 0, "3ダメージ。", shopArt("short_bow"), [{ t: "damage", n: 3 }]),
+  hunter_bow: atk("hunter_bow", "狩人の弓", 1, "7ダメージ。", shopArt("hunter_bow"), [{ t: "damage", n: 7 }]),
+  crossbow: atk("crossbow", "クロスボウ", 2, "11ダメージ。", shopArt("crossbow"), [{ t: "damage", n: 11 }]),
+  bone_bow: atk("bone_bow", "骨削りの弓", 1, "5ダメージを2回。", shopArt("bone_bow"), [
     { t: "damage", n: 5 },
     { t: "damage", n: 5 },
   ]),
@@ -116,7 +120,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "damage", n: 6 },
     { t: "addCurse", id: "dread" },
   ]),
-  hunter_shot: atk("hunter_shot", "忌まわしき狩人の魔弾", 3, "40ダメージ。意図を消す。次ターンエネルギー-1。", bow, [
+  hunter_shot: atk("hunter_shot", "忌まわしき狩人の魔弾", 3, "40ダメージ。意図を消す。次ターンエネルギー-1。", shopArt("hunter_shot"), [
     { t: "damage", n: 40 },
     { t: "cancelIntent" },
     { t: "energyNext", n: -1 },
