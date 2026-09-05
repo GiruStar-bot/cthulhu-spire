@@ -1,6 +1,7 @@
 import { CollectionCard } from "@/components/loadout/CollectionCard";
 import { PixelButton } from "@/components/ui/PixelButton";
-import { DECK_LIMIT } from "@/game/cards";
+import { ARCHETYPE_LABELS, DECK_LIMIT, getCard } from "@/game/cards";
+import type { Archetype, Rarity } from "@/game/types";
 import { cn } from "@/lib/utils";
 import {
   COPY_LIMIT,
@@ -49,6 +50,29 @@ function nextDeckName(decks: Record<string, unknown>): string {
   return `デッキ${n}`;
 }
 
+const RARITY_LABELS: Record<Rarity, string> = {
+  starter: "スターター",
+  common: "コモン",
+  uncommon: "アンコモン",
+  rare: "レア",
+  status: "状態",
+};
+const AI_TAG_LABELS: Record<"attack" | "defense" | "effect", string> = {
+  attack: "攻撃",
+  defense: "防御",
+  effect: "効果",
+};
+const FILTERABLE_ARCHETYPES = Object.keys(ARCHETYPE_LABELS) as Archetype[];
+const FILTERABLE_RARITIES: Rarity[] = ["starter", "common", "uncommon", "rare"];
+const FILTERABLE_AI_TAGS: ("attack" | "defense" | "effect")[] = ["attack", "defense", "effect"];
+
+function toggleInSet<T>(set: Set<T>, value: T): Set<T> {
+  const next = new Set(set);
+  if (next.has(value)) next.delete(value);
+  else next.add(value);
+  return next;
+}
+
 export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean }) {
   const inventory = useCollectionStore((s) => s.inventory);
   const decks = useCollectionStore((s) => s.decks);
@@ -62,6 +86,9 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
   const [flight, setFlight] = useState<Flight | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [draftName, setDraftName] = useState("");
+  const [filterArchetypes, setFilterArchetypes] = useState<Set<Archetype>>(new Set());
+  const [filterRarities, setFilterRarities] = useState<Set<Rarity>>(new Set());
+  const [filterAiTags, setFilterAiTags] = useState<Set<"attack" | "defense" | "effect">>(new Set());
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
   const deckPanelRef = useRef<HTMLDivElement>(null);
 
@@ -112,6 +139,13 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
   };
 
   const groups = groupInventory(inventory.cards);
+  const filteredGroups = groups.filter((group) => {
+    const def = getCard(group.baseCardId);
+    if (filterArchetypes.size > 0 && !filterArchetypes.has(def.archetype ?? "generic")) return false;
+    if (filterRarities.size > 0 && !filterRarities.has(def.rarity)) return false;
+    if (filterAiTags.size > 0 && (!def.aiTag || !filterAiTags.has(def.aiTag))) return false;
+    return true;
+  });
   const flying = flight ? inventory.cards.find((c) => c.baseCardId === flight.cardId) : null;
   const deckEntries = Object.entries(counts);
 
@@ -215,9 +249,72 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-5">
         <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">
+          <div className="mb-3 space-y-2 border-2 border-gray-200/30 p-2">
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 text-[10px] text-muted">ジャンル</span>
+              {FILTERABLE_ARCHETYPES.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => setFilterArchetypes((s) => toggleInSet(s, a))}
+                  className={cn(
+                    "border-2 px-1.5 py-0.5 text-[10px]",
+                    filterArchetypes.has(a) ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+                  )}
+                >
+                  {ARCHETYPE_LABELS[a]}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 text-[10px] text-muted">レア度</span>
+              {FILTERABLE_RARITIES.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setFilterRarities((s) => toggleInSet(s, r))}
+                  className={cn(
+                    "border-2 px-1.5 py-0.5 text-[10px]",
+                    filterRarities.has(r) ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+                  )}
+                >
+                  {RARITY_LABELS[r]}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 text-[10px] text-muted">種別</span>
+              {FILTERABLE_AI_TAGS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setFilterAiTags((s) => toggleInSet(s, t))}
+                  className={cn(
+                    "border-2 px-1.5 py-0.5 text-[10px]",
+                    filterAiTags.has(t) ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+                  )}
+                >
+                  {AI_TAG_LABELS[t]}
+                </button>
+              ))}
+            </div>
+            {filterArchetypes.size + filterRarities.size + filterAiTags.size > 0 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterArchetypes(new Set());
+                  setFilterRarities(new Set());
+                  setFilterAiTags(new Set());
+                }}
+                className="border-2 border-gray-200/40 px-1.5 py-0.5 text-[10px] text-muted"
+              >
+                フィルターをリセット
+              </button>
+            ) : null}
+          </div>
           <p className="mb-2 text-xs tracking-widest text-muted">所持カード</p>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-2">
-            {groups.map((group) => {
+            {filteredGroups.map((group) => {
               const copies = copiesOfBase(counts, group.baseCardId);
               const owned = ownedCountOf(inventory.cards, group.baseCardId);
               const remaining = Math.min(COPY_LIMIT, owned) - copies;
