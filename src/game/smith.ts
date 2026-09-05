@@ -3,11 +3,6 @@ import { asset } from "@/lib/asset";
 import { EQUIPMENT, rollEquipmentAtTier } from "./equipment";
 import { pick, uid } from "./rng";
 
-const blade = asset("art/card-blade.jpg");
-const bow = asset("art/card-bow.jpg");
-const mail = asset("art/card-mail.jpg");
-const cloak = asset("art/card-cloak.jpg");
-const beerArt = asset("art/card-beer.jpg");
 const study = asset("art/card-study.jpg");
 const ward = asset("art/card-ward.jpg");
 
@@ -114,7 +109,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "damageAll", n: 18 },
     { t: "weak", n: 1 },
   ], { target: "all", archetype: "elder" }),
-  blackwood_bow: atk("blackwood_bow", "黒き森の弓", 1, "6ダメージを3回。狂気を加える。", bow, [
+  blackwood_bow: atk("blackwood_bow", "黒き森の弓", 1, "6ダメージを3回。狂気を加える。", shopArt("blackwood_bow"), [
     { t: "damage", n: 6 },
     { t: "damage", n: 6 },
     { t: "damage", n: 6 },
@@ -130,9 +125,9 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "skipDraw", n: 1 },
   ], { target: "all", archetype: "outer" }),
 
-  iron_shield: skl("iron_shield", "鉄の盾", 1, "ブロック8。", mail, [{ t: "block", n: 8 }]),
-  tower_shield: skl("tower_shield", "タワーシールド", 2, "ブロック13。", mail, [{ t: "block", n: 13 }]),
-  chain_mail: skl("chain_mail", "鎖帷子", 1, "ブロック5。このターン、ブロックが残る。", mail, [
+  iron_shield: skl("iron_shield", "鉄の盾", 1, "ブロック8。", shopArt("iron_shield"), [{ t: "block", n: 8 }]),
+  tower_shield: skl("tower_shield", "タワーシールド", 2, "ブロック13。", shopArt("tower_shield"), [{ t: "block", n: 13 }]),
+  chain_mail: skl("chain_mail", "鎖帷子", 1, "ブロック5。このターン、ブロックが残る。", shopArt("chain_mail"), [
     { t: "block", n: 5 },
     { t: "retainBlock" },
   ]),
@@ -169,17 +164,17 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "cold", n: 1 },
   ], { archetype: "outer" }),
 
-  buckler: skl("buckler", "バックラー", 0, "ブロック4。", cloak, [{ t: "block", n: 4 }]),
-  leather: skl("leather", "革の鎧", 1, "ブロック6。1枚引く。", cloak, [{ t: "block", n: 6 }, { t: "draw", n: 1 }]),
+  buckler: skl("buckler", "バックラー", 0, "ブロック4。", shopArt("buckler"), [{ t: "block", n: 4 }]),
+  leather: skl("leather", "革の鎧", 1, "ブロック6。1枚引く。", shopArt("leather"), [{ t: "block", n: 6 }, { t: "draw", n: 1 }]),
   thief_cloak: skl("thief_cloak", "盗賊のマント", 2, "ブロック10。無形1。", shopArt("thief_cloak"), [
     { t: "block", n: 10 },
     { t: "intangible", n: 1 },
   ], { archetype: "shadow" }),
-  ghoul_rags: skl("ghoul_rags", "食尸鬼のボロ布", 0, "ブロック6。体力1失う。", cloak, [
+  ghoul_rags: skl("ghoul_rags", "食尸鬼のボロ布", 0, "ブロック6。体力1失う。", shopArt("ghoul_rags"), [
     { t: "block", n: 6 },
     { t: "hpCost", n: 1 },
   ]),
-  gaki_hide: skl("gaki_hide", "妖鬼の皮鎧", 1, "ブロック9。手札を1枚捨てる。", cloak, [
+  gaki_hide: skl("gaki_hide", "妖鬼の皮鎧", 1, "ブロック9。手札を1枚捨てる。", shopArt("gaki_hide"), [
     { t: "block", n: 9 },
     { t: "discardRandom", n: 1 },
   ]),
@@ -187,7 +182,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "block", n: 10 },
     { t: "retainCards", n: 2 },
   ], { archetype: "outer" }),
-  penguin_fur: skl("penguin_fur", "盲目のペンギンの毛皮", 0, "ブロック6。敵を拘束する。", cloak, [
+  penguin_fur: skl("penguin_fur", "盲目のペンギンの毛皮", 0, "ブロック6。敵を拘束する。", shopArt("penguin_fur"), [
     { t: "block", n: 6 },
     { t: "bind" },
   ], { target: "enemy" }),
@@ -200,7 +195,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "intangible", n: 1 },
     { t: "addCurse", id: "dread" },
   ], { archetype: "shadow" }),
-  azathoth_nap: skl("azathoth_nap", "アザトースの微睡み", 0, "ブロック15。50%でターン終了。", cloak, [
+  azathoth_nap: skl("azathoth_nap", "アザトースの微睡み", 0, "ブロック15。50%でターン終了。", shopArt("azathoth_nap"), [
     { t: "block", n: 15 },
     { t: "endTurnMaybe", p: 0.5 },
   ], { archetype: "outer" }),
@@ -210,7 +205,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "loseMaxHp", n: 1 },
   ], { archetype: "outer" }),
 
-  beer: skl("beer", "ビール瓶", 0, "エネルギー2。2回使うと消える。", beerArt, [{ t: "energy", n: 2 }], {
+  beer: skl("beer", "ビール瓶", 0, "エネルギー2。2回使うと消える。", shopArt("beer"), [{ t: "energy", n: 2 }], {
     shop: true,
     charges: 2,
   }),
