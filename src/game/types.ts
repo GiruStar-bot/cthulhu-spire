@@ -235,6 +235,7 @@ export interface EquipmentStats {
   sanResist: number;
   poisonResist: number;
   poisonImmune: boolean;
+  blockRetain: boolean;
   strength: number;
   drawBonus: number;
   healPerTurn: number;

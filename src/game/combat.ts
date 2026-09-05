@@ -723,8 +723,13 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   c.thornsVulnerable = 0;
 
   c.phase = "player";
-  if (c.keepBlock > 0) c.keepBlock -= 1;
-  else c.block = 0;
+  if (c.equipmentStats.blockRetain) {
+    // 騎士セット全身装備中はブロックが尽きない
+  } else if (c.keepBlock > 0) {
+    c.keepBlock -= 1;
+  } else {
+    c.block = 0;
+  }
   c.energy = Math.max(0, c.maxEnergy + c.energyNext);
   c.energyNext = 0;
   const drawN = Math.max(0, baseDrawCount(c) - c.skipDraw);

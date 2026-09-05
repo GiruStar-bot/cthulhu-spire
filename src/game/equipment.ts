@@ -332,6 +332,7 @@ export function computeEquipmentStats(
     sanResist: 0,
     poisonResist: 0,
     poisonImmune: false,
+    blockRetain: false,
     strength: 0,
     drawBonus: 0,
     healPerTurn: 0,
@@ -396,6 +397,9 @@ export function computeEquipmentStats(
   if (hasFullSet(equipped, "poison")) {
     stats.poisonImmune = true;
     stats.healBonusPct = 50;
+  }
+  if (hasFullSet(equipped, "knight")) {
+    stats.blockRetain = true;
   }
 
   return stats;
