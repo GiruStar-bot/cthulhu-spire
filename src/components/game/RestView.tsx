@@ -265,7 +265,7 @@ function SmithRoom() {
                   >
                     <img src={def.art} alt="" className="h-20 w-20 border-2 border-white object-cover" />
                     <span className="text-xs text-white">
-                      {def.name} T{g.tier}
+                      {def.name}
                     </span>
                     <span className="border-2 border-white bg-black px-2 py-0.5 text-xs text-accent">
                       {g.sold ? "売約" : `${g.price}枚`}

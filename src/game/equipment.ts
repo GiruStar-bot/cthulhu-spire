@@ -310,7 +310,7 @@ export function pickEquipmentTemplate(rand: () => number): string {
 export function equipmentLabel(inst: EquipmentInstance): string {
   const def = EQUIPMENT[inst.defId];
   const bonusCount = Object.keys(inst.bonusStats ?? {}).length;
-  return `${def?.name ?? inst.defId} T${inst.tier}${bonusCount > 0 ? ` +${bonusCount}` : ""}`;
+  return `${def?.name ?? inst.defId}${bonusCount > 0 ? ` +${bonusCount}` : ""}`;
 }
 
 export function hasFullSet(
