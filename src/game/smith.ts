@@ -67,7 +67,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "damage", n: 5 },
     { t: "poison", n: 2 },
   ]),
-  deep_spear: atk("deep_spear", "深きものの鉾", 1, "9ダメージ。脆弱1。", blade, [
+  deep_spear: atk("deep_spear", "深きものの鉾", 1, "9ダメージ。脆弱1。", shopArt("deep_spear"), [
     { t: "damage", n: 9 },
     { t: "vulnerable", n: 1 },
   ], { archetype: "deep" }),
@@ -136,7 +136,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "block", n: 5 },
     { t: "retainBlock" },
   ]),
-  deep_scale: skl("deep_scale", "深きものの鱗鎧", 2, "ブロック16。脆弱1を自分に。", mail, [
+  deep_scale: skl("deep_scale", "深きものの鱗鎧", 2, "ブロック16。脆弱1を自分に。", shopArt("deep_scale"), [
     { t: "block", n: 16 },
     { t: "selfVulnerable", n: 1 },
   ], { archetype: "deep" }),
@@ -148,7 +148,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "block", n: 18 },
     { t: "retainCards", n: 1 },
   ], { archetype: "outer" }),
-  dagon_shield: skl("dagon_shield", "ダゴンの儀式盾", 3, "ブロック22。3回復。", mail, [
+  dagon_shield: skl("dagon_shield", "ダゴンの儀式盾", 3, "ブロック22。3回復。", shopArt("dagon_shield"), [
     { t: "block", n: 22 },
     { t: "heal", n: 3 },
   ], { archetype: "deep" }),
@@ -171,7 +171,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
 
   buckler: skl("buckler", "バックラー", 0, "ブロック4。", cloak, [{ t: "block", n: 4 }]),
   leather: skl("leather", "革の鎧", 1, "ブロック6。1枚引く。", cloak, [{ t: "block", n: 6 }, { t: "draw", n: 1 }]),
-  thief_cloak: skl("thief_cloak", "盗賊のマント", 2, "ブロック10。無形1。", cloak, [
+  thief_cloak: skl("thief_cloak", "盗賊のマント", 2, "ブロック10。無形1。", shopArt("thief_cloak"), [
     { t: "block", n: 10 },
     { t: "intangible", n: 1 },
   ], { archetype: "shadow" }),
@@ -191,11 +191,11 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "block", n: 6 },
     { t: "bind" },
   ], { target: "enemy" }),
-  yellow_rags: skl("yellow_rags", "黄衣の王の襤褸", 2, "ブロック20。攻撃してきた敵に脆弱。", cloak, [
+  yellow_rags: skl("yellow_rags", "黄衣の王の襤褸", 2, "ブロック20。攻撃してきた敵に脆弱。", shopArt("yellow_rags"), [
     { t: "block", n: 20 },
     { t: "thornsVulnerable", n: 1 },
   ], { archetype: "shadow" }),
-  nameless_veil: skl("nameless_veil", "無貌の影衣", 1, "ブロック12。次ターン無形。呪いが混入。", cloak, [
+  nameless_veil: skl("nameless_veil", "無貌の影衣", 1, "ブロック12。次ターン無形。呪いが混入。", shopArt("nameless_veil"), [
     { t: "block", n: 12 },
     { t: "intangible", n: 1 },
     { t: "addCurse", id: "dread" },
