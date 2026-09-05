@@ -76,6 +76,18 @@ function persist(profile: PlayerProfile) {
   saveProfile(profile);
 }
 
+export function syncEquippedFromInventory(equipmentUid: string) {
+  const s = useGame.getState();
+  const slotEntry = Object.entries(s.profile.equipped ?? {}).find(([, inst]) => inst?.uid === equipmentUid);
+  if (!slotEntry) return;
+  const [slot] = slotEntry;
+  const latest = useCollectionStore.getState().inventory.equipment.find((e) => e.uid === equipmentUid);
+  if (!latest) return;
+  const profile = { ...s.profile, equipped: { ...s.profile.equipped, [slot]: latest } };
+  persist(profile);
+  useGame.setState({ profile });
+}
+
 function specAt(s: { runFloors: FloorSpec[]; floor: number }): FloorSpec | undefined {
   return s.runFloors[s.floor - 1];
 }

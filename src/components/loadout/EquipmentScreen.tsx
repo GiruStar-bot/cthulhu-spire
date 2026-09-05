@@ -3,7 +3,7 @@ import { PixelWindow } from "@/components/ui/PixelWindow";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelRune } from "@/components/loadout/PixelRune";
 import { EQUIPMENT, EQUIPMENT_SLOTS, equipmentLabel } from "@/game/equipment";
-import { useGame } from "@/game/store";
+import { syncEquippedFromInventory, useGame } from "@/game/store";
 import { peekRune, useCollectionStore } from "@/store/useCollectionStore";
 import { cn } from "@/lib/utils";
 
@@ -150,7 +150,11 @@ export function EquipmentScreen() {
                 <button
                   key={i}
                   type="button"
-                  onClick={() => runeId && unsocketRuneFromEquipment(active.uid, i)}
+                  onClick={() => {
+                    if (!runeId) return;
+                    unsocketRuneFromEquipment(active.uid, i);
+                    syncEquippedFromInventory(active.uid);
+                  }}
                   className="grid size-14 place-items-center border-2 border-white bg-black"
                   title={runeId ? "クリックで外す" : "空きソケット"}
                 >
@@ -181,6 +185,7 @@ export function EquipmentScreen() {
                 const emptyIdx = active.socketedRunes.findIndex((r) => !r);
                 if (emptyIdx === -1) return;
                 socketRuneToEquipment(active.uid, rune.id, emptyIdx);
+                syncEquippedFromInventory(active.uid);
               }}
               className="flex flex-col items-center gap-1 border-2 border-white bg-black p-2 text-center disabled:opacity-40"
             >
