@@ -59,7 +59,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
   iron_sword: atk("iron_sword", "鉄剣", 1, "8ダメージ。", shopArt("iron_sword"), [{ t: "damage", n: 8 }]),
   iron_axe: atk("iron_axe", "鉄斧", 2, "12ダメージ。", shopArt("iron_axe"), [{ t: "damage", n: 12 }]),
   knife: atk("knife", "ナイフ", 0, "4ダメージ。", shopArt("knife"), [{ t: "damage", n: 4 }]),
-  ritual_dagger: atk("ritual_dagger", "祭祀の短剣", 1, "10ダメージ。このカードで倒すと2回復。", blade, [
+  ritual_dagger: atk("ritual_dagger", "祭祀の短剣", 1, "10ダメージ。このカードで倒すと2回復。", shopArt("ritual_dagger"), [
     { t: "damage", n: 10 },
     { t: "healOnKill", n: 2 },
   ], { archetype: "fanatic" }),
@@ -80,15 +80,15 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "bind" },
     { t: "addCurse", id: "hallucination" },
   ], { archetype: "elder" }),
-  cthugha_blade: atk("cthugha_blade", "クトゥグアの炎剣", 2, "20ダメージ。手札をすべて廃棄。", blade, [
+  cthugha_blade: atk("cthugha_blade", "クトゥグアの炎剣", 2, "20ダメージ。手札をすべて廃棄。", shopArt("cthugha_blade"), [
     { t: "damage", n: 20 },
     { t: "exhaustHand" },
   ], { archetype: "outer" }),
-  nyar_fake: atk("nyar_fake", "ニャルラトホテプの偽剣", 1, "30ダメージ。手札2枚を戦闘終了まで消す。", blade, [
+  nyar_fake: atk("nyar_fake", "ニャルラトホテプの偽剣", 1, "30ダメージ。手札2枚を戦闘終了まで消す。", shopArt("nyar_fake"), [
     { t: "damage", n: 30 },
     { t: "banish", n: 2 },
   ], { archetype: "outer" }),
-  azathoth_end: atk("azathoth_end", "アザトースの断末魔", 0, "X×15ダメージ。全エネルギー消費。最大体力が半分になる。", blade, [
+  azathoth_end: atk("azathoth_end", "アザトースの断末魔", 0, "X×15ダメージ。全エネルギー消費。最大体力が半分になる。", shopArt("azathoth_end"), [
     { t: "damageX", n: 15 },
     { t: "loseMaxHpHalf" },
   ], { xCost: true, archetype: "outer" }),
@@ -100,13 +100,13 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "damage", n: 5 },
     { t: "damage", n: 5 },
   ]),
-  fanatic_dart: atk("fanatic_dart", "狂信者の吹き矢", 0, "4ダメージ。手札を1枚捨て、毒3。", bow, [
+  fanatic_dart: atk("fanatic_dart", "狂信者の吹き矢", 0, "4ダメージ。手札を1枚捨て、毒3。", shopArt("fanatic_dart"), [
     { t: "damage", n: 4 },
     { t: "discardRandom", n: 1 },
     { t: "poison", n: 3 },
   ], { archetype: "fanatic" }),
-  migo_gun: atk("migo_gun", "ミ＝ゴの電撃銃", 2, "敵全体に12ダメージ。", bow, [{ t: "damageAll", n: 12 }], { target: "all", archetype: "outer" }),
-  elder_staff: atk("elder_staff", "古きものの水晶杖", 1, "8ダメージ。1枚引く。", bow, [
+  migo_gun: atk("migo_gun", "ミ＝ゴの電撃銃", 2, "敵全体に12ダメージ。", shopArt("migo_gun"), [{ t: "damageAll", n: 12 }], { target: "all", archetype: "outer" }),
+  elder_staff: atk("elder_staff", "古きものの水晶杖", 1, "8ダメージ。1枚引く。", shopArt("elder_staff"), [
     { t: "damage", n: 8 },
     { t: "draw", n: 1 },
   ], { archetype: "outer" }),
@@ -125,7 +125,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
     { t: "cancelIntent" },
     { t: "energyNext", n: -1 },
   ]),
-  yog_gun: atk("yog_gun", "ヨグ＝ソトースの次元銃", 3, "敵全体に35。次のドローを飛ばす。", bow, [
+  yog_gun: atk("yog_gun", "ヨグ＝ソトースの次元銃", 3, "敵全体に35。次のドローを飛ばす。", shopArt("yog_gun"), [
     { t: "damageAll", n: 35 },
     { t: "skipDraw", n: 1 },
   ], { target: "all", archetype: "outer" }),
