@@ -119,6 +119,31 @@ export function EquipmentScreen() {
                   装着する
                 </button>
               )}
+              {(() => {
+                const p = active.power || 1;
+                const rows: { label: string; value: number }[] = [
+                  { label: "防御", value: Math.round((activeDef.baseDefense ?? 0) * p) },
+                  { label: "毒耐性", value: Math.round((activeDef.basePoisonResist ?? 0) * p) },
+                  { label: "狂気耐性", value: Math.round((activeDef.baseSanResist ?? 0) * p) },
+                  { label: "筋力", value: Math.round((activeDef.baseStrength ?? 0) * p) },
+                  { label: "ドロー", value: Math.round((activeDef.baseDraw ?? 0) * p) },
+                  { label: "回復", value: Math.round((activeDef.baseHeal ?? 0) * p) },
+                ].filter((r) => r.value > 0);
+                if (rows.length === 0) return null;
+                return (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {rows.map((r) => (
+                      <span
+                        key={r.label}
+                        className="border-2 border-gray-200/50 bg-black px-1.5 py-0.5 text-[10px] text-white"
+                      >
+                        {r.label}
+                        {r.value}
+                      </span>
+                    ))}
+                  </div>
+                );
+              })()}
               {Object.keys(active.bonusStats ?? {}).length > 0 ? (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {active.bonusStats?.strength ? (
