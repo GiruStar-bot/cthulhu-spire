@@ -249,9 +249,9 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-5">
         <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">
-          <div className="mb-3 space-y-2 border-2 border-gray-200/30 p-2">
+          <div className="mb-3 space-y-2 border-2 border-accent p-2">
             <div className="flex flex-wrap items-center gap-1">
-              <span className="mr-1 text-[10px] text-muted">ジャンル</span>
+              <span className="mr-1 text-[10px] text-accent">ジャンル</span>
               {FILTERABLE_ARCHETYPES.map((a) => (
                 <button
                   key={a}
@@ -259,7 +259,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
                   onClick={() => setFilterArchetypes((s) => toggleInSet(s, a))}
                   className={cn(
                     "border-2 px-1.5 py-0.5 text-[10px]",
-                    filterArchetypes.has(a) ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+                    filterArchetypes.has(a) ? "border-white bg-white text-ink" : "border-accent text-accent",
                   )}
                 >
                   {ARCHETYPE_LABELS[a]}
@@ -267,7 +267,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-1">
-              <span className="mr-1 text-[10px] text-muted">レア度</span>
+              <span className="mr-1 text-[10px] text-accent">レア度</span>
               {FILTERABLE_RARITIES.map((r) => (
                 <button
                   key={r}
@@ -275,7 +275,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
                   onClick={() => setFilterRarities((s) => toggleInSet(s, r))}
                   className={cn(
                     "border-2 px-1.5 py-0.5 text-[10px]",
-                    filterRarities.has(r) ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+                    filterRarities.has(r) ? "border-white bg-white text-ink" : "border-accent text-accent",
                   )}
                 >
                   {RARITY_LABELS[r]}
@@ -283,7 +283,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-1">
-              <span className="mr-1 text-[10px] text-muted">種別</span>
+              <span className="mr-1 text-[10px] text-accent">種別</span>
               {FILTERABLE_AI_TAGS.map((t) => (
                 <button
                   key={t}
@@ -291,7 +291,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
                   onClick={() => setFilterAiTags((s) => toggleInSet(s, t))}
                   className={cn(
                     "border-2 px-1.5 py-0.5 text-[10px]",
-                    filterAiTags.has(t) ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+                    filterAiTags.has(t) ? "border-white bg-white text-ink" : "border-accent text-accent",
                   )}
                 >
                   {AI_TAG_LABELS[t]}
@@ -306,7 +306,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
                   setFilterRarities(new Set());
                   setFilterAiTags(new Set());
                 }}
-                className="border-2 border-gray-200/40 px-1.5 py-0.5 text-[10px] text-muted"
+                className="border-2 border-accent px-1.5 py-0.5 text-[10px] text-accent"
               >
                 フィルターをリセット
               </button>
