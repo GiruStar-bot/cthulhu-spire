@@ -246,7 +246,7 @@ function SmithRoom() {
           </div>
         </div>
         {shop.equipmentGoods.length > 0 ? (
-          <div className="mt-4">
+          <div className="relative z-[6] mt-4 ml-[30%] sm:ml-[18rem]">
             <p className="mb-2 text-xs tracking-widest text-muted">装備</p>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] justify-items-center gap-3">
               {shop.equipmentGoods.map((g) => {
