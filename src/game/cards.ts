@@ -1,9 +1,20 @@
-import type { CardDef, CardInst, CharacterId } from "./types";
+import type { Archetype, CardDef, CardInst, CharacterId } from "./types";
 import { asset } from "@/lib/asset";
 import { uid } from "./rng";
 import { SHOP_CARDS } from "./smith";
 
 export const DECK_LIMIT = 20;
+
+export const ARCHETYPE_LABELS: Partial<Record<Archetype, string>> = {
+  fanatic: "狂信",
+  knight: "騎士",
+  poison: "毒",
+  outer: "外宇宙",
+  elder: "旧神",
+  deep: "深き者",
+  offering: "供物",
+  shadow: "影",
+};
 
 export const CARDS: Record<string, CardDef> = {
   strike: {

@@ -1,4 +1,4 @@
-import { cardCost, cardText, getCard } from "@/game/cards";
+import { ARCHETYPE_LABELS, cardCost, cardText, getCard } from "@/game/cards";
 import { PixelSprite } from "@/components/ui/PixelSprite";
 import type { CardInst } from "@/game/types";
 import { cn } from "@/lib/utils";
@@ -44,11 +44,16 @@ export function CardView({
         d.type === "status" ? "grayscale" : "",
       )}
     >
-      <div className="shrink-0 border-b-2 border-white bg-black px-1 py-0.5">
-        <p className={cn("truncate text-white", compact ? "text-xs" : "text-sm")}>
+      <div className="flex shrink-0 items-center justify-between gap-1 border-b-2 border-white bg-black px-1 py-0.5">
+        <p className={cn("min-w-0 truncate text-white", compact ? "text-xs" : "text-sm")}>
           {d.name}
           {card.upgraded ? "+" : ""}
         </p>
+        {d.archetype && ARCHETYPE_LABELS[d.archetype] ? (
+          <span className="shrink-0 border border-white/60 px-1 text-[8px] leading-tight text-white">
+            {ARCHETYPE_LABELS[d.archetype]}
+          </span>
+        ) : null}
       </div>
 
       <div className="relative min-h-16 flex-1 overflow-hidden">

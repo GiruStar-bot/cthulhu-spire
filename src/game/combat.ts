@@ -1,4 +1,5 @@
 import type {
+  Archetype,
   CardInst,
   CombatEnemy,
   CombatState,
@@ -171,6 +172,24 @@ function insertIntoDraw(c: CombatState, card: CardInst, rand: () => number) {
   c.draw.splice(idx, 0, card);
 }
 
+export type DeckSynergy = { archetype: Archetype; tier: 1 | 2 | 3 } | null;
+
+export function computeDeckSynergy(deck: CardInst[]): DeckSynergy {
+  const counts: Partial<Record<Archetype, number>> = {};
+  for (const c of deck) {
+    const def = getCard(c.defId);
+    if (!def.archetype || def.archetype === "generic") continue;
+    counts[def.archetype] = (counts[def.archetype] ?? 0) + 1;
+  }
+  let best: { archetype: Archetype; count: number } | null = null;
+  for (const [archetype, count] of Object.entries(counts) as [Archetype, number][]) {
+    if (!best || count > best.count) best = { archetype, count };
+  }
+  if (!best || best.count < 8) return null;
+  const tier = best.count >= 16 ? 3 : best.count >= 12 ? 2 : 1;
+  return { archetype: best.archetype, tier };
+}
+
 export function startCombat(
   deck: CardInst[],
   enemyIds: string[],
@@ -223,7 +242,35 @@ export function startCombat(
     equipmentStats: eq,
   };
   c.strength += player.extraStrength;
-  drawCards(c, baseDrawCount(c), rand, player);
+  const synergy = computeDeckSynergy(deck);
+  if (synergy) {
+    const { archetype, tier } = synergy;
+    if (archetype === "fanatic") {
+      c.strength += tier;
+    }
+    if (archetype === "knight") {
+      c.block += tier === 1 ? 3 : tier === 2 ? 6 : 10;
+    }
+    if (archetype === "poison") {
+      for (const e of c.enemies) e.poison += tier;
+    }
+    if (archetype === "elder") {
+      const weakN = tier === 3 ? 2 : 1;
+      for (const e of c.enemies) e.weak += weakN;
+    }
+    if (archetype === "deep") {
+      const healN = tier === 1 ? 2 : tier === 2 ? 4 : 6;
+      player.hp = Math.min(player.maxHp, player.hp + healN);
+    }
+    if (archetype === "offering" && tier >= 2) {
+      c.energy += 1;
+    }
+    if (archetype === "shadow" && tier === 3) {
+      c.intangible += 1;
+    }
+  }
+  const outerBonus = synergy?.archetype === "outer" ? synergy.tier : 0;
+  drawCards(c, baseDrawCount(c) + outerBonus, rand, player);
   if (player.sanity <= 0) {
     addToDiscard(c, makeCard("dread"));
     c.log.push("恐怖がデッキに沈む。");
