@@ -143,11 +143,11 @@ export const SHOP_CARDS: Record<string, CardDef> = {
   shoggoth_plate: skl("shoggoth_plate", "ショゴスの粘液装甲", 1, "ブロック10。粘液が混入する。", mail, [
     { t: "block", n: 10 },
     { t: "addCurse", id: "slime" },
-  ]),
+  ], { archetype: "outer" }),
   yith_shell: skl("yith_shell", "イスの金属殻", 2, "ブロック18。手札1枚を残す。", mail, [
     { t: "block", n: 18 },
     { t: "retainCards", n: 1 },
-  ]),
+  ], { archetype: "outer" }),
   dagon_shield: skl("dagon_shield", "ダゴンの儀式盾", 3, "ブロック22。3回復。", mail, [
     { t: "block", n: 22 },
     { t: "heal", n: 3 },
