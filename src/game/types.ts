@@ -128,6 +128,7 @@ export interface EnemyDef {
   deck?: string[];
   signatureCardId?: string;
   cardsPerTurn?: number;
+  archetype?: Archetype;
 }
 
 export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split";
