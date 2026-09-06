@@ -131,7 +131,7 @@ export interface EnemyDef {
   archetype?: Archetype;
 }
 
-export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split";
+export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split" | "flee";
 
 export interface Intent {
   kind: IntentKind;
@@ -306,8 +306,9 @@ export interface CombatState {
   thornsVulnerable: number;
   xSpent: number;
   forceEnd: boolean;
+  turn: number;
   phase: "player" | "enemy" | "over";
-  result: "ongoing" | "win" | "lose";
+  result: "ongoing" | "win" | "lose" | "fled";
   log: string[];
   floaters: Floater[];
   equipmentStats: EquipmentStats;

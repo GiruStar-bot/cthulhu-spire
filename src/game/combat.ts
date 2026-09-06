@@ -247,6 +247,7 @@ export function startCombat(
     thornsVulnerable: 0,
     xSpent: 0,
     forceEnd: false,
+    turn: 1,
     phase: "player",
     result: "ongoing",
     log: ["空気が、厚くなる。"],
@@ -810,6 +811,10 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   c.thornsVulnerable = 0;
 
   c.phase = "player";
+  c.turn += 1;
+  handleFlee(c);
+  if (c.result !== "ongoing") return sfx;
+
   if (c.equipmentStats.blockRetain) {
     // 騎士セット全身装備中はブロックが尽きない
   } else if (c.keepBlock > 0) {
@@ -838,6 +843,21 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   drawCards(c, drawN, rand, player);
   checkOver(c, player);
   return sfx;
+}
+
+function handleFlee(c: CombatState) {
+  if (c.turn <= 2) return;
+  const fleeing = living(c).filter((e) => getEnemy(e.defId).trait === "flee");
+  if (fleeing.length === 0) return;
+  for (const e of fleeing) {
+    e.hp = 0;
+    c.log.push(`${getEnemy(e.defId).name}が逃げ去った。`);
+    c.floaters.push(floater("逃走", "info", e.uid));
+  }
+  if (living(c).length === 0) {
+    c.result = "fled";
+    c.phase = "over";
+  }
 }
 
 export function clearFloaters(c: CombatState) {
@@ -869,6 +889,8 @@ export function encounterIds(
     if (floor >= 20) return ["choir", "choir"];
     return ["priest"];
   }
+
+  if (kind === "combat" && rand() < 0.03) return ["treasure_wanderer"];
 
   const VOID = ["migo", "shan", "starvamp", "colour"] as const;
   const voidChance = floor >= 50 ? 0.38 : floor >= 16 ? 0.28 : floor >= 8 ? 0.18 : 0;

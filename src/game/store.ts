@@ -133,6 +133,7 @@ export interface GameStore {
   setTargeting: (cardUid: string | null) => void;
   endPlayerTurn: () => void;
   claimReward: () => void;
+  resolveFlee: () => void;
   restHeal: () => void;
   restUpgrade: (uid: string) => void;
   visitVillage: (room: GameStore["restMode"]) => void;
@@ -199,6 +200,10 @@ function pickEquipmentDefId(archetype: Archetype | undefined, rand: () => number
   return pickEquipmentTemplate(rand);
 }
 
+function hadTreasureWanderer(enemies: CombatEnemy[]): boolean {
+  return enemies.some((e) => e.defId === "treasure_wanderer");
+}
+
 function starterPath(stats: PlayerStats): CharacterId {
   return stats.hp >= stats.san ? "investigator" : "cultist";
 }
@@ -258,7 +263,8 @@ function presentCombat(
       const cur = get();
       if (cur.combat?.result !== "win") return;
       playBgm("reward");
-      const gained = rollShells(cur);
+      const treasure = hadTreasureWanderer(cur.combat.enemies);
+      const gained = rollShells(cur) * (treasure ? 3 : 1);
       set({
         scene: "reward",
         reward: makeRewards(cur),
@@ -266,6 +272,13 @@ function presentCombat(
         shells: cur.shells + gained,
         toast: gained ? `きれいな貝殻 +${gained}` : cur.toast,
       });
+    }, 920);
+  } else if (combat.result === "fled") {
+    sfx.step();
+    window.setTimeout(() => {
+      const cur = get();
+      if (cur.combat?.result !== "fled") return;
+      cur.resolveFlee();
     }, 920);
   } else if (combat.result === "lose") {
     sfx.lose();
@@ -671,6 +684,18 @@ export const useGame = create<GameStore>((set, get) => {
       afterGain({ hp, maxHp, maxSanity, sanity, profile, toast });
     },
 
+    resolveFlee: () => {
+      const s = get();
+      afterGain({
+        hp: s.hp,
+        maxHp: s.maxHp,
+        maxSanity: s.maxSanity,
+        sanity: s.sanity,
+        profile: s.profile,
+        toast: "宝殻の徘徊者は、逃げ去った。",
+      });
+    },
+
     restHeal: () => get().innStay(10),
     restUpgrade: (cardUid) => get().forgeAtSmith(cardUid),
 
@@ -1056,13 +1081,26 @@ const ITEM_COUNT_WEIGHTS = {
 } as const;
 
 function makeRewards(s: GameStore): RewardOffer[] {
+  const enemies = s.combat?.enemies ?? [];
+  if (hadTreasureWanderer(enemies)) {
+    const archetype = encounterArchetype(enemies, s.rand);
+    const owner = s.character ?? "investigator";
+    const runeEffect = pick(RUNE_CATALOG, s.rand).effect;
+    const equipmentDefId = pickEquipmentDefId(archetype, s.rand);
+    return [
+      { kind: "card", card: weightedCard(owner, s.rand, archetype) },
+      { kind: "equipment", equipment: rollEquipment(equipmentDefId, s.floor, s.rand, "drop") },
+      { kind: "rune", rune: rollRune(runeEffect, s.floor, s.rand) },
+    ];
+  }
+
   const spec = specAt(s);
   const kind = spec?.type === "boss" ? "boss" : spec?.type === "elite" ? "elite" : "combat";
   const table = DROP_RATES[kind];
   if (s.rand() >= table.chance) return [{ kind: "none" }];
 
   const floorForRoll = kind === "boss" ? s.floor + 5 : s.floor;
-  const archetype = encounterArchetype(s.combat?.enemies ?? [], s.rand);
+  const archetype = encounterArchetype(enemies, s.rand);
   const count = Number(weightedPick(ITEM_COUNT_WEIGHTS[kind] as Record<string, number>, s.rand));
 
   const rewards: RewardOffer[] = [];
