@@ -244,6 +244,10 @@ export interface EquipmentStats {
   drawBonus: number;
   healPerTurn: number;
   healBonusPct: number;
+  sanHealOnStart: number;
+  vulnOnStart: number;
+  energyPerTurn: number;
+  thornDamage: number;
 }
 
 export interface PlayerProfile {

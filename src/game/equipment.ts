@@ -337,6 +337,10 @@ export function computeEquipmentStats(
     drawBonus: 0,
     healPerTurn: 0,
     healBonusPct: 0,
+    sanHealOnStart: 0,
+    vulnOnStart: 0,
+    energyPerTurn: 0,
+    thornDamage: 0,
   };
 
   for (const inst of Object.values(equipped)) {
@@ -365,21 +369,39 @@ export function computeEquipmentStats(
       switch (rune.effect) {
         case "BLK+":
           stats.defense += rune.value;
+          stats.strength += 1;
           break;
         case "SAN+":
           stats.sanResist += rune.value;
+          stats.sanHealOnStart += 2;
           break;
         case "POISON":
           stats.poisonResist += rune.value;
+          stats.healPerTurn += 1;
           break;
         case "STR+":
           stats.strength += rune.value;
+          stats.defense += 1;
           break;
         case "DRAW":
           stats.drawBonus += rune.value;
+          stats.vulnOnStart += 1;
           break;
         case "HEAL":
           stats.healPerTurn += rune.value;
+          stats.poisonResist += 1;
+          break;
+        case "VULN+":
+          stats.vulnOnStart += rune.value;
+          stats.strength += 1;
+          break;
+        case "ENERGY+":
+          stats.energyPerTurn += rune.value;
+          stats.drawBonus += 1;
+          break;
+        case "THORN":
+          stats.thornDamage += rune.value;
+          stats.defense += 1;
           break;
         default:
           break;
@@ -393,6 +415,10 @@ export function computeEquipmentStats(
   stats.strength = round(stats.strength);
   stats.drawBonus = round(stats.drawBonus);
   stats.healPerTurn = round(stats.healPerTurn);
+  stats.sanHealOnStart = round(stats.sanHealOnStart);
+  stats.vulnOnStart = round(stats.vulnOnStart);
+  stats.energyPerTurn = round(stats.energyPerTurn);
+  stats.thornDamage = round(stats.thornDamage);
 
   if (hasFullSet(equipped, "poison")) {
     stats.poisonImmune = true;

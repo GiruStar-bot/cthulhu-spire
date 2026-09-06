@@ -210,7 +210,7 @@ export function startCombat(
     discard: [],
     exhaust: [],
     hand: [],
-    energy: baseEnergy + (player.extraEnergyNext || 0),
+    energy: baseEnergy + (player.extraEnergyNext || 0) + eq.energyPerTurn,
     maxEnergy: baseEnergy,
     block: 0,
     strength: Math.round(eq.strength),
@@ -264,6 +264,12 @@ export function startCombat(
     if (archetype === "shadow" && tier === 3) {
       c.intangible += 1;
     }
+  }
+  if (eq.vulnOnStart > 0) {
+    for (const e of c.enemies) e.vulnerable += eq.vulnOnStart;
+  }
+  if (eq.sanHealOnStart > 0) {
+    player.sanity = Math.min(player.maxSanity, player.sanity + eq.sanHealOnStart);
   }
   const outerBonus = c.synergy?.archetype === "outer" ? c.synergy.tier : 0;
   drawCards(c, baseDrawCount(c) + outerBonus, rand, player);
@@ -658,6 +664,10 @@ function applyEnemyIntent(
       c.floaters.push(floater(`-${n}`, "dmg", "player"));
       if (hp > 0) sfx.push("hurt");
       if (blocked > 0) sfx.push("block");
+      if (reducedHp > 0 && c.equipmentStats.thornDamage > 0) {
+        e.hp = Math.max(0, e.hp - c.equipmentStats.thornDamage);
+        c.floaters.push(floater(`-${c.equipmentStats.thornDamage}`, "dmg", e.uid));
+      }
     }
     c.log.push(`${getEnemy(e.defId).name}が${totalDealt}ダメージ。`);
   }
@@ -790,7 +800,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   } else {
     c.block = 0;
   }
-  c.energy = Math.max(0, c.maxEnergy + c.energyNext);
+  c.energy = Math.max(0, c.maxEnergy + c.energyNext + c.equipmentStats.energyPerTurn);
   c.energyNext = 0;
   const drawN = Math.max(0, baseDrawCount(c) - c.skipDraw);
   c.skipDraw = 0;
