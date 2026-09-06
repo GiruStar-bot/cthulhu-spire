@@ -17,6 +17,15 @@ const TIER_RARITIES: Record<"mob" | "elite", readonly string[]> = {
 export function rollEnemyCard(defId: string, rand: () => number): CardDef {
   const def = getEnemy(defId);
   const rarities = def.deck ? undefined : TIER_RARITIES[def.tier ?? "mob"];
+  const useArchetype = !def.deck && !!def.archetype && rand() < 0.8;
+
+  const buildPool = (tag: "attack" | "defense" | "effect") => {
+    if (useArchetype) {
+      const filtered = aiCardPool(tag, rarities, def.archetype);
+      if (filtered.length > 0) return filtered;
+    }
+    return aiCardPool(tag, rarities);
+  };
 
   const pools: Record<"attack" | "defense" | "effect", CardDef[]> = def.deck
     ? {
@@ -25,9 +34,9 @@ export function rollEnemyCard(defId: string, rand: () => number): CardDef {
         effect: aiCardPoolFrom(def.deck, "effect"),
       }
     : {
-        attack: aiCardPool("attack", rarities),
-        defense: aiCardPool("defense", rarities),
-        effect: aiCardPool("effect", rarities),
+        attack: buildPool("attack"),
+        defense: buildPool("defense"),
+        effect: buildPool("effect"),
       };
 
   const activeWeights = Object.fromEntries(

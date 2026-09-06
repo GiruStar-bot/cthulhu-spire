@@ -1093,6 +1093,7 @@ const AI_EXCLUDED_IDS = new Set([
 export function aiCardPool(
   tag: "attack" | "defense" | "effect",
   maxRarities?: readonly string[],
+  archetype?: Archetype,
 ): CardDef[] {
   return Object.values(CARDS).filter(
     (c) =>
@@ -1102,7 +1103,8 @@ export function aiCardPool(
       c.aiTag === tag &&
       hasTranslatableEffect(c) &&
       !AI_EXCLUDED_IDS.has(c.id) &&
-      (!maxRarities || maxRarities.includes(c.rarity)),
+      (!maxRarities || maxRarities.includes(c.rarity)) &&
+      (!archetype || !c.archetype || c.archetype === archetype),
   );
 }
 
