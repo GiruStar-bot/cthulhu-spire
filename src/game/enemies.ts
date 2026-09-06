@@ -359,7 +359,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   treasure_wanderer: {
     id: "treasure_wanderer",
     name: "宝殻の徘徊者",
-    art: asset("art/pixel/enemies/treasure_wanderer.jpg"),
+    ...still("treasure_wanderer"),
     biome: "reef",
     maxHp: 18,
     trait: "flee",
