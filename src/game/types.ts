@@ -145,6 +145,7 @@ export interface Intent {
   dread?: number;
   sanityDrain?: number;
   seal?: "attack" | "skill";
+  heal?: number;
 }
 
 export interface CombatEnemy {

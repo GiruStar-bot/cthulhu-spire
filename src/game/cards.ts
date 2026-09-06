@@ -1068,6 +1068,7 @@ const AI_TRANSLATABLE = new Set([
   "vulnerable",
   "poison",
   "addDread",
+  "heal",
 ]);
 
 function hasTranslatableEffect(card: CardDef): boolean {
@@ -1078,7 +1079,16 @@ function hasTranslatableEffect(card: CardDef): boolean {
   );
 }
 
-const AI_EXCLUDED_IDS = new Set(["precise", "tome", "deep_ones_blessing"]);
+const AI_EXCLUDED_IDS = new Set([
+  "precise",
+  "tome",
+  "deep_ones_blessing",
+  "dressing",
+  "adapted_scales",
+  "deep_breath",
+  "self_offering",
+  "blood_toll",
+]);
 
 export function aiCardPool(
   tag: "attack" | "defense" | "effect",
@@ -1105,8 +1115,7 @@ export function aiCardPoolFrom(deckIds: string[], tag: "attack" | "defense" | "e
         c.type !== "status" &&
         c.type !== "power" &&
         c.aiTag === tag &&
-        hasTranslatableEffect(c) &&
-        !AI_EXCLUDED_IDS.has(c.id),
+        hasTranslatableEffect(c),
     );
 }
 

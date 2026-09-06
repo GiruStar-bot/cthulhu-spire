@@ -689,6 +689,10 @@ function applyEnemyIntent(
     if (intent.block) c.log.push(`${getEnemy(e.defId).name}がブロック${intent.block}を得た。`);
   }
   if (intent.strength) e.strength += intent.strength;
+  if (intent.heal) {
+    e.hp = Math.min(e.maxHp, e.hp + intent.heal);
+    c.floaters.push(floater(`+${intent.heal}`, "heal", e.uid));
+  }
   if (intent.weak) {
     c.weak += intent.weak;
     c.log.push(`${getEnemy(e.defId).name}に弱体${intent.weak}を仕掛けられた。`);

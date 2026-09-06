@@ -79,6 +79,10 @@ export function cardToIntent(card: CardDef): Intent {
         intent.sanityDrain = (intent.sanityDrain ?? 0) + Math.abs(eff.n);
         if (intent.kind === "unknown") intent.kind = "debuff";
       }
+      if (eff.t === "heal") {
+        intent.heal = (intent.heal ?? 0) + eff.n;
+        if (intent.kind === "unknown") intent.kind = "buff";
+      }
     }
   };
   scan(card.effects);
