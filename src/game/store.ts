@@ -54,7 +54,7 @@ import {
 import { loadoutDeck, loadoutError } from "./cardEvaluator";
 import { useCollectionStore } from "@/store/useCollectionStore";
 import { nextUnread } from "./grimoire";
-import { forgeCard, makeSmith, SHOP_PRICE } from "./smith";
+import { cardSellPrice, equipmentSellPrice, forgeCard, makeSmith, runeSellPrice, SHOP_PRICE } from "./smith";
 
 function hookFrom(s: GameStore): PlayerHook {
   const vitals = derivedVitals(s.profile.stats, s.profile.madness);
@@ -117,7 +117,7 @@ export interface GameStore {
   targeting: string | null;
   reward: RewardOffer | null;
   event: GameEvent | null;
-  restMode: "hub" | "inn" | "pub" | "smith" | "upgrade" | "choose" | "deck" | null;
+  restMode: "hub" | "inn" | "pub" | "smith" | "upgrade" | "choose" | "deck" | "sell" | null;
   toast: string | null;
   shells: number;
   village: VillageState | null;
@@ -155,6 +155,7 @@ export interface GameStore {
   acceptShatter: () => void;
   equipItem: (equipmentUid: string) => void;
   unequipSlot: (slot: EquipmentSlot) => void;
+  sellItems: (payload: { cardIds: string[]; equipmentUids: string[]; runeIds: string[] }) => void;
 }
 
 function weightedCard(owner: CharacterId, rand: () => number, archetype?: Archetype): CardInst {
@@ -989,6 +990,43 @@ export const useGame = create<GameStore>((set, get) => {
       persist(profile);
       set({ profile });
       sfx.select();
+    },
+
+    sellItems: ({ cardIds, equipmentUids, runeIds }) => {
+      const s = get();
+      const collection = useCollectionStore.getState();
+      const equippedUids = new Set(
+        Object.values(s.profile.equipped ?? {})
+          .map((e) => e?.uid)
+          .filter((id): id is string => !!id),
+      );
+      const socketedRuneIds = new Set(
+        collection.inventory.equipment.flatMap((e) => e.socketedRunes.filter((r): r is string => !!r)),
+      );
+
+      let total = 0;
+      const sellCardIds = cardIds.filter((id) => collection.inventory.cards.some((c) => c.instanceId === id));
+      for (const id of sellCardIds) {
+        const inst = collection.inventory.cards.find((c) => c.instanceId === id);
+        if (inst) total += cardSellPrice(getCard(inst.baseCardId));
+      }
+      const sellEquipmentUids = equipmentUids.filter((uid) => !equippedUids.has(uid));
+      for (const uid of sellEquipmentUids) {
+        const inst = collection.inventory.equipment.find((e) => e.uid === uid);
+        if (inst) total += equipmentSellPrice(inst);
+      }
+      const sellRuneIds = runeIds.filter((id) => !socketedRuneIds.has(id));
+      for (const id of sellRuneIds) {
+        const rune = collection.inventory.runes.find((r) => r.id === id);
+        if (rune) total += runeSellPrice(rune);
+      }
+
+      if (total === 0) return;
+      collection.removeCards(sellCardIds);
+      collection.removeEquipment(sellEquipmentUids);
+      collection.removeRunes(sellRuneIds);
+      sfx.reward();
+      set({ shells: s.shells + total, toast: `貝殻+${total}` });
     },
   };
 });

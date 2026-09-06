@@ -1,5 +1,6 @@
 import { CardView } from "@/components/game/CardView";
 import { Bar, Vitals } from "@/components/game/Hud";
+import { SellScreen } from "@/components/game/SellScreen";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
@@ -16,6 +17,7 @@ export function RestView() {
   if (room === "smith") return <SmithRoom />;
   if (room === "upgrade") return <ForgeRoom />;
   if (room === "deck") return <DeckEditRoom />;
+  if (room === "sell") return <SellRoom />;
   return <VillageHub />;
 }
 
@@ -103,6 +105,15 @@ function DeckEditRoom() {
           if (apply()) visit("smith");
         }}
       />
+    </section>
+  );
+}
+
+function SellRoom() {
+  const visit = useGame((s) => s.visitVillage);
+  return (
+    <section className="h-dvh overflow-hidden bg-ink font-pixel">
+      <SellScreen onClose={() => visit("smith")} />
     </section>
   );
 }
@@ -279,6 +290,7 @@ function SmithRoom() {
         <div className="mt-auto flex flex-wrap gap-3 pb-4">
           <PixelButton onClick={() => visit("deck")}>デッキ編成</PixelButton>
           <PixelButton onClick={() => visit("upgrade")}>焼く（強化）</PixelButton>
+          <PixelButton onClick={() => visit("sell")}>売却</PixelButton>
         </div>
       </div>
       <PixelButton onClick={() => visit("hub")} className="fixed right-5 bottom-5 z-20">
