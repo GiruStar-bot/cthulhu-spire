@@ -19,6 +19,9 @@ export const RUNE_CATALOG: Omit<Rune, "id">[] = [
   { effect: "STR+", value: 1 },
   { effect: "POISON", value: 2 },
   { effect: "HEAL", value: 4 },
+  { effect: "VULN+", value: 1 },
+  { effect: "ENERGY+", value: 1 },
+  { effect: "THORN", value: 2 },
 ];
 
 export function runeArt(effect: string): string | null {
@@ -31,5 +34,7 @@ export function rollRune(effect: string, floor: number, rand: () => number): Run
   const tier = tierFromFloor(floor);
   const scaled = base + Math.floor(tier / 2);
   const roll = 1 + (rand() * 2 - 1) * 0.25;
-  return { id: uid("rn"), effect, value: Math.max(1, Math.round(scaled * roll)) };
+  let value = Math.max(1, Math.round(scaled * roll));
+  if (effect === "ENERGY+") value = Math.min(2, value);
+  return { id: uid("rn"), effect, value };
 }
