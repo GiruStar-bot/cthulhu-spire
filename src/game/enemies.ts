@@ -356,6 +356,15 @@ export const ENEMIES: Record<string, EnemyDef> = {
       { kind: "attack", damage: 18, hits: 2 },
     ],
   },
+  treasure_wanderer: {
+    id: "treasure_wanderer",
+    name: "宝殻の徘徊者",
+    art: asset("art/pixel/enemies/treasure_wanderer.jpg"),
+    biome: "reef",
+    maxHp: 18,
+    trait: "flee",
+    deck: ["buckler"],
+  },
 };
 
 export function getEnemy(id: string): EnemyDef {
