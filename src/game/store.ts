@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import type {
+  Archetype,
   CardInst,
   CharacterId,
+  CombatEnemy,
   CombatState,
   EquipmentSlot,
   FloorSpec,
@@ -16,6 +18,7 @@ import { cardText, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
 import { DEMO_MAX_FLOOR, generateRunTable, layerLabel } from "./floors";
 import {
+  EQUIPMENT,
   equipmentLabel,
   getEquipment,
   hasFullSet,
@@ -23,6 +26,7 @@ import {
   rollEquipment,
   rollEquipmentAtTier,
 } from "./equipment";
+import { getEnemy } from "./enemies";
 import { RUNE_CATALOG, rollRune } from "./runes";
 import {
   canPlay,
@@ -33,7 +37,7 @@ import {
   startCombat,
   type PlayerHook,
 } from "./combat";
-import { mulberry32, pick, weightedPick } from "./rng";
+import { mulberry32, pick, weightedPick, weightedPickBy } from "./rng";
 import { playBgm, playCues, sfx, stopBgm, unlockAudio } from "./audio";
 import {
   clampStats,
@@ -153,13 +157,44 @@ export interface GameStore {
   unequipSlot: (slot: EquipmentSlot) => void;
 }
 
-function weightedCard(owner: CharacterId, rand: () => number): CardInst {
+function weightedCard(owner: CharacterId, rand: () => number, archetype?: Archetype): CardInst {
   const pool = rewardPool(owner);
   const roll = rand();
   const rarity = roll < 0.62 ? "common" : roll < 0.9 ? "uncommon" : "rare";
-  const sliced = pool.filter((c) => c.rarity === rarity);
-  const def = pick(sliced.length ? sliced : pool, rand);
+  const raritySliced = pool.filter((c) => c.rarity === rarity);
+  let candidates = raritySliced.length ? raritySliced : pool;
+  if (archetype) {
+    const archetypeSliced = candidates.filter((c) => c.archetype === archetype);
+    if (archetypeSliced.length > 0 && rand() < 0.5) candidates = archetypeSliced;
+  }
+  const owned = useCollectionStore.getState().inventory.cards;
+  const def = weightedPickBy(
+    candidates,
+    (c) => 1 / (1 + owned.filter((o) => o.baseCardId === c.id).length),
+    rand,
+  );
   return makeCard(def.id, false);
+}
+
+function encounterArchetype(enemies: CombatEnemy[], rand: () => number): Archetype | undefined {
+  const counts = new Map<Archetype, number>();
+  for (const e of enemies) {
+    const archetype = getEnemy(e.defId).archetype;
+    if (!archetype) continue;
+    counts.set(archetype, (counts.get(archetype) ?? 0) + 1);
+  }
+  if (counts.size === 0) return undefined;
+  const max = Math.max(...counts.values());
+  const top = [...counts.entries()].filter(([, n]) => n === max).map(([a]) => a);
+  return pick(top, rand);
+}
+
+function pickEquipmentDefId(archetype: Archetype | undefined, rand: () => number): string {
+  if (archetype) {
+    const matching = Object.values(EQUIPMENT).filter((d) => d.archetype === archetype);
+    if (matching.length > 0 && rand() < 0.7) return pick(matching, rand).id;
+  }
+  return pickEquipmentTemplate(rand);
 }
 
 function starterPath(stats: PlayerStats): CharacterId {
@@ -972,16 +1007,17 @@ function makeReward(s: GameStore): RewardOffer {
 
   const category = weightedPick(table.weights, s.rand);
   const floorForRoll = kind === "boss" ? s.floor + 5 : s.floor;
+  const archetype = encounterArchetype(s.combat?.enemies ?? [], s.rand);
 
   if (category === "card") {
     const owner = s.character ?? "investigator";
-    return { kind: "card", card: weightedCard(owner, s.rand) };
+    return { kind: "card", card: weightedCard(owner, s.rand, archetype) };
   }
   if (category === "rune") {
     const effect = pick(RUNE_CATALOG, s.rand).effect;
     return { kind: "rune", rune: rollRune(effect, floorForRoll, s.rand) };
   }
-  const defId = pickEquipmentTemplate(s.rand);
+  const defId = pickEquipmentDefId(archetype, s.rand);
   return { kind: "equipment", equipment: rollEquipment(defId, floorForRoll, s.rand, "drop") };
 }
 

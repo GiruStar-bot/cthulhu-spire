@@ -32,6 +32,18 @@ export function uid(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
+export function weightedPickBy<T>(items: readonly T[], weight: (item: T) => number, rand: () => number): T {
+  const weights = items.map(weight);
+  const total = weights.reduce((sum, w) => sum + w, 0);
+  if (total <= 0) return items[Math.floor(rand() * items.length)]!;
+  let roll = rand() * total;
+  for (let i = 0; i < items.length; i++) {
+    if (roll < weights[i]!) return items[i]!;
+    roll -= weights[i]!;
+  }
+  return items[items.length - 1]!;
+}
+
 export function weightedPick<T extends string>(weights: Record<T, number>, rand: () => number): T {
   const entries = Object.entries(weights) as [T, number][];
   const total = entries.reduce((sum, [, w]) => sum + w, 0);
