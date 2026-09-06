@@ -44,16 +44,29 @@ function scaleHp(base: number, floor: number) {
   return Math.round(base * (1 + Math.max(0, floor - 1) * 0.03));
 }
 
+function blockPosition(floor: number): number {
+  return ((floor - 1) % 10) + 1;
+}
+
+function blockStrengthBonus(floor: number): number {
+  const pos = blockPosition(floor);
+  if (pos <= 3) return 0;
+  if (pos <= 6) return 1;
+  if (pos <= 9) return 2;
+  return 3;
+}
+
 export function makeEnemy(defId: string, floor: number, rand: () => number): CombatEnemy {
   const d = getEnemy(defId);
   const maxHp = scaleHp(d.maxHp, floor);
+  const isBoss = !!d.deck;
   const e: CombatEnemy = {
     uid: uid("e"),
     defId,
     hp: maxHp,
     maxHp,
     block: 0,
-    strength: 0,
+    strength: isBoss ? 0 : blockStrengthBonus(floor),
     weak: 0,
     vulnerable: 0,
     poison: 0,
