@@ -115,7 +115,8 @@ export interface GameStore {
   floor: number;
   combat: CombatState | null;
   targeting: string | null;
-  reward: RewardOffer | null;
+  reward: RewardOffer[] | null;
+  rewardShells: number;
   event: GameEvent | null;
   restMode: "hub" | "inn" | "pub" | "smith" | "upgrade" | "choose" | "deck" | "sell" | null;
   toast: string | null;
@@ -260,7 +261,8 @@ function presentCombat(
       const gained = rollShells(cur);
       set({
         scene: "reward",
-        reward: makeReward(cur),
+        reward: makeRewards(cur),
+        rewardShells: gained,
         shells: cur.shells + gained,
         toast: gained ? `きれいな貝殻 +${gained}` : cur.toast,
       });
@@ -317,6 +319,7 @@ export const useGame = create<GameStore>((set, get) => {
         profile,
         combat: null,
         reward: null,
+        rewardShells: 0,
         event: null,
         restMode: null,
       });
@@ -331,7 +334,8 @@ export const useGame = create<GameStore>((set, get) => {
       floor,
       targeting: null as string | null,
       combat: null as CombatState | null,
-      reward: null as RewardOffer | null,
+      reward: null as RewardOffer[] | null,
+      rewardShells: 0,
       event: null as GameEvent | null,
       restMode: null as GameStore["restMode"],
     };
@@ -382,6 +386,7 @@ export const useGame = create<GameStore>((set, get) => {
         scene: "hub",
         profile,
         reward: null,
+        rewardShells: 0,
         combat: null,
         event: null,
         restMode: null,
@@ -404,12 +409,13 @@ export const useGame = create<GameStore>((set, get) => {
         scene: "victory",
         profile,
         reward: null,
+        rewardShells: 0,
         combat: null,
         event: null,
       });
       return;
     }
-    enterFloor(s.floor + 1, { ...carry, reward: null, event: null, combat: null });
+    enterFloor(s.floor + 1, { ...carry, reward: null, rewardShells: 0, event: null, combat: null });
   }
 
   function afterGain(carry: Partial<GameStore>) {
@@ -436,6 +442,7 @@ export const useGame = create<GameStore>((set, get) => {
     combat: null,
     targeting: null,
     reward: null,
+    rewardShells: 0,
     event: null,
     restMode: null,
     toast: null,
@@ -568,6 +575,7 @@ export const useGame = create<GameStore>((set, get) => {
         act: 1,
         combat: null,
         reward: null,
+        rewardShells: 0,
         event: null,
         restMode: null,
         targeting: null,
@@ -629,32 +637,35 @@ export const useGame = create<GameStore>((set, get) => {
 
     claimReward: () => {
       const s = get();
-      const reward = s.reward;
+      const rewards = s.reward ?? [];
       const hp = s.hp;
       const maxHp = s.maxHp;
       const maxSanity = s.maxSanity;
       const sanity = s.sanity;
       let profile = s.profile;
-      let toast: string | null = null;
+      const labels: string[] = [];
 
-      if (reward?.kind === "card") {
-        useCollectionStore.getState().addLootCard(reward.card.defId);
-        toast = `${getCard(reward.card.defId).name}を戦利品として持ち帰った。`;
-      } else if (reward?.kind === "equipment") {
-        const inst = reward.equipment;
-        useCollectionStore.getState().addLootEquipment(inst);
-        const def = getEquipment(inst.defId);
-        if (!profile.equipped[def.slot]) {
-          profile = { ...profile, equipped: { ...profile.equipped, [def.slot]: inst } };
+      for (const reward of rewards) {
+        if (reward.kind === "card") {
+          useCollectionStore.getState().addLootCard(reward.card.defId);
+          labels.push(getCard(reward.card.defId).name);
+        } else if (reward.kind === "equipment") {
+          const inst = reward.equipment;
+          useCollectionStore.getState().addLootEquipment(inst);
+          const def = getEquipment(inst.defId);
+          if (!profile.equipped[def.slot]) {
+            profile = { ...profile, equipped: { ...profile.equipped, [def.slot]: inst } };
+          }
+          sfx.reward();
+          labels.push(equipmentLabel(inst));
+        } else if (reward.kind === "rune") {
+          useCollectionStore.getState().addLootRune(reward.rune);
+          labels.push(`${reward.rune.effect}のルーン`);
         }
-        sfx.reward();
-        toast = `${equipmentLabel(inst)} を得た。`;
-      } else if (reward?.kind === "rune") {
-        useCollectionStore.getState().addLootRune(reward.rune);
-        toast = `${reward.rune.effect}のルーンを見つけた。`;
-      } else {
-        toast = "何も見つからなかった。";
       }
+
+      const toast =
+        labels.length === 0 ? "何も見つからなかった。" : `${labels.join("・")}を戦利品として持ち帰った。`;
 
       persist(profile);
       afterGain({ hp, maxHp, maxSanity, sanity, profile, toast });
@@ -825,6 +836,7 @@ export const useGame = create<GameStore>((set, get) => {
         floor: 0,
         deck: [],
         reward: null,
+        rewardShells: 0,
         event: null,
         restMode: null,
         inspectDeck: false,
@@ -1037,26 +1049,37 @@ const DROP_RATES = {
   boss: { chance: 1.0, weights: { card: 0.2, rune: 0.3, equipment: 0.5 } },
 } as const;
 
-function makeReward(s: GameStore): RewardOffer {
+const ITEM_COUNT_WEIGHTS = {
+  combat: { 1: 0.8, 2: 0.2 },
+  elite: { 1: 0.6, 2: 0.3, 3: 0.1 },
+  boss: { 1: 0.3, 2: 0.4, 3: 0.3 },
+} as const;
+
+function makeRewards(s: GameStore): RewardOffer[] {
   const spec = specAt(s);
   const kind = spec?.type === "boss" ? "boss" : spec?.type === "elite" ? "elite" : "combat";
   const table = DROP_RATES[kind];
-  if (s.rand() >= table.chance) return { kind: "none" };
+  if (s.rand() >= table.chance) return [{ kind: "none" }];
 
-  const category = weightedPick(table.weights, s.rand);
   const floorForRoll = kind === "boss" ? s.floor + 5 : s.floor;
   const archetype = encounterArchetype(s.combat?.enemies ?? [], s.rand);
+  const count = Number(weightedPick(ITEM_COUNT_WEIGHTS[kind] as Record<string, number>, s.rand));
 
-  if (category === "card") {
-    const owner = s.character ?? "investigator";
-    return { kind: "card", card: weightedCard(owner, s.rand, archetype) };
+  const rewards: RewardOffer[] = [];
+  for (let i = 0; i < count; i++) {
+    const category = weightedPick(table.weights, s.rand);
+    if (category === "card") {
+      const owner = s.character ?? "investigator";
+      rewards.push({ kind: "card", card: weightedCard(owner, s.rand, archetype) });
+    } else if (category === "rune") {
+      const effect = pick(RUNE_CATALOG, s.rand).effect;
+      rewards.push({ kind: "rune", rune: rollRune(effect, floorForRoll, s.rand) });
+    } else {
+      const defId = pickEquipmentDefId(archetype, s.rand);
+      rewards.push({ kind: "equipment", equipment: rollEquipment(defId, floorForRoll, s.rand, "drop") });
+    }
   }
-  if (category === "rune") {
-    const effect = pick(RUNE_CATALOG, s.rand).effect;
-    return { kind: "rune", rune: rollRune(effect, floorForRoll, s.rand) };
-  }
-  const defId = pickEquipmentDefId(archetype, s.rand);
-  return { kind: "equipment", equipment: rollEquipment(defId, floorForRoll, s.rand, "drop") };
+  return rewards;
 }
 
 export { cardText, canPlay };

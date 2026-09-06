@@ -5,16 +5,20 @@ import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DEMO_MAX_FLOOR, floorKindLabel, layerLabel } from "@/game/floors";
 import { equipmentLabel } from "@/game/equipment";
+import type { RewardOffer } from "@/game/types";
 import { useGame } from "@/game/store";
+import { asset } from "@/lib/asset";
 
 export function RewardView() {
   const reward = useGame((s) => s.reward);
+  const rewardShells = useGame((s) => s.rewardShells);
   const claim = useGame((s) => s.claimReward);
   const floor = useGame((s) => s.floor);
   const runFloors = useGame((s) => s.runFloors);
   if (!reward) return null;
   const spec = runFloors[floor - 1];
   const bossGate = spec?.type === "boss";
+  const items = reward.filter((offer) => offer.kind !== "none");
 
   return (
     <section className="relative min-h-dvh overflow-hidden bg-ink px-4 py-10 font-pixel sm:px-10">
@@ -23,7 +27,7 @@ export function RewardView() {
           {layerLabel(floor)} · {spec ? floorKindLabel(spec.type, floor) : "戦利"}
         </p>
         <h2 className="mt-2 text-3xl text-balance text-white">
-          {reward.kind === "none" ? "何も見つからなかった" : "戦利品を発見"}
+          {items.length === 0 ? "何も見つからなかった" : "戦利品を発見"}
         </h2>
         <p className="mt-2 max-w-lg text-sm text-pretty text-muted">
           {bossGate && floor >= DEMO_MAX_FLOOR
@@ -33,39 +37,22 @@ export function RewardView() {
               : "次の層へ沈む。"}
         </p>
 
-        {reward.kind === "card" ? (
-          <div className="mt-8 flex justify-center">
-            <CardView card={reward.card} playable={false} />
-          </div>
+        {rewardShells > 0 ? (
+          <p className="mt-3 inline-flex items-center gap-1.5 border-2 border-white bg-black px-2 py-1 text-xs tabular-nums text-white">
+            <img src={asset("art/shell.jpg")} alt="" className="size-4 border-2 border-white object-cover" />
+            貝がら +{rewardShells}
+          </p>
         ) : null}
 
-        {reward.kind === "equipment" ? (
-          <div className="mt-5 flex items-center gap-3 border-2 border-white bg-black px-4 py-3">
-            <PixelRelic defId={reward.equipment.defId} className="size-12 shrink-0" />
-            <div>
-              <p className="text-[11px] tracking-widest text-accent">装備</p>
-              <p className="mt-1 text-xl text-white">{equipmentLabel(reward.equipment)}</p>
-              <p className="mt-2 text-xs text-muted">得た瞬間から所持に残る。死んでも失わない。</p>
-            </div>
+        {items.length > 0 ? (
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            {items.map((offer, i) => (
+              <RewardItem key={i} offer={offer} />
+            ))}
           </div>
-        ) : null}
-
-        {reward.kind === "rune" ? (
-          <div className="mt-5 flex items-center gap-3 border-2 border-white bg-black px-4 py-3">
-            <PixelRune effect={reward.rune.effect} className="size-12 shrink-0" />
-            <div>
-              <p className="text-[11px] tracking-widest text-accent">ルーン</p>
-              <p className="mt-1 text-xl text-white">
-                {reward.rune.effect} {reward.rune.value}
-              </p>
-              <p className="mt-2 text-xs text-muted">装備のソケットに嵌めることができる。</p>
-            </div>
-          </div>
-        ) : null}
-
-        {reward.kind === "none" ? (
+        ) : (
           <p className="mt-8 text-center text-sm text-muted">今回は何も落ちていなかった。</p>
-        ) : null}
+        )}
 
         <PixelButton onClick={claim} className="mx-auto mt-8 block">
           次へ進む
@@ -73,4 +60,38 @@ export function RewardView() {
       </PixelWindow>
     </section>
   );
+}
+
+function RewardItem({ offer }: { offer: RewardOffer }) {
+  if (offer.kind === "card") {
+    return <CardView card={offer.card} playable={false} />;
+  }
+
+  if (offer.kind === "equipment") {
+    return (
+      <div className="flex w-64 items-center gap-3 border-2 border-white bg-black px-4 py-3">
+        <PixelRelic defId={offer.equipment.defId} className="size-12 shrink-0" />
+        <div>
+          <p className="text-[11px] tracking-widest text-accent">装備</p>
+          <p className="mt-1 text-xl text-white">{equipmentLabel(offer.equipment)}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (offer.kind === "rune") {
+    return (
+      <div className="flex w-64 items-center gap-3 border-2 border-white bg-black px-4 py-3">
+        <PixelRune effect={offer.rune.effect} className="size-12 shrink-0" />
+        <div>
+          <p className="text-[11px] tracking-widest text-accent">ルーン</p>
+          <p className="mt-1 text-xl text-white">
+            {offer.rune.effect} {offer.rune.value}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
