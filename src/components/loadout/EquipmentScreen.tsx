@@ -2,12 +2,30 @@ import { useState } from "react";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelRune } from "@/components/loadout/PixelRune";
+import { ARCHETYPE_LABELS } from "@/game/cards";
 import { EQUIPMENT, EQUIPMENT_SLOTS, equipmentLabel } from "@/game/equipment";
 import { syncEquippedFromInventory, useGame } from "@/game/store";
+import type { Archetype, EquipmentSlot } from "@/game/types";
 import { peekRune, useCollectionStore } from "@/store/useCollectionStore";
 import { cn } from "@/lib/utils";
 
 const USABLE_RUNE_EFFECTS = new Set(["BLK+", "DRAW", "SAN+", "STR+", "POISON", "HEAL"]);
+
+const EQUIPMENT_ARCHETYPE_LABELS: Partial<Record<Archetype, string>> = {
+  ...ARCHETYPE_LABELS,
+  generic: "汎用",
+};
+
+const FILTERABLE_ARCHETYPES = Array.from(
+  new Set(Object.values(EQUIPMENT).map((d) => d.archetype)),
+) as Archetype[];
+
+function toggleInSet<T>(set: Set<T>, value: T): Set<T> {
+  const next = new Set(set);
+  if (next.has(value)) next.delete(value);
+  else next.add(value);
+  return next;
+}
 
 export function EquipmentScreen() {
   const inventory = useCollectionStore((s) => s.inventory);
@@ -17,6 +35,9 @@ export function EquipmentScreen() {
   const socketRuneToEquipment = useCollectionStore((s) => s.socketRuneToEquipment);
   const unsocketRuneFromEquipment = useCollectionStore((s) => s.unsocketRuneFromEquipment);
   const [activeUid, setActiveUid] = useState<string | null>(null);
+  const [filterArchetypes, setFilterArchetypes] = useState<Set<Archetype>>(new Set());
+  const [filterSlots, setFilterSlots] = useState<Set<EquipmentSlot>>(new Set());
+  const [sortAsc, setSortAsc] = useState(false);
 
   const equippedUids = new Set(
     EQUIPMENT_SLOTS.map((slot) => equipped[slot]?.uid).filter((id): id is string => !!id),
@@ -24,6 +45,17 @@ export function EquipmentScreen() {
   const active = inventory.equipment.find((e) => e.uid === activeUid) ?? null;
   const activeDef = active ? EQUIPMENT[active.defId] : null;
   const usableRunes = inventory.runes.filter((rune) => USABLE_RUNE_EFFECTS.has(rune.effect));
+
+  const filteredEquipment = inventory.equipment.filter((inst) => {
+    const def = EQUIPMENT[inst.defId];
+    if (!def) return false;
+    if (filterArchetypes.size > 0 && !filterArchetypes.has(def.archetype)) return false;
+    if (filterSlots.size > 0 && !filterSlots.has(def.slot)) return false;
+    return true;
+  });
+  const sortedEquipment = [...filteredEquipment].sort((a, b) =>
+    sortAsc ? a.tier - b.tier : b.tier - a.tier,
+  );
 
   return (
     <div className="grid h-full min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-6">
@@ -56,12 +88,73 @@ export function EquipmentScreen() {
           })}
         </ul>
 
-        <p className="mb-2 text-xs tracking-widest text-muted">所持装備 {inventory.equipment.length}</p>
+        <div className="mb-3 space-y-2 border-2 border-accent p-2">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="mr-1 text-[10px] text-white">ジャンル</span>
+            {FILTERABLE_ARCHETYPES.map((a) => (
+              <button
+                key={a}
+                type="button"
+                onClick={() => setFilterArchetypes((s) => toggleInSet(s, a))}
+                className={cn(
+                  "border-2 px-1.5 py-0.5 text-[10px]",
+                  filterArchetypes.has(a) ? "border-white bg-white text-ink" : "border-accent text-white",
+                )}
+              >
+                {EQUIPMENT_ARCHETYPE_LABELS[a] ?? a}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="mr-1 text-[10px] text-white">部位</span>
+            {EQUIPMENT_SLOTS.map((slot) => (
+              <button
+                key={slot}
+                type="button"
+                onClick={() => setFilterSlots((s) => toggleInSet(s, slot))}
+                className={cn(
+                  "border-2 px-1.5 py-0.5 text-[10px]",
+                  filterSlots.has(slot) ? "border-white bg-white text-ink" : "border-accent text-white",
+                )}
+              >
+                {slot}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="mr-1 text-[10px] text-white">並び替え</span>
+            <button
+              type="button"
+              onClick={() => setSortAsc((v) => !v)}
+              className="border-2 border-white bg-white px-1.5 py-0.5 text-[10px] text-ink"
+            >
+              tier{sortAsc ? "低い順" : "高い順"}
+            </button>
+          </div>
+          {filterArchetypes.size + filterSlots.size > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                setFilterArchetypes(new Set());
+                setFilterSlots(new Set());
+              }}
+              className="border-2 border-accent px-1.5 py-0.5 text-[10px] text-white"
+            >
+              フィルターをリセット
+            </button>
+          ) : null}
+        </div>
+
+        <p className="mb-2 text-xs tracking-widest text-muted">
+          所持装備 {sortedEquipment.length}/{inventory.equipment.length}
+        </p>
         {inventory.equipment.length === 0 ? (
           <p className="text-xs text-muted">まだ装備を持っていない。</p>
+        ) : sortedEquipment.length === 0 ? (
+          <p className="text-xs text-muted">条件に合う装備がない。</p>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] justify-items-center gap-2">
-            {inventory.equipment.map((inst) => {
+            {sortedEquipment.map((inst) => {
               const isEquipped = equippedUids.has(inst.uid);
               return (
                 <button
