@@ -40,6 +40,9 @@ type CollectionState = {
   addLootEquipment: (equipment: EquipmentInstance) => void;
   socketRuneToEquipment: (equipmentUid: string, runeId: string, socketIndex: number) => boolean;
   unsocketRuneFromEquipment: (equipmentUid: string, socketIndex: number) => boolean;
+  removeCards: (instanceIds: string[]) => void;
+  removeEquipment: (uids: string[]) => void;
+  removeRunes: (ids: string[]) => void;
 };
 
 const STARTER_CARDS: { id: string; count: number }[] = [
@@ -243,6 +246,47 @@ export const useCollectionStore = create<CollectionState>()(
           runeRegistry: { ...s.runeRegistry, [restored.id]: restored },
         });
         return true;
+      },
+
+      removeCards: (instanceIds) => {
+        const s = get();
+        if (instanceIds.length === 0) return;
+        const removeSet = new Set(instanceIds);
+        const cards = s.inventory.cards.filter((c) => !removeSet.has(c.instanceId));
+        const owned = new Map<string, number>();
+        for (const c of cards) owned.set(c.baseCardId, (owned.get(c.baseCardId) ?? 0) + 1);
+        const decks: Record<string, DeckCounts> = {};
+        for (const [name, counts] of Object.entries(s.decks)) {
+          const next: DeckCounts = {};
+          for (const [cardId, count] of Object.entries(counts)) {
+            const clamped = Math.min(count, owned.get(cardId) ?? 0);
+            if (clamped > 0) next[cardId] = clamped;
+          }
+          decks[name] = next;
+        }
+        set({ inventory: { ...s.inventory, cards }, decks });
+      },
+
+      removeEquipment: (uids) => {
+        if (uids.length === 0) return;
+        const removeSet = new Set(uids);
+        set((s) => ({
+          inventory: {
+            ...s.inventory,
+            equipment: s.inventory.equipment.filter((e) => !removeSet.has(e.uid)),
+          },
+        }));
+      },
+
+      removeRunes: (ids) => {
+        if (ids.length === 0) return;
+        const removeSet = new Set(ids);
+        set((s) => ({
+          inventory: {
+            ...s.inventory,
+            runes: s.inventory.runes.filter((r) => !removeSet.has(r.id)),
+          },
+        }));
       },
     }),
     {

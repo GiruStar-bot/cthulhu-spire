@@ -1,4 +1,4 @@
-import type { CardDef, CardInst, ItemRank, ShopGood, SmithShop, ShopSub } from "./types";
+import type { CardDef, CardInst, EquipmentInstance, ItemRank, Rune, ShopGood, SmithShop, ShopSub } from "./types";
 import { asset } from "@/lib/asset";
 import { EQUIPMENT, rollEquipmentAtTier } from "./equipment";
 import { pick, uid } from "./rng";
@@ -444,4 +444,23 @@ export function rankLabel(rank: ItemRank) {
 export function forgeCard(card: CardInst, taboo: boolean): CardInst {
   const mul = taboo ? 2 : 1.5;
   return { ...card, forge: (card.forge ?? 1) * mul, upgraded: true };
+}
+
+const CARD_SELL_PRICE: Record<string, number> = {
+  starter: 2,
+  common: 5,
+  uncommon: 10,
+  rare: 20,
+};
+
+export function cardSellPrice(card: CardDef): number {
+  return CARD_SELL_PRICE[card.rarity] ?? 0;
+}
+
+export function equipmentSellPrice(inst: EquipmentInstance): number {
+  return inst.tier * 5;
+}
+
+export function runeSellPrice(rune: Rune): number {
+  return rune.value * 3;
 }
