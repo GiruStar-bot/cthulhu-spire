@@ -1,4 +1,5 @@
 import { ARCHETYPE_LABELS, cardCost, cardText, getCard } from "@/game/cards";
+import { PanelCorners } from "@/components/ui/PanelCorners";
 import { PixelSprite } from "@/components/ui/PixelSprite";
 import type { CardInst } from "@/game/types";
 import { cn } from "@/lib/utils";
@@ -36,14 +37,16 @@ export function CardView({
       className={cn(
         "relative flex shrink-0 flex-col overflow-hidden border-2 bg-ink-2 text-left font-pixel",
         borderColor,
-        "transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
+        "transition-[transform,box-shadow,filter] duration-100",
         compact ? "h-48 w-32" : "h-64 w-40 sm:h-72 sm:w-48",
         selected ? "-translate-y-2" : "",
         playable && onClick ? "hover:-translate-y-1.5" : "",
+        onClick ? "active:translate-y-[1px] active:brightness-90" : "",
         !playable && onClick ? "opacity-55" : "",
         d.type === "status" ? "grayscale" : "",
       )}
     >
+      <PanelCorners className={compact ? "size-4" : "size-5"} />
       <div className="flex shrink-0 items-center justify-between gap-1 border-b-2 border-border bg-ink-2 px-1 py-0.5">
         <p className={cn("min-w-0 truncate text-white", compact ? "text-xs" : "text-sm")}>
           {d.name}

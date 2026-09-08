@@ -162,6 +162,7 @@ function HeroSlot({
         "panel relative flex size-16 shrink-0 flex-col justify-end overflow-hidden sm:size-[5.5rem]",
         inst ? "border-accent" : "opacity-50",
         selected ? "panel-active" : "hover:border-white/60",
+        "transition-[transform,filter] duration-100 active:translate-y-[1px] active:brightness-90",
       )}
     >
       <span className="absolute top-1 left-1 z-10 text-[9px] text-muted">{SLOT_LABEL[slot]}</span>
@@ -200,8 +201,9 @@ function InventoryTile({
       onClick={onClick}
       title={def.name}
       className={cn(
-        "panel relative aspect-square overflow-hidden transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
+        "panel relative aspect-square overflow-hidden transition-[transform,filter] duration-100",
         selected ? "-translate-y-1 border-accent" : "hover:-translate-y-0.5 hover:border-white/60",
+        "active:translate-y-[1px] active:brightness-90",
       )}
     >
       <PixelRelic defId={def.id} className="absolute inset-0 size-full object-cover" />

@@ -140,6 +140,7 @@ function DeckSelectPanel() {
               onClick={() => setActiveDeck(name)}
               className={cn(
                 "panel flex items-center justify-between px-3 py-2 text-left font-pixel text-xs hover:border-white/60",
+                "transition-[transform,box-shadow,filter] duration-100 active:translate-y-[2px] active:shadow-none active:brightness-90",
                 name === activeDeck && "border-white bg-white text-ink hover:border-white",
               )}
             >
