@@ -289,6 +289,10 @@ export function startCombat(
   if (eq.sanFullRestoreOnStart) {
     player.sanity = player.maxSanity;
   }
+  if (eq.hpPercentHealOnStart) {
+    const healN = Math.floor(player.maxHp * 0.1);
+    player.hp = Math.min(player.maxHp, player.hp + healN);
+  }
   const outerBonus = c.synergy?.archetype === "outer" ? c.synergy.tier : 0;
   drawCards(c, baseDrawCount(c) + outerBonus, rand, player);
   if (player.sanity <= 0) {

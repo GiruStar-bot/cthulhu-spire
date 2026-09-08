@@ -244,6 +244,7 @@ export interface EquipmentStats {
   blockRetain: boolean;
   sanFullRestoreOnStart: boolean;
   expandedHand: boolean;
+  hpPercentHealOnStart: boolean;
   strength: number;
   drawBonus: number;
   healPerTurn: number;

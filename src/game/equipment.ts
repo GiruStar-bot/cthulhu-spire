@@ -284,6 +284,51 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     sockets: 1,
     baseDraw: 1,
   },
+  abyssal_hood: {
+    id: "abyssal_hood",
+    name: "深海の頭巾",
+    slot: "head",
+    archetype: "deep",
+    art: asset("art/pixel/equipment/abyssal_hood.jpg"),
+    sockets: 1,
+    baseHeal: 2,
+  },
+  abyssal_coat: {
+    id: "abyssal_coat",
+    name: "深海の外套",
+    slot: "chest",
+    archetype: "deep",
+    art: asset("art/pixel/equipment/abyssal_coat.jpg"),
+    sockets: 2,
+    baseHeal: 3,
+  },
+  abyssal_bracers: {
+    id: "abyssal_bracers",
+    name: "深海の腕当て",
+    slot: "arms",
+    archetype: "deep",
+    art: asset("art/pixel/equipment/abyssal_bracers.jpg"),
+    sockets: 1,
+    baseHeal: 2,
+  },
+  abyssal_leggings: {
+    id: "abyssal_leggings",
+    name: "深海の脚衣",
+    slot: "legs",
+    archetype: "deep",
+    art: asset("art/pixel/equipment/abyssal_leggings.jpg"),
+    sockets: 1,
+    baseHeal: 2,
+  },
+  abyssal_boots: {
+    id: "abyssal_boots",
+    name: "深海の靴",
+    slot: "feet",
+    archetype: "deep",
+    art: asset("art/pixel/equipment/abyssal_boots.jpg"),
+    sockets: 1,
+    baseHeal: 1,
+  },
 };
 
 export const EQUIPMENT_SLOTS: EquipmentSlot[] = ["head", "chest", "arms", "legs", "feet"];
@@ -425,6 +470,7 @@ export function computeEquipmentStats(
     blockRetain: false,
     sanFullRestoreOnStart: false,
     expandedHand: false,
+    hpPercentHealOnStart: false,
     strength: 0,
     drawBonus: 0,
     healPerTurn: 0,
@@ -524,6 +570,9 @@ export function computeEquipmentStats(
   }
   if (hasFullSet(equipped, "elder")) {
     stats.expandedHand = true;
+  }
+  if (hasFullSet(equipped, "deep")) {
+    stats.hpPercentHealOnStart = true;
   }
 
   return stats;
