@@ -4,12 +4,13 @@ import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelRune } from "@/components/loadout/PixelRune";
 import { ARCHETYPE_LABELS } from "@/game/cards";
 import { EQUIPMENT, EQUIPMENT_SLOTS, equipmentLabel } from "@/game/equipment";
+import { RUNE_CATALOG } from "@/game/runes";
 import { syncEquippedFromInventory, useGame } from "@/game/store";
 import type { Archetype, EquipmentSlot } from "@/game/types";
 import { peekRune, useCollectionStore } from "@/store/useCollectionStore";
 import { cn } from "@/lib/utils";
 
-const USABLE_RUNE_EFFECTS = new Set(["BLK+", "DRAW", "SAN+", "STR+", "POISON", "HEAL"]);
+const USABLE_RUNE_EFFECTS = new Set(RUNE_CATALOG.map((r) => r.effect));
 
 const EQUIPMENT_ARCHETYPE_LABELS: Partial<Record<Archetype, string>> = {
   ...ARCHETYPE_LABELS,
