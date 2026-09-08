@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelRune } from "@/components/loadout/PixelRune";
 import { ARCHETYPE_LABELS } from "@/game/cards";
-import { EQUIPMENT, EQUIPMENT_SLOTS, equipmentLabel, hasFullSet } from "@/game/equipment";
+import { EQUIPMENT, EQUIPMENT_SLOTS, hasFullSet } from "@/game/equipment";
 import { syncEquippedFromInventory, useGame } from "@/game/store";
 import type { Archetype, EquipmentInstance, EquipmentSlot } from "@/game/types";
 import { peekRune, useCollectionStore } from "@/store/useCollectionStore";
@@ -70,6 +70,17 @@ const FULLSET_DESCRIPTIONS: Partial<Record<Archetype, string>> = {
   fanatic: "正気が尽きても、一度だけ力尽きずに耐える。",
 };
 
+const ARCHETYPE_GLOW_COLOR: Partial<Record<Archetype, string>> = {
+  fanatic: "#ff6b5c",
+  knight: "#8fd6ff",
+  poison: "#7dd957",
+  outer: "#b06bff",
+  elder: "#e8c34a",
+  deep: "#5eead4",
+  offering: "#ff6ea8",
+  shadow: "#9b8cff",
+};
+
 function toggleInSet<T>(set: Set<T>, value: T): Set<T> {
   const next = new Set(set);
   if (next.has(value)) next.delete(value);
@@ -83,18 +94,6 @@ function runeEffectsOf(inst: EquipmentInstance): string[] {
     .filter((e): e is string => !!e);
 }
 
-function countArchetypeEquipped(
-  equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>,
-  archetype: Archetype,
-): number {
-  let n = 0;
-  for (const slot of EQUIPMENT_SLOTS) {
-    const inst = equipped[slot];
-    if (inst && EQUIPMENT[inst.defId]?.archetype === archetype) n++;
-  }
-  return n;
-}
-
 function RuneDot({ effect, size = "sm" }: { effect: string; size?: "sm" | "md" }) {
   return (
     <span
@@ -105,15 +104,48 @@ function RuneDot({ effect, size = "sm" }: { effect: string; size?: "sm" | "md" }
   );
 }
 
+function FullSetDots({
+  archetype,
+  equipped,
+  size = "sm",
+}: {
+  archetype: Archetype;
+  equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>;
+  size?: "sm" | "md";
+}) {
+  const color = ARCHETYPE_GLOW_COLOR[archetype] ?? "#5eead4";
+  return (
+    <div className="flex gap-1.5">
+      {EQUIPMENT_SLOTS.map((slot) => {
+        const inst = equipped[slot];
+        const filled = !!inst && EQUIPMENT[inst.defId]?.archetype === archetype;
+        return (
+          <span
+            key={slot}
+            className={cn(
+              "block rounded-full border",
+              size === "sm" ? "size-2" : "size-2.5",
+              filled ? "border-transparent" : "border-muted/50 bg-transparent",
+            )}
+            style={filled ? { background: color, boxShadow: `0 0 5px 1px ${color}` } : undefined}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function HeroSlot({
   slot,
   inst,
   selected,
+  glowColor,
   onClick,
 }: {
   slot: EquipmentSlot;
   inst: EquipmentInstance | undefined;
   selected: boolean;
+  glowColor?: string;
   onClick: () => void;
 }) {
   const def = inst ? EQUIPMENT[inst.defId] : null;
@@ -124,6 +156,7 @@ function HeroSlot({
       disabled={!inst}
       onClick={onClick}
       title={def?.name}
+      style={glowColor ? { boxShadow: `0 0 0 2px ${glowColor}, 0 0 10px 2px ${glowColor}` } : undefined}
       className={cn(
         "relative flex size-16 shrink-0 flex-col justify-end overflow-hidden border-2 bg-ink-2 sm:size-[5.5rem]",
         inst ? "border-accent" : "border-border opacity-50",
@@ -243,7 +276,6 @@ export function EquipmentScreen() {
   }, [equipped]);
   const topArchetypeFull = topArchetype ? hasFullSet(equipped, topArchetype.archetype) : false;
 
-  const activeArchetypeCount = activeDef ? countArchetypeEquipped(equipped, activeDef.archetype) : 0;
   const activeArchetypeFull = activeDef ? hasFullSet(equipped, activeDef.archetype) : false;
 
   return (
@@ -254,12 +286,17 @@ export function EquipmentScreen() {
           <div className="flex gap-2">
             {EQUIPMENT_SLOTS.map((slot) => {
               const inst = equipped[slot];
+              const glow =
+                topArchetypeFull && topArchetype && inst && EQUIPMENT[inst.defId]?.archetype === topArchetype.archetype
+                  ? (ARCHETYPE_GLOW_COLOR[topArchetype.archetype] ?? "#5eead4")
+                  : undefined;
               return (
                 <HeroSlot
                   key={slot}
                   slot={slot}
                   inst={inst}
                   selected={inst?.uid === activeUid}
+                  glowColor={glow}
                   onClick={() => inst && setActiveUid(inst.uid)}
                 />
               );
@@ -270,24 +307,21 @@ export function EquipmentScreen() {
               <>
                 <p className="text-[11px] text-white">
                   <span className="text-accent">{EQUIPMENT_ARCHETYPE_LABELS[topArchetype.archetype] ?? topArchetype.archetype}</span>{" "}
-                  {topArchetype.count}/5{" "}
-                  {topArchetypeFull ? (
-                    <>そろっています → 全身加護「{FULLSET_DESCRIPTIONS[topArchetype.archetype] ?? "効果なし"}」発動中</>
-                  ) : (
-                    <>→ あと{5 - topArchetype.count}部位</>
-                  )}
+                  全身セット
                 </p>
-                <div className="mt-1.5 h-1.5 w-48 max-w-full bg-ink">
-                  <div
-                    className="h-full bg-accent"
-                    style={{ width: `${Math.round((topArchetype.count / 5) * 100)}%` }}
-                  />
+                <div className="mt-1.5">
+                  <FullSetDots archetype={topArchetype.archetype} equipped={equipped} />
                 </div>
+                {topArchetypeFull ? (
+                  <p className="mt-1.5 text-[11px] text-accent">
+                    全身加護「{FULLSET_DESCRIPTIONS[topArchetype.archetype] ?? "効果なし"}」発動中
+                  </p>
+                ) : null}
               </>
             ) : (
               <p className="text-[11px] text-muted">
                 {topArchetype
-                  ? "特定ジャンルの装備を5部位そろえると全身加護が発動する。"
+                  ? "装備の系統をそろえると全身加護が発動する。"
                   : "装備を身につけると、ここに系統ボーナスが表示されます。"}
               </p>
             )}
@@ -295,7 +329,7 @@ export function EquipmentScreen() {
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[21rem_1fr_18rem]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[1fr_420px_16rem]">
         <aside className="flex min-h-0 flex-col overflow-hidden border-b-2 border-border lg:border-r-2 lg:border-b-0">
           <div className="panel m-2 space-y-2 border-accent p-2">
             <div className="flex flex-wrap items-center gap-1">
@@ -378,11 +412,11 @@ export function EquipmentScreen() {
           </div>
         </aside>
 
-        <section className="min-h-0 overflow-y-auto border-b-2 border-border p-3 lg:border-r-2 lg:border-b-0">
+        <section className="min-h-0 overflow-y-auto border-b-2 border-border p-2.5 lg:border-r-2 lg:border-b-0">
           {active && activeDef ? (
             <>
-              <div className="flex items-start gap-3">
-                <div className="relative size-20 shrink-0 overflow-hidden border-2 border-parchment bg-ink-2 sm:size-24">
+              <div className="flex items-start gap-2.5">
+                <div className="relative size-16 shrink-0 overflow-hidden border-2 border-parchment bg-ink-2 sm:size-20">
                   <PixelRelic defId={activeDef.id} className="absolute inset-0 size-full object-cover" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -411,7 +445,7 @@ export function EquipmentScreen() {
                     ].filter((r) => r.value > 0);
                     if (baseRows.length === 0 && bonusRows.length === 0) return null;
                     return (
-                      <div className="mt-2 flex flex-wrap gap-1">
+                      <div className="mt-1.5 flex flex-wrap gap-1">
                         {baseRows.map((r) => (
                           <span key={`base-${r.label}`} className="panel px-1.5 py-0.5 text-[10px] text-white">
                             {r.label}
@@ -429,7 +463,7 @@ export function EquipmentScreen() {
                       </div>
                     );
                   })()}
-                  <div className="mt-2">
+                  <div className="mt-1.5">
                     {equippedUids.has(active.uid) ? (
                       <button
                         type="button"
@@ -451,7 +485,7 @@ export function EquipmentScreen() {
                 </div>
               </div>
 
-              <p className="mt-4 mb-2 text-[10px] tracking-widest text-muted">
+              <p className="mt-3 mb-1.5 text-[10px] tracking-widest text-muted">
                 ソケット（{active.socketedRunes.filter((r) => r).length}/{active.socketedRunes.length}）
               </p>
               <div className="flex flex-wrap gap-2">
@@ -465,13 +499,13 @@ export function EquipmentScreen() {
                       syncEquippedFromInventory(active.uid);
                     }}
                     className={cn(
-                      "panel grid size-14 place-items-center",
+                      "panel grid size-12 place-items-center",
                       !runeId && "border-dashed",
                     )}
                     title={runeId ? "クリックで外す" : "空きソケット"}
                   >
                     {runeId ? (
-                      <PixelRune effect={peekRune(runeId)?.effect ?? "ATK+"} className="size-8" />
+                      <PixelRune effect={peekRune(runeId)?.effect ?? "ATK+"} className="size-7" />
                     ) : (
                       <span className="text-xs text-muted">空</span>
                     )}
@@ -479,12 +513,14 @@ export function EquipmentScreen() {
                 ))}
               </div>
 
-              <div className="panel mt-4 p-2">
-                <p className={cn("mb-1 text-[11px]", activeArchetypeFull ? "text-accent" : "text-muted")}>
-                  {EQUIPMENT_ARCHETYPE_LABELS[activeDef.archetype] ?? activeDef.archetype} 全身セット {activeArchetypeCount}/5
-                  {activeArchetypeFull ? " ✓" : ""}
-                </p>
-                <p className="text-[11px] text-white/80">
+              <div className="panel mt-3 p-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className={cn("text-[11px]", activeArchetypeFull ? "text-accent" : "text-muted")}>
+                    {EQUIPMENT_ARCHETYPE_LABELS[activeDef.archetype] ?? activeDef.archetype} 全身セット
+                  </p>
+                  <FullSetDots archetype={activeDef.archetype} equipped={equipped} />
+                </div>
+                <p className="mt-1 text-[11px] text-white/80">
                   {FULLSET_DESCRIPTIONS[activeDef.archetype] ?? "このジャンルに全身セット効果はない。"}
                 </p>
               </div>
