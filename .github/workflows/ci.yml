@@ -25,5 +25,14 @@ jobs:
       - name: 型チェック（tsc --noEmit）
         run: npm run typecheck
 
+      - name: ビルド情報を取得
+        id: buildinfo
+        run: |
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "time=$(date -u +'%Y-%m-%d %H:%M UTC')" >> "$GITHUB_OUTPUT"
+
       - name: 本番ビルド確認
         run: npm run build
+        env:
+          VITE_COMMIT_SHA: ${{ steps.buildinfo.outputs.sha }}
+          VITE_BUILD_TIME: ${{ steps.buildinfo.outputs.time }}

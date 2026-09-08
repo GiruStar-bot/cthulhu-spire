@@ -22,9 +22,16 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
+      - name: ビルド情報を取得
+        id: buildinfo
+        run: |
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "time=$(date -u +'%Y-%m-%d %H:%M UTC')" >> "$GITHUB_OUTPUT"
       - run: npm run build
         env:
           VITE_BASE: /cthulhu-spire/
+          VITE_COMMIT_SHA: ${{ steps.buildinfo.outputs.sha }}
+          VITE_BUILD_TIME: ${{ steps.buildinfo.outputs.time }}
       - name: Prepare Pages files
         run: |
           cp dist/index.html dist/404.html

@@ -69,6 +69,9 @@ export function TitleScreen() {
       </div>
       {sheet === "settings" ? <SettingsPanel onClose={() => setSheet(null)} /> : null}
       {sheet === "credits" ? <CreditsPanel onClose={() => setSheet(null)} /> : null}
+      <div className="pointer-events-none absolute bottom-1 left-1 z-10 font-pixel text-[9px] text-white/40">
+        {import.meta.env.VITE_COMMIT_SHA ?? "dev"} · {import.meta.env.VITE_BUILD_TIME ?? "local"}
+      </div>
     </section>
   );
 }
