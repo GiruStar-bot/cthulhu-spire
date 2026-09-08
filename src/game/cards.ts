@@ -1072,7 +1072,9 @@ const AI_TRANSLATABLE = new Set([
 ]);
 
 function hasTranslatableEffect(card: CardDef): boolean {
-  return card.effects.some(
+  const effects = [...(card.effects ?? []), ...(card.upgradedEffects ?? [])];
+  if (effects.some((e) => e.t === "draw")) return false;
+  return effects.some(
     (e) =>
       AI_TRANSLATABLE.has(e.t) ||
       (e.t === "sanity" && typeof e.n === "number" && e.n < 0),
