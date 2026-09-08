@@ -223,6 +223,7 @@ export interface EquipmentDef {
   baseStrength?: number;
   baseDraw?: number;
   baseHeal?: number;
+  baseThorn?: number;
 }
 
 export interface EquipmentInstance {
@@ -245,6 +246,7 @@ export interface EquipmentStats {
   sanFullRestoreOnStart: boolean;
   expandedHand: boolean;
   hpPercentHealOnStart: boolean;
+  sacrificeEnergyOnStart: boolean;
   strength: number;
   drawBonus: number;
   healPerTurn: number;

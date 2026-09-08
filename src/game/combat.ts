@@ -293,6 +293,11 @@ export function startCombat(
     const healN = Math.floor(player.maxHp * 0.1);
     player.hp = Math.min(player.maxHp, player.hp + healN);
   }
+  if (eq.sacrificeEnergyOnStart) {
+    const cost = Math.max(1, Math.floor(player.maxHp * 0.1));
+    player.hp = Math.max(1, player.hp - cost);
+    c.energy += 1;
+  }
   const outerBonus = c.synergy?.archetype === "outer" ? c.synergy.tier : 0;
   drawCards(c, baseDrawCount(c) + outerBonus, rand, player);
   if (player.sanity <= 0) {

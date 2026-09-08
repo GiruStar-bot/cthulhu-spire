@@ -329,6 +329,51 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     sockets: 1,
     baseHeal: 1,
   },
+  offering_headdress: {
+    id: "offering_headdress",
+    name: "供物の頭飾り",
+    slot: "head",
+    archetype: "offering",
+    art: asset("art/pixel/equipment/offering_headdress.jpg"),
+    sockets: 1,
+    baseThorn: 2,
+  },
+  offering_vestment: {
+    id: "offering_vestment",
+    name: "供物の法衣",
+    slot: "chest",
+    archetype: "offering",
+    art: asset("art/pixel/equipment/offering_vestment.jpg"),
+    sockets: 2,
+    baseThorn: 3,
+  },
+  offering_bangle: {
+    id: "offering_bangle",
+    name: "供物の腕輪",
+    slot: "arms",
+    archetype: "offering",
+    art: asset("art/pixel/equipment/offering_bangle.jpg"),
+    sockets: 1,
+    baseThorn: 2,
+  },
+  offering_leggings: {
+    id: "offering_leggings",
+    name: "供物の脚衣",
+    slot: "legs",
+    archetype: "offering",
+    art: asset("art/pixel/equipment/offering_leggings.jpg"),
+    sockets: 1,
+    baseThorn: 2,
+  },
+  offering_sandals: {
+    id: "offering_sandals",
+    name: "供物の靴",
+    slot: "feet",
+    archetype: "offering",
+    art: asset("art/pixel/equipment/offering_sandals.jpg"),
+    sockets: 1,
+    baseThorn: 1,
+  },
 };
 
 export const EQUIPMENT_SLOTS: EquipmentSlot[] = ["head", "chest", "arms", "legs", "feet"];
@@ -471,6 +516,7 @@ export function computeEquipmentStats(
     sanFullRestoreOnStart: false,
     expandedHand: false,
     hpPercentHealOnStart: false,
+    sacrificeEnergyOnStart: false,
     strength: 0,
     drawBonus: 0,
     healPerTurn: 0,
@@ -493,6 +539,7 @@ export function computeEquipmentStats(
     stats.strength += (def.baseStrength ?? 0) * power;
     stats.drawBonus += (def.baseDraw ?? 0) * power;
     stats.healPerTurn += (def.baseHeal ?? 0) * power;
+    stats.thornDamage += (def.baseThorn ?? 0) * power;
 
     const bonus = inst.bonusStats ?? {};
     if (bonus.strength) stats.strength += bonus.strength;
@@ -573,6 +620,9 @@ export function computeEquipmentStats(
   }
   if (hasFullSet(equipped, "deep")) {
     stats.hpPercentHealOnStart = true;
+  }
+  if (hasFullSet(equipped, "offering")) {
+    stats.sacrificeEnergyOnStart = true;
   }
 
   return stats;
