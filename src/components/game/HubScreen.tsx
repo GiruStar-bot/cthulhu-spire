@@ -49,9 +49,11 @@ export function HubScreen() {
 
       <header className="relative z-10 flex h-12 shrink-0 items-center gap-3 border-b-2 border-border bg-ink-2 px-3">
         <span className="truncate text-sm tracking-widest">{playerName.trim() || profile.playerName || "無名"}</span>
-        <span className="hidden text-xs tabular-nums text-muted sm:inline">
-          HP {vitals.maxHp} · SAN {vitals.maxSanity} · 貝殻 {shells}
-        </span>
+        {tab === "descend" ? (
+          <span className="hidden text-xs tabular-nums text-muted sm:inline">
+            HP {vitals.maxHp} · SAN {vitals.maxSanity} · 貝殻 {shells}
+          </span>
+        ) : null}
         <span className="ml-auto text-xs tabular-nums text-muted">
           {checkpoint ? layerLabel(floor) : `最深 ${profile.bestFloor ? layerLabel(profile.bestFloor) : "—"}`} · デッキ {deckCount}/20
         </span>
@@ -67,13 +69,13 @@ export function HubScreen() {
       </header>
 
       <div className="relative z-10 flex min-h-0 flex-1">
-        <nav className="flex w-36 shrink-0 flex-col gap-1 border-r-2 border-border bg-ink-2 p-2 sm:w-44">
+        <nav className="flex w-24 shrink-0 flex-col gap-1 border-r-2 border-border bg-ink-2 p-1 sm:w-28 sm:p-2">
           {NAV.map((item) => (
             <PixelButton
               key={item.id}
               onClick={() => setTab(item.id)}
               className={cn(
-                "w-full px-2 py-2 text-left text-xs",
+                "w-full whitespace-nowrap px-1 py-2 text-left text-[10px] sm:px-1.5 sm:text-xs",
                 tab === item.id && "bg-white text-black",
               )}
             >

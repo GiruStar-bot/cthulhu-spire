@@ -31,7 +31,7 @@ export function CollectionCard({
         "relative rounded-none",
         size === "sm" && "w-32",
         size === "md" && "w-36",
-        size === "lg" && "w-64 sm:w-72",
+        size === "lg" && "w-44 sm:w-48",
         dim && "opacity-40",
         selected && "outline-2 outline-offset-2 outline-white",
       )}
@@ -40,7 +40,7 @@ export function CollectionCard({
         className={cn(
           size === "sm" && "[&>*]:!h-48 [&>*]:!w-32",
           size === "md" && "[&>*]:!h-48 [&>*]:!w-36",
-          size === "lg" && "[&>*]:!h-[26rem] [&>*]:!w-64 sm:[&>*]:!h-[31rem] sm:[&>*]:!w-72",
+          size === "lg" && "[&>*]:!h-64 [&>*]:!w-44 sm:[&>*]:!h-72 sm:[&>*]:!w-48",
         )}
       >
         <CardView card={card} compact={size !== "lg"} selected={selected} playable={!dim} onClick={onClick} />
@@ -51,7 +51,7 @@ export function CollectionCard({
             "pointer-events-none absolute bottom-0 right-0 z-10 px-1 font-pixel text-[10px]",
             copies >= (copiesMax ?? COPY_LIMIT)
               ? "border-2 border-white bg-white text-black shadow-[2px_2px_0_0_#000]"
-              : "panel text-white",
+              : "border-2 border-parchment/70 bg-ink text-white shadow-[2px_2px_0_0_#000]",
           )}
         >
           {copies}/{copiesMax ?? COPY_LIMIT}
