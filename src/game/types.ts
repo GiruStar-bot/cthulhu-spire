@@ -247,6 +247,7 @@ export interface EquipmentStats {
   expandedHand: boolean;
   hpPercentHealOnStart: boolean;
   sacrificeEnergyOnStart: boolean;
+  intangibleOnHit: boolean;
   strength: number;
   drawBonus: number;
   healPerTurn: number;

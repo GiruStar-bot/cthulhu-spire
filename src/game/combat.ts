@@ -695,6 +695,9 @@ function applyEnemyIntent(
         e.hp = Math.max(0, e.hp - c.equipmentStats.thornDamage);
         c.floaters.push(floater(`-${c.equipmentStats.thornDamage}`, "dmg", e.uid));
       }
+      if (c.equipmentStats.intangibleOnHit && reducedHp > 0 && c.intangible === 0) {
+        c.intangible += 1;
+      }
     }
     c.log.push(`${getEnemy(e.defId).name}が${totalDealt}ダメージ。`);
   }

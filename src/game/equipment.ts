@@ -374,6 +374,51 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     sockets: 1,
     baseThorn: 1,
   },
+  umbral_hood: {
+    id: "umbral_hood",
+    name: "闇の頭巾",
+    slot: "head",
+    archetype: "shadow",
+    art: asset("art/pixel/equipment/umbral_hood.jpg"),
+    sockets: 1,
+    baseDefense: 2,
+  },
+  umbral_wrap: {
+    id: "umbral_wrap",
+    name: "闇の衣",
+    slot: "chest",
+    archetype: "shadow",
+    art: asset("art/pixel/equipment/umbral_wrap.jpg"),
+    sockets: 2,
+    baseDefense: 3,
+  },
+  umbral_gloves: {
+    id: "umbral_gloves",
+    name: "闇の手袋",
+    slot: "arms",
+    archetype: "shadow",
+    art: asset("art/pixel/equipment/umbral_gloves.jpg"),
+    sockets: 1,
+    baseDefense: 2,
+  },
+  umbral_leggings: {
+    id: "umbral_leggings",
+    name: "闇の脚衣",
+    slot: "legs",
+    archetype: "shadow",
+    art: asset("art/pixel/equipment/umbral_leggings.jpg"),
+    sockets: 1,
+    baseDefense: 2,
+  },
+  umbral_boots: {
+    id: "umbral_boots",
+    name: "闇の靴",
+    slot: "feet",
+    archetype: "shadow",
+    art: asset("art/pixel/equipment/umbral_boots.jpg"),
+    sockets: 1,
+    baseDefense: 1,
+  },
 };
 
 export const EQUIPMENT_SLOTS: EquipmentSlot[] = ["head", "chest", "arms", "legs", "feet"];
@@ -517,6 +562,7 @@ export function computeEquipmentStats(
     expandedHand: false,
     hpPercentHealOnStart: false,
     sacrificeEnergyOnStart: false,
+    intangibleOnHit: false,
     strength: 0,
     drawBonus: 0,
     healPerTurn: 0,
@@ -623,6 +669,9 @@ export function computeEquipmentStats(
   }
   if (hasFullSet(equipped, "offering")) {
     stats.sacrificeEnergyOnStart = true;
+  }
+  if (hasFullSet(equipped, "shadow")) {
+    stats.intangibleOnHit = true;
   }
 
   return stats;
