@@ -243,6 +243,7 @@ export interface EquipmentStats {
   poisonImmune: boolean;
   blockRetain: boolean;
   sanFullRestoreOnStart: boolean;
+  expandedHand: boolean;
   strength: number;
   drawBonus: number;
   healPerTurn: number;

@@ -239,6 +239,51 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     sockets: 1,
     baseSanResist: 2,
   },
+  ancient_helm: {
+    id: "ancient_helm",
+    name: "太古の兜",
+    slot: "head",
+    archetype: "elder",
+    art: asset("art/pixel/equipment/ancient_helm.jpg"),
+    sockets: 1,
+    baseDraw: 2,
+  },
+  ancient_robe: {
+    id: "ancient_robe",
+    name: "太古の法衣",
+    slot: "chest",
+    archetype: "elder",
+    art: asset("art/pixel/equipment/ancient_robe.jpg"),
+    sockets: 2,
+    baseDraw: 2,
+  },
+  ancient_vambrace: {
+    id: "ancient_vambrace",
+    name: "太古の腕甲",
+    slot: "arms",
+    archetype: "elder",
+    art: asset("art/pixel/equipment/ancient_vambrace.jpg"),
+    sockets: 1,
+    baseDraw: 2,
+  },
+  ancient_leggings: {
+    id: "ancient_leggings",
+    name: "太古の脚衣",
+    slot: "legs",
+    archetype: "elder",
+    art: asset("art/pixel/equipment/ancient_leggings.jpg"),
+    sockets: 1,
+    baseDraw: 1,
+  },
+  ancient_boots: {
+    id: "ancient_boots",
+    name: "太古の靴",
+    slot: "feet",
+    archetype: "elder",
+    art: asset("art/pixel/equipment/ancient_boots.jpg"),
+    sockets: 1,
+    baseDraw: 1,
+  },
 };
 
 export const EQUIPMENT_SLOTS: EquipmentSlot[] = ["head", "chest", "arms", "legs", "feet"];
@@ -379,6 +424,7 @@ export function computeEquipmentStats(
     poisonImmune: false,
     blockRetain: false,
     sanFullRestoreOnStart: false,
+    expandedHand: false,
     strength: 0,
     drawBonus: 0,
     healPerTurn: 0,
@@ -475,6 +521,9 @@ export function computeEquipmentStats(
   }
   if (hasFullSet(equipped, "outer")) {
     stats.sanFullRestoreOnStart = true;
+  }
+  if (hasFullSet(equipped, "elder")) {
+    stats.expandedHand = true;
   }
 
   return stats;

@@ -156,9 +156,10 @@ function baseDrawCount(c: CombatState): number {
 }
 
 export function drawCards(c: CombatState, n: number, rand: () => number, player?: PlayerHook) {
+  const handLimit = c.equipmentStats.expandedHand ? 12 : 10;
   let drawn = 0;
   while (drawn < n) {
-    if (c.hand.length >= 10) break;
+    if (c.hand.length >= handLimit) break;
     if (c.draw.length === 0) {
       if (c.discard.length === 0) break;
       c.draw = shuffle(c.discard, rand);
