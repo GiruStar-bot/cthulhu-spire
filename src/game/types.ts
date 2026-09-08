@@ -71,7 +71,8 @@ export type Effect =
   | { t: "thornsVulnerable"; n: number }
   | { t: "loseMaxHpHalf" }
   | { t: "curePoison" }
-  | { t: "hpCostHalf" };
+  | { t: "hpCostHalf" }
+  | { t: "seal"; value: "attack" | "skill" };
 
 export type PowerId = "resolve" | "echo" | "bloodOath";
 
@@ -131,7 +132,7 @@ export interface EnemyDef {
   archetype?: Archetype;
 }
 
-export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "seal" | "split" | "flee";
+export type EnemyTrait = "choir" | "nurse" | "liar" | "bell" | "split" | "flee";
 
 export interface Intent {
   kind: IntentKind;

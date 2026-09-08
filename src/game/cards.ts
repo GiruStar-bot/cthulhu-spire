@@ -1048,6 +1048,42 @@ export const CARDS: Record<string, CardDef> = {
     effects: [{ t: "damage", n: 25 }, { t: "vulnerable", n: 2 }],
     upgradedEffects: [{ t: "damage", n: 32 }, { t: "vulnerable", n: 3 }],
   },
+  evil_eye_bind: {
+    id: "evil_eye_bind",
+    name: "邪視の呪縛",
+    type: "skill",
+    aiTag: "effect",
+    archetype: "shadow",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "相手の攻撃を封じる。弱体1を与える。",
+    upgradedText: "相手の攻撃を封じる。弱体2を与える。",
+    flavor: "千の仮面が見つめる先で、剣は震え、動けなくなる。",
+    art: asset("art/pixel/cards/evil_eye_bind.jpg"),
+    target: "enemy",
+    effects: [{ t: "seal", value: "attack" }, { t: "weak", n: 1 }],
+    upgradedEffects: [{ t: "seal", value: "attack" }, { t: "weak", n: 2 }],
+  },
+  silent_bind: {
+    id: "silent_bind",
+    name: "沈黙の呪縛",
+    type: "skill",
+    aiTag: "effect",
+    archetype: "shadow",
+    cost: 1,
+    rarity: "rare",
+    owner: "shared",
+    enemyOnly: true,
+    text: "相手の技能を封じる。",
+    upgradedText: "相手の技能を封じる。ブロック5を得る。",
+    flavor: "言葉は喉の奥で、形を失う。",
+    art: asset("art/pixel/cards/silent_bind.jpg"),
+    target: "enemy",
+    effects: [{ t: "seal", value: "skill" }],
+    upgradedEffects: [{ t: "seal", value: "skill" }, { t: "block", n: 5 }],
+  },
 };
 
 Object.assign(CARDS, SHOP_CARDS);
@@ -1076,6 +1112,7 @@ function hasTranslatableEffect(card: CardDef): boolean {
   if (effects.some((e) => e.t === "draw")) return false;
   return effects.some(
     (e) =>
+      e.t === "seal" ||
       AI_TRANSLATABLE.has(e.t) ||
       (e.t === "sanity" && typeof e.n === "number" && e.n < 0),
   );

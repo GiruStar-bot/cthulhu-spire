@@ -92,6 +92,10 @@ export function cardToIntent(card: CardDef): Intent {
         intent.heal = (intent.heal ?? 0) + eff.n;
         if (intent.kind === "unknown") intent.kind = "buff";
       }
+      if (eff.t === "seal") {
+        intent.seal = eff.value;
+        intent.kind = "debuff";
+      }
     }
   };
   scan(card.effects);

@@ -80,15 +80,6 @@ export function makeEnemy(defId: string, floor: number, rand: () => number): Com
 
 function rollNextAction(e: CombatEnemy, rand: () => number) {
   const d = getEnemy(e.defId);
-  if (d.trait === "seal" && rand() < 0.35) {
-    const sealType: "attack" | "skill" = rand() < 0.5 ? "attack" : "skill";
-    e.actionCardIds = [];
-    e.shownCardIds = undefined;
-    e.shownIntent = undefined;
-    e.intent = { kind: "debuff", seal: sealType };
-    return;
-  }
-
   const n = d.cardsPerTurn ?? 1;
   const cardIds: string[] = [];
   for (let i = 0; i < n; i++) cardIds.push(rollEnemyCard(e.defId, rand).id);
@@ -560,6 +551,10 @@ function runEffects(
         c.floaters.push(floater(`最大-${lost}`, "dmg", "player"));
         break;
       }
+      case "seal":
+        c.sealed = e.value;
+        c.log.push(`${e.value === "attack" ? "攻撃" : "技能"}が封じられた。`);
+        break;
     }
   }
 }
