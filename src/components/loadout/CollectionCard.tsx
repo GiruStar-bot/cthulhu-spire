@@ -48,8 +48,10 @@ export function CollectionCard({
       {typeof copies === "number" ? (
         <span
           className={cn(
-            "pointer-events-none absolute bottom-0 right-0 z-10 border-2 border-white bg-black px-1 font-pixel text-[10px] text-white shadow-[2px_2px_0_0_#000]",
-            copies >= (copiesMax ?? COPY_LIMIT) && "bg-white text-black",
+            "pointer-events-none absolute bottom-0 right-0 z-10 px-1 font-pixel text-[10px]",
+            copies >= (copiesMax ?? COPY_LIMIT)
+              ? "border-2 border-white bg-white text-black shadow-[2px_2px_0_0_#000]"
+              : "panel text-white",
           )}
         >
           {copies}/{copiesMax ?? COPY_LIMIT}
@@ -61,7 +63,7 @@ export function CollectionCard({
         </span>
       ) : null}
       {typeof stackCount === "number" && stackCount > 1 ? (
-        <span className="pointer-events-none absolute bottom-0 left-0 z-10 border-2 border-white bg-black px-1 font-pixel text-[10px] text-white shadow-[2px_2px_0_0_#000]">
+        <span className="panel pointer-events-none absolute bottom-0 left-0 z-10 px-1 font-pixel text-[10px] text-white">
           ×{stackCount}
         </span>
       ) : null}

@@ -89,7 +89,7 @@ export function EquipmentScreen() {
           })}
         </ul>
 
-        <div className="mb-3 space-y-2 border-2 border-accent p-2">
+        <div className="panel mb-3 space-y-2 border-accent p-2">
           <div className="flex flex-wrap items-center gap-1">
             <span className="mr-1 text-[10px] text-white">ジャンル</span>
             {FILTERABLE_ARCHETYPES.map((a) => (

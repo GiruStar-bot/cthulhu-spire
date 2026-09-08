@@ -249,7 +249,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-5">
         <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">
-          <div className="mb-3 space-y-2 border-2 border-accent p-2">
+          <div className="panel mb-3 space-y-2 border-accent p-2">
             <div className="flex flex-wrap items-center gap-1">
               <span className="mr-1 text-[10px] text-white">ジャンル</span>
               {FILTERABLE_ARCHETYPES.map((a) => (
