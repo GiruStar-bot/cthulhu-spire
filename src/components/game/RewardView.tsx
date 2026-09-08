@@ -38,8 +38,8 @@ export function RewardView() {
         </p>
 
         {rewardShells > 0 ? (
-          <p className="mt-3 inline-flex items-center gap-1.5 border-2 border-white bg-black px-2 py-1 text-xs tabular-nums text-white">
-            <img src={asset("art/shell.jpg")} alt="" className="size-4 border-2 border-white object-cover" />
+          <p className="panel mt-3 inline-flex items-center gap-1.5 px-2 py-1 text-xs tabular-nums text-white">
+            <img src={asset("art/shell.jpg")} alt="" className="size-4 border-2 border-border object-cover" />
             貝がら +{rewardShells}
           </p>
         ) : null}
@@ -69,7 +69,7 @@ function RewardItem({ offer }: { offer: RewardOffer }) {
 
   if (offer.kind === "equipment") {
     return (
-      <div className="flex w-64 items-center gap-3 border-2 border-white bg-black px-4 py-3">
+      <div className="panel flex w-64 items-center gap-3 px-4 py-3">
         <PixelRelic defId={offer.equipment.defId} className="size-12 shrink-0" />
         <div>
           <p className="text-[11px] tracking-widest text-accent">装備</p>
@@ -81,7 +81,7 @@ function RewardItem({ offer }: { offer: RewardOffer }) {
 
   if (offer.kind === "rune") {
     return (
-      <div className="flex w-64 items-center gap-3 border-2 border-white bg-black px-4 py-3">
+      <div className="panel flex w-64 items-center gap-3 px-4 py-3">
         <PixelRune effect={offer.rune.effect} className="size-12 shrink-0" />
         <div>
           <p className="text-[11px] tracking-widest text-accent">ルーン</p>

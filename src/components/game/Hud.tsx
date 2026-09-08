@@ -41,7 +41,7 @@ export function Vitals() {
             <span
               key={r.uid}
               title={equipmentLabel(r)}
-              className="inline-flex items-center gap-1 border-2 border-gray-200 bg-black px-1 py-0.5 font-pixel text-[10px] text-parchment"
+              className="panel inline-flex items-center gap-1 px-1 py-0.5 font-pixel text-[10px] text-parchment"
             >
               <PixelRelic defId={r.defId} className="size-4" />
               {equipmentLabel(r)}
@@ -73,7 +73,7 @@ export function Bar({
           {value}/{max}
         </span>
       </div>
-      <div className="h-2.5 overflow-hidden border-2 border-white bg-ink-2">
+      <div className="h-2.5 overflow-hidden border-2 border-border bg-ink-2">
         <div
           className={cn("h-full", tone === "hp" ? "bg-blood" : "bg-accent")}
           style={{ width: `${pct}%` }}

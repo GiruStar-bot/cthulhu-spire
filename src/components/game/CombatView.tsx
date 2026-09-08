@@ -127,7 +127,7 @@ export function CombatView() {
           <div className="relative z-10 shrink-0 px-3 sm:px-5">
             <div className="flex flex-wrap gap-2">
               {combat.powers.map((p) => (
-                <span key={p} className="border-2 border-gray-200 bg-black/80 px-2 py-1 font-pixel text-xs text-muted">
+                <span key={p} className="panel px-2 py-1 font-pixel text-xs text-muted">
                   {POWER_TEXT[p]}
                 </span>
               ))}
@@ -220,7 +220,7 @@ function CombatLogPanel({ log }: { log: string[] }) {
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="absolute top-3 right-3 z-20 max-w-[14rem] border-2 border-white bg-black/85 px-2 py-1.5 text-left font-pixel leading-tight sm:top-5 sm:right-5"
+        className="panel absolute top-3 right-3 z-20 max-w-[14rem] px-2 py-1.5 text-left font-pixel leading-tight sm:top-5 sm:right-5"
       >
         {recent.length === 0 ? (
           <p className="text-[11px] text-muted">まだ記録がない。</p>
@@ -238,7 +238,7 @@ function CombatLogPanel({ log }: { log: string[] }) {
           onClick={() => setExpanded(false)}
         >
           <div
-            className="max-h-[70dvh] w-full max-w-md overflow-y-auto border-2 border-white bg-ink p-4"
+            className="panel max-h-[70dvh] w-full max-w-md overflow-y-auto p-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
@@ -246,7 +246,7 @@ function CombatLogPanel({ log }: { log: string[] }) {
               <button
                 type="button"
                 onClick={() => setExpanded(false)}
-                className="border-2 border-white bg-black px-2 py-1 font-pixel text-xs text-white"
+                className="panel px-2 py-1 font-pixel text-xs text-white"
               >
                 閉じる
               </button>
@@ -375,7 +375,7 @@ function HudBar({
           {value}/{max}
         </span>
       </div>
-      <div className="h-2 w-40 max-w-full bg-black">
+      <div className="h-2 w-40 max-w-full bg-ink-2">
         <div className={cn("h-full", tone === "hp" ? "bg-blood" : "bg-accent")} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -390,7 +390,7 @@ function Energy({ n, max }: { n: number; max: number }) {
           key={i}
           className={cn(
             "size-3",
-            i < n ? "bg-accent" : "border border-gray-200",
+            i < n ? "bg-accent" : "border border-border",
           )}
         />
       ))}
@@ -532,18 +532,18 @@ function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
           ))}
         </div>
       ) : i.seal ? (
-        <div className="mb-1 border-2 border-white bg-black px-2 py-1 text-center font-pixel text-[10px] text-blood">
+        <div className="panel mb-1 px-2 py-1 text-center font-pixel text-[10px] text-blood">
           {i.seal === "attack" ? "攻撃封印" : "技能封印"}
         </div>
       ) : null}
 
       <div
         data-enemy-plate=""
-        className="w-full min-w-[9.25rem] border-2 border-white bg-black/90 px-2 py-1.5 text-left"
+        className="panel w-full min-w-[9.25rem] px-2 py-1.5 text-left"
       >
         <p className="font-pixel text-sm text-white">{def.name}</p>
         <p className="font-pixel text-xs text-accent">{intent}</p>
-        <div className="mt-1 h-1.5 overflow-hidden bg-black">
+        <div className="mt-1 h-1.5 overflow-hidden bg-ink-2">
           <div className="h-full bg-blood" style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} />
         </div>
         <p className="font-pixel text-xs text-muted tabular-nums">

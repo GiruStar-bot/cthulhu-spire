@@ -60,7 +60,7 @@ export function EquipmentScreen() {
 
   return (
     <div className="grid h-full min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-6">
-      <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-2 lg:border-r-2 lg:border-b-0">
+      <aside className="min-h-0 overflow-y-auto border-b-2 border-border p-3 lg:col-span-2 lg:border-r-2 lg:border-b-0">
         <p className="mb-2 text-xs tracking-widest text-muted">装着中</p>
         <ul className="mb-4 grid grid-cols-5 gap-1">
           {EQUIPMENT_SLOTS.map((slot) => {
@@ -71,8 +71,8 @@ export function EquipmentScreen() {
                   type="button"
                   onClick={() => inst && setActiveUid(inst.uid)}
                   className={cn(
-                    "flex w-full flex-col items-center border-2 bg-black p-1",
-                    inst?.uid === activeUid ? "border-accent" : "border-white",
+                    "panel flex w-full flex-col items-center p-1",
+                    inst?.uid === activeUid ? "border-accent" : "",
                   )}
                 >
                   {inst ? (
@@ -127,7 +127,7 @@ export function EquipmentScreen() {
             <button
               type="button"
               onClick={() => setSortAsc((v) => !v)}
-              className="border-2 border-white bg-white px-1.5 py-0.5 text-[10px] text-ink"
+              className="panel px-1.5 py-0.5 text-[10px] text-white"
             >
               tier{sortAsc ? "低い順" : "高い順"}
             </button>
@@ -163,8 +163,8 @@ export function EquipmentScreen() {
                   type="button"
                   onClick={() => setActiveUid(inst.uid)}
                   className={cn(
-                    "flex w-24 flex-col items-center gap-1 border-2 bg-black p-2 text-center",
-                    inst.uid === activeUid ? "border-accent" : "border-white",
+                    "panel flex w-24 flex-col items-center gap-1 p-2 text-center",
+                    inst.uid === activeUid ? "border-accent" : "",
                   )}
                 >
                   <PixelRelic defId={inst.defId} className="h-12 w-full" />
@@ -178,7 +178,7 @@ export function EquipmentScreen() {
                         e.stopPropagation();
                         equipItem(inst.uid);
                       }}
-                      className="border-2 border-white bg-black px-1 text-[9px] text-white"
+                      className="panel px-1 text-[9px] text-white"
                     >
                       装着
                     </span>
@@ -190,7 +190,7 @@ export function EquipmentScreen() {
         )}
       </aside>
 
-      <section className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-2 lg:border-r-2 lg:border-b-0">
+      <section className="min-h-0 overflow-y-auto border-b-2 border-border p-3 lg:col-span-2 lg:border-r-2 lg:border-b-0">
         {active && activeDef ? (
           <>
             <PixelWindow className="mb-3">
@@ -200,7 +200,7 @@ export function EquipmentScreen() {
                 <button
                   type="button"
                   onClick={() => unequipSlot(activeDef.slot)}
-                  className="mt-2 border-2 border-white bg-black px-2 py-1 text-xs text-white"
+                  className="panel mt-2 px-2 py-1 text-xs text-white"
                 >
                   外す
                 </button>
@@ -208,7 +208,7 @@ export function EquipmentScreen() {
                 <button
                   type="button"
                   onClick={() => equipItem(active.uid)}
-                  className="mt-2 border-2 border-white bg-black px-2 py-1 text-xs text-white"
+                  className="panel mt-2 px-2 py-1 text-xs text-white"
                 >
                   装着する
                 </button>
@@ -229,7 +229,7 @@ export function EquipmentScreen() {
                     {rows.map((r) => (
                       <span
                         key={r.label}
-                        className="border-2 border-gray-200/50 bg-black px-1.5 py-0.5 text-[10px] text-white"
+                        className="panel px-1.5 py-0.5 text-[10px] text-white"
                       >
                         {r.label}
                         {r.value}
@@ -241,22 +241,22 @@ export function EquipmentScreen() {
               {Object.keys(active.bonusStats ?? {}).length > 0 ? (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {active.bonusStats?.strength ? (
-                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                    <span className="panel px-1.5 py-0.5 text-[10px] text-accent">
                       筋力+{active.bonusStats.strength}
                     </span>
                   ) : null}
                   {active.bonusStats?.defense ? (
-                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                    <span className="panel px-1.5 py-0.5 text-[10px] text-accent">
                       防御+{active.bonusStats.defense}
                     </span>
                   ) : null}
                   {active.bonusStats?.poisonResist ? (
-                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                    <span className="panel px-1.5 py-0.5 text-[10px] text-accent">
                       毒耐性+{active.bonusStats.poisonResist}
                     </span>
                   ) : null}
                   {active.bonusStats?.sanResist ? (
-                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                    <span className="panel px-1.5 py-0.5 text-[10px] text-accent">
                       狂気耐性+{active.bonusStats.sanResist}
                     </span>
                   ) : null}
@@ -274,7 +274,7 @@ export function EquipmentScreen() {
                     unsocketRuneFromEquipment(active.uid, i);
                     syncEquippedFromInventory(active.uid);
                   }}
-                  className="grid size-14 place-items-center border-2 border-white bg-black"
+                  className="panel grid size-14 place-items-center"
                   title={runeId ? "クリックで外す" : "空きソケット"}
                 >
                   {runeId ? (
@@ -306,7 +306,7 @@ export function EquipmentScreen() {
                 socketRuneToEquipment(active.uid, rune.id, emptyIdx);
                 syncEquippedFromInventory(active.uid);
               }}
-              className="flex flex-col items-center gap-1 border-2 border-white bg-black p-2 text-center disabled:opacity-40"
+              className="panel flex flex-col items-center gap-1 p-2 text-center disabled:opacity-40"
             >
               <PixelRune effect={rune.effect} className="size-8" />
               <span className="text-[10px] text-white">{rune.effect}</span>

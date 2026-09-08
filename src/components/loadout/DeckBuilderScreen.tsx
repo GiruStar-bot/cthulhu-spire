@@ -157,7 +157,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
   return (
     <section className={cn("flex w-full flex-col font-pixel text-parchment", embedded ? "h-full bg-transparent" : "h-dvh bg-ink")}>
       {embedded ? null : (
-        <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-gray-200 bg-black px-3">
+        <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-border bg-ink-2 px-3">
           <h1 className="text-sm tracking-widest">デッキ編成</h1>
           <span className={cn("text-sm tabular-nums", total >= DECK_LIMIT ? "text-blood" : "text-accent")}>
             {total}/{DECK_LIMIT}
@@ -172,7 +172,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
         </header>
       )}
 
-      <div className="flex shrink-0 flex-wrap items-center gap-1 border-b-2 border-gray-200 bg-black px-3 py-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-1 border-b-2 border-border bg-ink-2 px-3 py-2">
         {names.map((name) => (
           <button
             key={name}
@@ -183,7 +183,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
             }}
             className={cn(
               "border-2 px-2 py-1 text-xs",
-              name === activeDeck ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+              name === activeDeck ? "border-white bg-white text-ink" : "border-border text-muted",
             )}
           >
             {name}
@@ -205,14 +205,14 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
         ) : null}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-gray-200 px-3 py-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-border px-3 py-2">
         {renaming ? (
           <>
             <input
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
               maxLength={12}
-              className="border-2 border-white bg-black px-2 py-1 font-pixel text-xs text-white outline-none"
+              className="panel px-2 py-1 font-pixel text-xs text-white outline-none"
               onKeyDown={(e) => {
                 if (e.key === "Enter") commitRename();
                 if (e.key === "Escape") setRenaming(false);
@@ -248,7 +248,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-5">
-        <aside className="min-h-0 overflow-y-auto border-b-2 border-gray-200 p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">
+        <aside className="min-h-0 overflow-y-auto border-b-2 border-border p-3 lg:col-span-3 lg:border-r-2 lg:border-b-0">
           <div className="panel mb-3 space-y-2 border-accent p-2">
             <div className="flex flex-wrap items-center gap-1">
               <span className="mr-1 text-[10px] text-white">ジャンル</span>

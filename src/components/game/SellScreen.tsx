@@ -91,14 +91,14 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
 
   return (
     <section className="flex h-dvh flex-col overflow-hidden bg-ink font-pixel text-parchment">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-gray-200 bg-black px-3">
+      <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-border bg-ink-2 px-3">
         <h1 className="text-sm tracking-widest text-white">売却</h1>
         <PixelButton onClick={onClose} className="min-h-9 px-3 py-1 text-xs">
           戻る
         </PixelButton>
       </header>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-1 border-b-2 border-gray-200 bg-black px-3 py-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-1 border-b-2 border-border bg-ink-2 px-3 py-2">
         {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
           <button
             key={t}
@@ -145,7 +145,7 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
                       selected={selected}
                       onClick={() => setSelectedCardIds((s) => toggleInSet(s, inst.instanceId))}
                     />
-                    <span className="border-2 border-white bg-black px-1.5 py-0.5 text-[10px] text-accent">
+                    <span className="panel px-1.5 py-0.5 text-[10px] text-accent">
                       貝殻{cardSellPrice(def)}
                     </span>
                   </div>
@@ -168,13 +168,13 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
                     type="button"
                     onClick={() => setSelectedEquipmentUids((s) => toggleInSet(s, inst.uid))}
                     className={cn(
-                      "flex w-24 flex-col items-center gap-1 border-2 bg-black p-2 text-center",
-                      selected ? "border-accent" : "border-white",
+                      "panel flex w-24 flex-col items-center gap-1 p-2 text-center",
+                      selected ? "border-accent" : "",
                     )}
                   >
                     <PixelRelic defId={inst.defId} className="h-12 w-full" />
                     <span className="text-[9px] text-white">{equipmentLabel(inst)}</span>
-                    <span className="border-2 border-white bg-black px-1 text-[9px] text-accent">
+                    <span className="panel px-1 text-[9px] text-accent">
                       貝殻{equipmentSellPrice(inst)}
                     </span>
                   </button>
@@ -197,13 +197,13 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
                     type="button"
                     onClick={() => setSelectedRuneIds((s) => toggleInSet(s, rune.id))}
                     className={cn(
-                      "flex w-24 flex-col items-center gap-1 border-2 bg-black p-2 text-center",
-                      selected ? "border-accent" : "border-white",
+                      "panel flex w-24 flex-col items-center gap-1 p-2 text-center",
+                      selected ? "border-accent" : "",
                     )}
                   >
                     <PixelRune effect={rune.effect} className="size-8" />
                     <span className="text-[10px] text-white">{rune.effect}</span>
-                    <span className="border-2 border-white bg-black px-1 text-[9px] text-accent">
+                    <span className="panel px-1 text-[9px] text-accent">
                       貝殻{runeSellPrice(rune)}
                     </span>
                   </button>
@@ -214,7 +214,7 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
         ) : null}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t-2 border-gray-200 bg-black px-3 py-3">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t-2 border-border bg-ink-2 px-3 py-3">
         <span className="text-xs tabular-nums text-white">
           選択中 {totalSelected}点 · 獲得予定 貝殻{totalValue}
         </span>

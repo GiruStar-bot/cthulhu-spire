@@ -47,7 +47,7 @@ export function HubScreen() {
       />
       <div className="absolute inset-0 bg-ink/60" />
 
-      <header className="relative z-10 flex h-12 shrink-0 items-center gap-3 border-b-2 border-gray-200 bg-black px-3">
+      <header className="relative z-10 flex h-12 shrink-0 items-center gap-3 border-b-2 border-border bg-ink-2 px-3">
         <span className="truncate text-sm tracking-widest">{playerName.trim() || profile.playerName || "無名"}</span>
         <span className="hidden text-xs tabular-nums text-muted sm:inline">
           HP {vitals.maxHp} · SAN {vitals.maxSanity} · 貝殻 {shells}
@@ -67,7 +67,7 @@ export function HubScreen() {
       </header>
 
       <div className="relative z-10 flex min-h-0 flex-1">
-        <nav className="flex w-36 shrink-0 flex-col gap-1 border-r-2 border-gray-200 bg-black p-2 sm:w-44">
+        <nav className="flex w-36 shrink-0 flex-col gap-1 border-r-2 border-border bg-ink-2 p-2 sm:w-44">
           {NAV.map((item) => (
             <PixelButton
               key={item.id}

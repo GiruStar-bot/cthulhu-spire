@@ -25,7 +25,7 @@ function Shells() {
   const n = useGame((s) => s.shells);
   return (
     <span className="inline-flex items-center gap-1.5 font-pixel text-xs tabular-nums text-white">
-      <img src={asset("art/shell.jpg")} alt="" className="size-5 rounded-none border-2 border-white object-cover" />
+      <img src={asset("art/shell.jpg")} alt="" className="size-5 rounded-none border-2 border-border object-cover" />
       {n}
     </span>
   );
@@ -50,7 +50,7 @@ function VillageHub() {
         <button
           type="button"
           onClick={dismiss}
-          className="absolute top-3 right-3 z-20 max-w-xs border-2 border-white bg-black px-3 py-2 text-left text-sm text-white sm:top-5 sm:right-5"
+          className="panel absolute top-3 right-3 z-20 max-w-xs px-3 py-2 text-left text-sm text-white sm:top-5 sm:right-5"
         >
           {toast}
         </button>
@@ -67,7 +67,7 @@ function VillageHub() {
           alt="酒場"
           className="w-full select-none drop-shadow-[4px_4px_0_rgba(0,0,0,0.6)]"
         />
-        <span className="absolute inset-x-6 -bottom-1 border-2 border-white bg-black px-2 py-1 text-center text-xs text-white">
+        <span className="panel absolute inset-x-6 -bottom-1 px-2 py-1 text-center text-xs text-white">
           酒場
         </span>
       </button>
@@ -83,7 +83,7 @@ function VillageHub() {
           alt="鍛冶屋"
           className="w-full select-none drop-shadow-[3px_3px_0_rgba(0,0,0,0.6)]"
         />
-        <span className="absolute inset-x-0 -bottom-6 border-2 border-white bg-black px-1.5 py-0.5 text-center text-[10px] text-white">
+        <span className="panel absolute inset-x-0 -bottom-6 px-1.5 py-0.5 text-center text-[10px] text-white">
           鍛冶屋
         </span>
       </button>
@@ -124,7 +124,7 @@ function VillageStatus() {
   const sanity = useGame((s) => s.sanity);
   const maxSanity = useGame((s) => s.maxSanity);
   return (
-    <div className="w-48 border-2 border-white bg-black/85 px-3 py-2 font-pixel">
+    <div className="panel w-48 px-3 py-2 font-pixel">
       <Bar label="肉体" value={hp} max={maxHp} tone="hp" />
       <Bar label="正気" value={sanity} max={maxSanity} tone="sanity" />
     </div>
@@ -161,7 +161,7 @@ function InnRoom() {
         alt=""
         className="pointer-events-none absolute bottom-0 left-[8%] z-10 h-[55dvh] max-h-96 select-none object-contain object-bottom drop-shadow-[4px_4px_0_rgba(0,0,0,0.6)]"
       />
-      <div className="absolute bottom-[54dvh] left-[8%] z-10 border-2 border-white bg-black px-3 py-1.5 font-pixel text-sm text-white">
+      <div className="panel absolute bottom-[54dvh] left-[8%] z-10 px-3 py-1.5 font-pixel text-sm text-white">
         いらっしゃい
       </div>
 
@@ -172,12 +172,12 @@ function InnRoom() {
             type="button"
             disabled={shells < n}
             onClick={() => stay(n)}
-            className="flex w-fit items-center gap-4 border-2 border-white bg-black/85 p-3 font-pixel text-left text-white disabled:opacity-40"
+            className="panel flex w-fit items-center gap-4 p-3 font-pixel text-left text-white disabled:opacity-40"
           >
             <img
               src={asset(`art/pixel/village/room-${n}.jpg`)}
               alt=""
-              className="h-32 w-48 border-2 border-white object-cover"
+              className="h-32 w-48 border-2 border-border object-cover"
             />
             <span className="text-lg">
               {n}枚 · {n === 10 ? "体力2割 正気+10" : n === 20 ? "体力5割 正気+20" : "体力全快 正気+30"}
@@ -186,7 +186,7 @@ function InnRoom() {
         ))}
       </div>
 
-      <div className="absolute top-1/2 right-[5%] z-10 flex w-56 -translate-y-1/2 flex-col items-center gap-2 border-2 border-white bg-black/85 p-4 text-center">
+      <div className="panel absolute top-1/2 right-[5%] z-10 flex w-56 -translate-y-1/2 flex-col items-center gap-2 p-4 text-center">
         <p className="text-[11px] tracking-widest text-accent">パブ</p>
         <p className="text-sm text-white">冷えた瓶。気力が戻る。二度飲めば空だ。</p>
         <PixelButton disabled={beerSold || shells < 5} onClick={buyBeer} className="w-fit">
@@ -222,7 +222,7 @@ function SmithRoom() {
         alt=""
         className="pointer-events-none absolute bottom-0 left-[4%] z-[5] h-[50dvh] max-h-80 select-none object-contain object-bottom object-left opacity-90"
       />
-      <div className="absolute bottom-[48dvh] left-[4%] z-10 border-2 border-white bg-black px-3 py-1.5 font-pixel text-sm text-white">
+      <div className="panel absolute bottom-[48dvh] left-[4%] z-10 px-3 py-1.5 font-pixel text-sm text-white">
         ……
       </div>
       <div className="relative z-10 flex min-h-dvh flex-col gap-4 px-5 py-6 sm:px-12">
@@ -248,7 +248,7 @@ function SmithRoom() {
                   className={cn("flex flex-col items-center gap-1", disabled && "opacity-40")}
                 >
                   <CardView card={makeCard(g.defId)} compact />
-                  <span className="border-2 border-white bg-black px-2 py-0.5 font-pixel text-xs text-accent">
+                  <span className="panel px-2 py-0.5 font-pixel text-xs text-accent">
                     {g.sold ? "売約" : shop.taboo ? "0" : `${g.price}枚`}
                   </span>
                 </button>
@@ -270,15 +270,15 @@ function SmithRoom() {
                     disabled={disabled}
                     onClick={() => buyEquipmentGood(g.uid)}
                     className={cn(
-                      "flex w-32 flex-col items-center gap-1 border-2 border-white bg-black/85 p-2 text-center",
+                      "panel flex w-32 flex-col items-center gap-1 p-2 text-center",
                       disabled && "opacity-40",
                     )}
                   >
-                    <img src={def.art} alt="" className="h-20 w-20 border-2 border-white object-cover" />
+                    <img src={def.art} alt="" className="h-20 w-20 border-2 border-border object-cover" />
                     <span className="text-xs text-white">
                       {def.name}
                     </span>
-                    <span className="border-2 border-white bg-black px-2 py-0.5 text-xs text-accent">
+                    <span className="panel px-2 py-0.5 text-xs text-accent">
                       {g.sold ? "売約" : `${g.price}枚`}
                     </span>
                   </button>

@@ -25,7 +25,7 @@ export function EventView() {
             <button
               type="button"
               onClick={dismiss}
-              className="border-2 border-white bg-black px-4 py-3 text-left text-sm text-white shadow-[3px_3px_0_0_#000]"
+              className="panel px-4 py-3 text-left text-sm text-white"
             >
               {toast}
             </button>
