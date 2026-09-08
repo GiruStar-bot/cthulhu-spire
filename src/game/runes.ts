@@ -10,6 +10,9 @@ const FILES: Record<string, string> = {
   "STR+": "str.png",
   POISON: "poison.png",
   HEAL: "heal.png",
+  "VULN+": "vuln.png",
+  "ENERGY+": "energy.png",
+  THORN: "thorn.png",
 };
 
 export const RUNE_CATALOG: Omit<Rune, "id">[] = [
