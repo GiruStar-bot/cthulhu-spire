@@ -346,10 +346,30 @@ function CombatHud({
           <img src={asset("art/shell.jpg")} alt="" className="size-3 object-cover" />
           {shells}
         </span>
-        {strength ? <span className="text-accent">筋 {strength}</span> : null}
-        {weak ? <span className="text-blood">弱 {weak}</span> : null}
-        {poison ? <span className="text-accent">毒 {poison}</span> : null}
-        {sealed ? <span className="text-blood">{sealed === "attack" ? "攻撃封印" : "技能封印"}</span> : null}
+        {strength ? (
+          <span className="inline-flex items-center gap-1 text-accent">
+            <img src={asset("art/pixel/runes/str.png")} alt="" className="size-3.5 object-contain" />
+            {strength}
+          </span>
+        ) : null}
+        {weak ? (
+          <span className="inline-flex items-center gap-1 text-blood">
+            <img src={asset("art/pixel/status/weak.png")} alt="" className="size-3.5 object-contain" />
+            {weak}
+          </span>
+        ) : null}
+        {poison ? (
+          <span className="inline-flex items-center gap-1 text-accent">
+            <img src={asset("art/pixel/runes/poison.png")} alt="" className="size-3.5 object-contain" />
+            {poison}
+          </span>
+        ) : null}
+        {sealed ? (
+          <span className="inline-flex items-center gap-1 text-blood">
+            <img src={asset("art/pixel/status/seal.png")} alt="" className="size-3.5 object-contain" />
+            {sealed === "attack" ? "攻撃封印" : "技能封印"}
+          </span>
+        ) : null}
       </div>
     </PixelWindow>
   );
@@ -533,7 +553,10 @@ function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
         </div>
       ) : i.seal ? (
         <div className="panel mb-1 px-2 py-1 text-center font-pixel text-[10px] text-blood">
-          {i.seal === "attack" ? "攻撃封印" : "技能封印"}
+          <span className="inline-flex items-center gap-1">
+            <img src={asset("art/pixel/status/seal.png")} alt="" className="size-3.5 object-contain" />
+            {i.seal === "attack" ? "攻撃封印" : "技能封印"}
+          </span>
         </div>
       ) : null}
 
@@ -549,9 +572,29 @@ function EnemyPlate({ enemy }: { enemy: CombatEnemy }) {
         <p className="font-pixel text-xs text-muted tabular-nums">
           {enemy.hp}/{enemy.maxHp}
           {enemy.block ? ` · 防 ${enemy.block}` : ""}
-          {enemy.strength ? ` · 筋 ${enemy.strength}` : ""}
-          {enemy.poison ? ` · 毒 ${enemy.poison}` : ""}
         </p>
+        {enemy.strength || enemy.weak || enemy.poison ? (
+          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 font-pixel text-xs">
+            {enemy.strength ? (
+              <span className="inline-flex items-center gap-1 text-accent">
+                <img src={asset("art/pixel/runes/str.png")} alt="" className="size-3.5 object-contain" />
+                {enemy.strength}
+              </span>
+            ) : null}
+            {enemy.weak ? (
+              <span className="inline-flex items-center gap-1 text-blood">
+                <img src={asset("art/pixel/status/weak.png")} alt="" className="size-3.5 object-contain" />
+                {enemy.weak}
+              </span>
+            ) : null}
+            {enemy.poison ? (
+              <span className="inline-flex items-center gap-1 text-accent">
+                <img src={asset("art/pixel/runes/poison.png")} alt="" className="size-3.5 object-contain" />
+                {enemy.poison}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );
