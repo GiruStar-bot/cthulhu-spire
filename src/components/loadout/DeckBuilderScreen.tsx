@@ -689,7 +689,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
               <div className="min-w-0">
                 <p className="text-[11px] text-muted">デッキ枚数</p>
                 <p className={cn("text-[10px]", synergyHint ? "text-accent" : "text-muted")}>
-                  {synergyHint ?? "アーキタイプの偏りなし"}
+                  {synergyHint ?? "ジャンルの偏りなし"}
                 </p>
               </div>
             </div>
