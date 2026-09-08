@@ -6,6 +6,7 @@ import { EQUIPMENT, EQUIPMENT_SLOTS, hasFullSet } from "@/game/equipment";
 import { syncEquippedFromInventory, useGame } from "@/game/store";
 import type { Archetype, EquipmentInstance, EquipmentSlot } from "@/game/types";
 import { peekRune, useCollectionStore } from "@/store/useCollectionStore";
+import { PixelButton } from "@/components/ui/PixelButton";
 import { cn } from "@/lib/utils";
 
 const USABLE_RUNE_EFFECTS = new Set(["BLK+", "DRAW", "SAN+", "STR+", "POISON", "HEAL", "VULN+", "ENERGY+", "THORN"]);
@@ -158,9 +159,9 @@ function HeroSlot({
       title={def?.name}
       style={glowColor ? { boxShadow: `0 0 0 2px ${glowColor}, 0 0 10px 2px ${glowColor}` } : undefined}
       className={cn(
-        "relative flex size-16 shrink-0 flex-col justify-end overflow-hidden border-2 bg-ink-2 sm:size-[5.5rem]",
-        inst ? "border-accent" : "border-border opacity-50",
-        selected ? "outline-2 outline-offset-1 outline-white" : "",
+        "panel relative flex size-16 shrink-0 flex-col justify-end overflow-hidden sm:size-[5.5rem]",
+        inst ? "border-accent" : "opacity-50",
+        selected ? "panel-active" : "hover:border-white/60",
       )}
     >
       <span className="absolute top-1 left-1 z-10 text-[9px] text-muted">{SLOT_LABEL[slot]}</span>
@@ -199,8 +200,8 @@ function InventoryTile({
       onClick={onClick}
       title={def.name}
       className={cn(
-        "relative aspect-square overflow-hidden border-2 bg-ink-2 transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
-        selected ? "-translate-y-1 border-accent" : "border-border hover:-translate-y-0.5 hover:border-accent",
+        "panel relative aspect-square overflow-hidden transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
+        selected ? "-translate-y-1 border-accent" : "hover:-translate-y-0.5 hover:border-white/60",
       )}
     >
       <PixelRelic defId={def.id} className="absolute inset-0 size-full object-cover" />
@@ -335,56 +336,52 @@ export function EquipmentScreen() {
             <div className="flex flex-wrap items-center gap-1">
               <span className="mr-1 text-[10px] text-white">ジャンル</span>
               {FILTERABLE_ARCHETYPES.map((a) => (
-                <button
+                <PixelButton
                   key={a}
-                  type="button"
                   onClick={() => setFilterArchetypes((s) => toggleInSet(s, a))}
                   className={cn(
-                    "border-2 px-1.5 py-0.5 text-[10px]",
-                    filterArchetypes.has(a) ? "border-white bg-white text-ink" : "border-accent text-white",
+                    "min-h-0 px-1.5 py-0.5 text-[10px]",
+                    filterArchetypes.has(a) && "border-white bg-white text-ink hover:border-white",
                   )}
                 >
                   {EQUIPMENT_ARCHETYPE_LABELS[a] ?? a}
-                </button>
+                </PixelButton>
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-1">
               <span className="mr-1 text-[10px] text-white">部位</span>
               {EQUIPMENT_SLOTS.map((slot) => (
-                <button
+                <PixelButton
                   key={slot}
-                  type="button"
                   onClick={() => setFilterSlots((s) => toggleInSet(s, slot))}
                   className={cn(
-                    "border-2 px-1.5 py-0.5 text-[10px]",
-                    filterSlots.has(slot) ? "border-white bg-white text-ink" : "border-accent text-white",
+                    "min-h-0 px-1.5 py-0.5 text-[10px]",
+                    filterSlots.has(slot) && "border-white bg-white text-ink hover:border-white",
                   )}
                 >
                   {slot}
-                </button>
+                </PixelButton>
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-1">
               <span className="mr-1 text-[10px] text-white">並び替え</span>
-              <button
-                type="button"
+              <PixelButton
                 onClick={() => setSortAsc((v) => !v)}
-                className="panel px-1.5 py-0.5 text-[10px] text-white"
+                className="min-h-0 px-1.5 py-0.5 text-[10px]"
               >
                 tier{sortAsc ? "低い順" : "高い順"}
-              </button>
+              </PixelButton>
             </div>
             {filterArchetypes.size + filterSlots.size > 0 ? (
-              <button
-                type="button"
+              <PixelButton
                 onClick={() => {
                   setFilterArchetypes(new Set());
                   setFilterSlots(new Set());
                 }}
-                className="border-2 border-accent px-1.5 py-0.5 text-[10px] text-white"
+                className="min-h-0 border-accent px-1.5 py-0.5 text-[10px]"
               >
                 フィルターをリセット
-              </button>
+              </PixelButton>
             ) : null}
           </div>
 
@@ -465,21 +462,19 @@ export function EquipmentScreen() {
                   })()}
                   <div className="mt-1.5">
                     {equippedUids.has(active.uid) ? (
-                      <button
-                        type="button"
+                      <PixelButton
                         onClick={() => unequipSlot(activeDef.slot)}
-                        className="panel px-2 py-1 text-xs text-white"
+                        className="min-h-0 px-2 py-1 text-xs"
                       >
                         外す
-                      </button>
+                      </PixelButton>
                     ) : (
-                      <button
-                        type="button"
+                      <PixelButton
                         onClick={() => equipItem(active.uid)}
-                        className="panel px-2 py-1 text-xs text-white"
+                        className="min-h-0 px-2 py-1 text-xs"
                       >
                         装着する
-                      </button>
+                      </PixelButton>
                     )}
                   </div>
                 </div>
@@ -490,16 +485,15 @@ export function EquipmentScreen() {
               </p>
               <div className="flex flex-wrap gap-2">
                 {active.socketedRunes.map((runeId, i) => (
-                  <button
+                  <PixelButton
                     key={i}
-                    type="button"
                     onClick={() => {
                       if (!runeId) return;
                       unsocketRuneFromEquipment(active.uid, i);
                       syncEquippedFromInventory(active.uid);
                     }}
                     className={cn(
-                      "panel grid size-12 place-items-center",
+                      "grid size-12 min-h-0 place-items-center p-0",
                       !runeId && "border-dashed",
                     )}
                     title={runeId ? "クリックで外す" : "空きソケット"}
@@ -509,7 +503,7 @@ export function EquipmentScreen() {
                     ) : (
                       <span className="text-xs text-muted">空</span>
                     )}
-                  </button>
+                  </PixelButton>
                 ))}
               </div>
 
@@ -538,28 +532,26 @@ export function EquipmentScreen() {
             className="panel m-2 px-2 py-1.5 font-pixel text-xs text-white outline-none placeholder:text-muted"
           />
           <div className="flex flex-wrap items-center gap-1 px-2 pb-2">
-            <button
-              type="button"
+            <PixelButton
               onClick={() => setRuneCategory(null)}
               className={cn(
-                "border-2 px-1.5 py-0.5 text-[10px]",
-                runeCategory === null ? "border-white bg-white text-ink" : "border-accent text-white",
+                "min-h-0 px-1.5 py-0.5 text-[10px]",
+                runeCategory === null && "border-white bg-white text-ink hover:border-white",
               )}
             >
               全て
-            </button>
+            </PixelButton>
             {RUNE_CATEGORIES.map((cat) => (
-              <button
+              <PixelButton
                 key={cat}
-                type="button"
                 onClick={() => setRuneCategory((c) => (c === cat ? null : cat))}
                 className={cn(
-                  "border-2 px-1.5 py-0.5 text-[10px]",
-                  runeCategory === cat ? "border-white bg-white text-ink" : "border-accent text-white",
+                  "min-h-0 px-1.5 py-0.5 text-[10px]",
+                  runeCategory === cat && "border-white bg-white text-ink hover:border-white",
                 )}
               >
                 {RUNE_CATEGORY_LABELS[cat]}
-              </button>
+              </PixelButton>
             ))}
           </div>
           <p className="mx-2 mb-2 text-xs tracking-widest text-muted">
@@ -575,9 +567,8 @@ export function EquipmentScreen() {
                 {filteredRunes.map((rune) => {
                   const full = !active || active.socketedRunes.every((r) => r !== null);
                   return (
-                    <button
+                    <PixelButton
                       key={rune.id}
-                      type="button"
                       disabled={full}
                       onClick={() => {
                         if (!active) return;
@@ -586,12 +577,12 @@ export function EquipmentScreen() {
                         socketRuneToEquipment(active.uid, rune.id, emptyIdx);
                         syncEquippedFromInventory(active.uid);
                       }}
-                      className="panel flex flex-col items-center gap-1 p-2 text-center disabled:opacity-40"
+                      className="flex flex-col items-center gap-1 p-2 text-center"
                     >
                       <PixelRune effect={rune.effect} className="size-8" />
                       <span className="text-[10px] text-white">{rune.effect}</span>
                       <span className="text-[10px] text-accent">{rune.value}</span>
-                    </button>
+                    </PixelButton>
                   );
                 })}
               </div>

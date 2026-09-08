@@ -71,7 +71,7 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
               onChange={(e) => setPlayerName(e.target.value)}
               maxLength={16}
               placeholder="名を記す"
-              className="mt-1 w-full border-0 border-b-2 border-gray-200 bg-transparent px-0 py-2 font-pixel text-lg text-white outline-none"
+              className="panel mt-1 w-full px-2 py-2 font-pixel text-lg text-white outline-none placeholder:text-muted"
             />
           </label>
 
@@ -139,8 +139,8 @@ function DeckSelectPanel() {
               type="button"
               onClick={() => setActiveDeck(name)}
               className={cn(
-                "flex items-center justify-between border-2 px-3 py-2 text-left font-pixel text-xs",
-                name === activeDeck ? "border-white bg-white text-ink" : "border-gray-200/40 text-muted",
+                "panel flex items-center justify-between px-3 py-2 text-left font-pixel text-xs hover:border-white/60",
+                name === activeDeck && "border-white bg-white text-ink hover:border-white",
               )}
             >
               <span>{name}</span>
@@ -165,11 +165,11 @@ function EquipmentSummaryPanel() {
     <PixelWindow className="w-full max-w-xs shrink-0">
       <p className="mb-2 text-[11px] tracking-widest text-accent">装備込みステータス</p>
       <ul className="space-y-1 text-sm text-white">
-        <li>体力 {vitals.maxHp}</li>
-        <li>筋力 {eq.strength}</li>
-        <li>防御 {Math.round(eq.defense)}</li>
-        <li>毒耐性 {Math.round(eq.poisonResist)}</li>
-        <li>狂気耐性 {Math.round(eq.sanResist)}</li>
+        <li className="border-b border-border py-1">体力 {vitals.maxHp}</li>
+        <li className="border-b border-border py-1">筋力 {eq.strength}</li>
+        <li className="border-b border-border py-1">防御 {Math.round(eq.defense)}</li>
+        <li className="border-b border-border py-1">毒耐性 {Math.round(eq.poisonResist)}</li>
+        <li className="py-1">狂気耐性 {Math.round(eq.sanResist)}</li>
       </ul>
     </PixelWindow>
   );
@@ -197,7 +197,7 @@ function StatRow({
   canPlus: boolean;
 }) {
   return (
-    <li className="flex items-center gap-2 border-b border-gray-200/30 py-1.5">
+    <li className="flex items-center gap-2 border-b border-border py-1.5">
       <div className="min-w-0 flex-1">
         <p className="text-white">
           {name} <span className="text-xs text-muted">{tag}</span>

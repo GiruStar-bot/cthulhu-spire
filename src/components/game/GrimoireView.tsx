@@ -2,6 +2,7 @@ import { useGame } from "@/game/store";
 import { GRIMOIRE, nextUnread } from "@/game/grimoire";
 import { grimoireOpen, MADNESS_STEP, SANITY_PENALTY_PER_TIER, derivedVitals } from "@/game/profile";
 import { getCard } from "@/game/cards";
+import { PixelButton } from "@/components/ui/PixelButton";
 import { useState } from "react";
 
 export function GrimoirePanel({ onClose }: { onClose: () => void }) {
@@ -18,9 +19,9 @@ export function GrimoirePanel({ onClose }: { onClose: () => void }) {
         <button type="button" className="absolute inset-0" aria-label="閉じる" onClick={onClose} />
         <div className="relative w-full max-w-md px-2">
           <p className="prologue-line text-2xl sm:text-3xl">文字が、降りてこない。</p>
-          <button type="button" className="mt-8 font-mono text-sm text-muted" onClick={onClose}>
+          <PixelButton onClick={onClose} className="mt-8">
             閉じる
-          </button>
+          </PixelButton>
         </div>
       </div>
     );
@@ -47,17 +48,10 @@ export function GrimoirePanel({ onClose }: { onClose: () => void }) {
               })}
             </ol>
             <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="min-h-11 rounded-[var(--radius-md)] bg-parchment px-5 py-2 font-display text-ink disabled:opacity-40"
-                onClick={() => setPage(1)}
-                disabled={!unread}
-              >
+              <PixelButton onClick={() => setPage(1)} disabled={!unread}>
                 次の頁へ
-              </button>
-              <button type="button" className="min-h-11 px-4 font-mono text-sm text-muted" onClick={onClose}>
-                閉じる
-              </button>
+              </PixelButton>
+              <PixelButton onClick={onClose}>閉じる</PixelButton>
             </div>
           </>
         ) : (
@@ -73,9 +67,8 @@ export function GrimoirePanel({ onClose }: { onClose: () => void }) {
               正気0で記録は消える。
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="min-h-11 rounded-[var(--radius-md)] bg-blood px-5 py-2 font-display text-parchment disabled:opacity-40"
+              <PixelButton
+                className="text-blood"
                 onClick={() => {
                   turn();
                   setPage(0);
@@ -83,10 +76,8 @@ export function GrimoirePanel({ onClose }: { onClose: () => void }) {
                 disabled={!unread}
               >
                 記す
-              </button>
-              <button type="button" className="min-h-11 px-4 font-mono text-sm text-muted" onClick={() => setPage(0)}>
-                目次へ
-              </button>
+              </PixelButton>
+              <PixelButton onClick={() => setPage(0)}>目次へ</PixelButton>
             </div>
           </>
         )}
