@@ -194,6 +194,51 @@ export const EQUIPMENT: Record<string, EquipmentDef> = {
     sockets: 1,
     basePoisonResist: 2,
   },
+  void_helm: {
+    id: "void_helm",
+    name: "虚空の兜",
+    slot: "head",
+    archetype: "outer",
+    art: asset("art/pixel/equipment/void_helm.jpg"),
+    sockets: 1,
+    baseSanResist: 3,
+  },
+  void_coat: {
+    id: "void_coat",
+    name: "虚空の外套",
+    slot: "chest",
+    archetype: "outer",
+    art: asset("art/pixel/equipment/void_coat.jpg"),
+    sockets: 2,
+    baseSanResist: 4,
+  },
+  void_gauntlets: {
+    id: "void_gauntlets",
+    name: "虚空の篭手",
+    slot: "arms",
+    archetype: "outer",
+    art: asset("art/pixel/equipment/void_gauntlets.jpg"),
+    sockets: 1,
+    baseSanResist: 3,
+  },
+  void_leggings: {
+    id: "void_leggings",
+    name: "虚空の脚衣",
+    slot: "legs",
+    archetype: "outer",
+    art: asset("art/pixel/equipment/void_leggings.jpg"),
+    sockets: 1,
+    baseSanResist: 3,
+  },
+  void_boots: {
+    id: "void_boots",
+    name: "虚空の靴",
+    slot: "feet",
+    archetype: "outer",
+    art: asset("art/pixel/equipment/void_boots.jpg"),
+    sockets: 1,
+    baseSanResist: 2,
+  },
 };
 
 export const EQUIPMENT_SLOTS: EquipmentSlot[] = ["head", "chest", "arms", "legs", "feet"];
@@ -333,6 +378,7 @@ export function computeEquipmentStats(
     poisonResist: 0,
     poisonImmune: false,
     blockRetain: false,
+    sanFullRestoreOnStart: false,
     strength: 0,
     drawBonus: 0,
     healPerTurn: 0,
@@ -426,6 +472,9 @@ export function computeEquipmentStats(
   }
   if (hasFullSet(equipped, "knight")) {
     stats.blockRetain = true;
+  }
+  if (hasFullSet(equipped, "outer")) {
+    stats.sanFullRestoreOnStart = true;
   }
 
   return stats;
