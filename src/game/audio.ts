@@ -36,6 +36,10 @@ const buffers = new Map<SampleId, AudioBuffer>();
 const loopBuffers = new Map<string, AudioBuffer>();
 const LOOP_SRC: Partial<Record<BgmId, string>> = {
   title: "music/dunkle-herrlichkeit.mp3",
+  combat: "music/combat.mp3",
+  boss: "music/boss.mp3",
+  rest: "music/rest.mp3",
+  event: "music/event.mp3",
 };
 
 function ac() {
@@ -517,9 +521,13 @@ export function playBgm(id: BgmId) {
   }
   if (currentBgm === id && bgmHandle) return;
   stopBgmInternal();
+  const loop = LOOP_SRC[id];
+  if (!loop) {
+    currentBgm = id;
+    return;
+  }
   try {
-    const loop = LOOP_SRC[id];
-    bgmHandle = loop ? startLoop(id, loop) : startTheme(id);
+    bgmHandle = startLoop(id, loop);
     currentBgm = id;
   } catch {
     bgmHandle = null;
