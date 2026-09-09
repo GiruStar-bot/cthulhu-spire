@@ -120,7 +120,6 @@ export interface GameStore {
   event: GameEvent | null;
   restMode: "hub" | "inn" | "pub" | "smith" | "upgrade" | "choose" | "deck" | "sell" | null;
   toast: string | null;
-  shells: number;
   village: VillageState | null;
   inspectDeck: boolean;
 
@@ -265,11 +264,13 @@ function presentCombat(
       playBgm("reward");
       const treasure = hadTreasureWanderer(cur.combat.enemies);
       const gained = rollShells(cur) * (treasure ? 3 : 1);
+      const profile = { ...cur.profile, shells: cur.profile.shells + gained };
+      persist(profile);
       set({
         scene: "reward",
         reward: makeRewards(cur),
         rewardShells: gained,
-        shells: cur.shells + gained,
+        profile,
         toast: gained ? `きれいな貝殻 +${gained}` : cur.toast,
       });
     }, 920);
@@ -459,7 +460,6 @@ export const useGame = create<GameStore>((set, get) => {
     event: null,
     restMode: null,
     toast: null,
-    shells: 0,
     village: null,
     inspectDeck: false,
 
@@ -593,7 +593,6 @@ export const useGame = create<GameStore>((set, get) => {
         restMode: null,
         targeting: null,
         toast: null,
-        shells: 0,
         village: null,
         inspectDeck: false,
       });
@@ -703,7 +702,7 @@ export const useGame = create<GameStore>((set, get) => {
 
     innStay: (tier) => {
       const s = get();
-      if (s.shells < tier) {
+      if (s.profile.shells < tier) {
         set({ toast: "貝殻が足りない。" });
         return;
       }
@@ -711,8 +710,10 @@ export const useGame = create<GameStore>((set, get) => {
       const san = tier === 10 ? 10 : tier === 20 ? 20 : 30;
       const heal = Math.round(s.maxHp * pct);
       sfx.ui();
+      const profile = { ...s.profile, shells: s.profile.shells - tier };
+      persist(profile);
       set({
-        shells: s.shells - tier,
+        profile,
         hp: Math.min(s.maxHp, s.hp + heal),
         sanity: Math.min(s.maxSanity, s.sanity + san),
         restMode: "hub",
@@ -724,14 +725,16 @@ export const useGame = create<GameStore>((set, get) => {
       const s = get();
       const price = SHOP_PRICE.beer ?? 5;
       if (!s.village || s.village.beerSold) return;
-      if (s.shells < price) {
+      if (s.profile.shells < price) {
         set({ toast: "貝殻が足りない。" });
         return;
       }
       useCollectionStore.getState().addLootCard("beer");
       sfx.reward();
+      const profile = { ...s.profile, shells: s.profile.shells - price };
+      persist(profile);
       set({
-        shells: s.shells - price,
+        profile,
         village: { ...s.village, beerSold: true },
         toast: "ビール瓶を戦利品として持ち帰った。",
       });
@@ -742,15 +745,17 @@ export const useGame = create<GameStore>((set, get) => {
       const shop = s.village?.smith;
       const good = shop?.goods.find((g) => g.uid === uid);
       if (!s.village || !shop || !good || good.sold) return;
-      if (s.shells < good.price) {
+      if (s.profile.shells < good.price) {
         set({ toast: "貝殻が足りない。" });
         return;
       }
       const goods = shop.goods.map((g) => (g.uid === uid ? { ...g, sold: true } : g));
       useCollectionStore.getState().addLootCard(good.defId);
       sfx.reward();
+      const profile = { ...s.profile, shells: s.profile.shells - good.price };
+      persist(profile);
       set({
-        shells: s.shells - good.price,
+        profile,
         village: { ...s.village, smith: { ...shop, goods } },
         toast: `${getCard(good.defId).name}を戦利品として持ち帰った。`,
       });
@@ -761,8 +766,8 @@ export const useGame = create<GameStore>((set, get) => {
       const shop = s.village?.smith;
       if (!s.village || !shop) return;
       const good = shop.equipmentGoods.find((g) => g.uid === goodUid);
-      if (!good || good.sold || s.shells < good.price) {
-        if (good && !good.sold && s.shells < good.price) set({ toast: "貝殻が足りない。" });
+      if (!good || good.sold || s.profile.shells < good.price) {
+        if (good && !good.sold && s.profile.shells < good.price) set({ toast: "貝殻が足りない。" });
         return;
       }
       const inst = rollEquipmentAtTier(good.defId, good.tier, s.rand, "smith");
@@ -771,8 +776,10 @@ export const useGame = create<GameStore>((set, get) => {
         g.uid === goodUid ? { ...g, sold: true } : g,
       );
       sfx.reward();
+      const profile = { ...s.profile, shells: s.profile.shells - good.price };
+      persist(profile);
       set({
-        shells: s.shells - good.price,
+        profile,
         village: { ...s.village, smith: { ...shop, equipmentGoods } },
         toast: `${equipmentLabel(inst)} を購入した。`,
       });
@@ -782,7 +789,7 @@ export const useGame = create<GameStore>((set, get) => {
       const s = get();
       const taboo = !!s.village?.smith.taboo;
       const cost = taboo ? 0 : 5;
-      if (s.shells < cost) {
+      if (s.profile.shells < cost) {
         set({ toast: "貝殻が足りない。" });
         return;
       }
@@ -793,9 +800,11 @@ export const useGame = create<GameStore>((set, get) => {
       }
       const deck = s.deck.map((c) => (c.uid === cardUid ? forgeCard(c, taboo) : c));
       sfx.select();
+      const profile = { ...s.profile, shells: s.profile.shells - cost };
+      persist(profile);
       set({
         deck,
-        shells: s.shells - cost,
+        profile,
         restMode: "smith",
         toast: `${getCard(card.defId).name}を焼いた。`,
       });
@@ -1063,7 +1072,9 @@ export const useGame = create<GameStore>((set, get) => {
       collection.removeEquipment(sellEquipmentUids);
       collection.removeRunes(sellRuneIds);
       sfx.reward();
-      set({ shells: s.shells + total, toast: `貝殻+${total}` });
+      const profile = { ...s.profile, shells: s.profile.shells + total };
+      persist(profile);
+      set({ profile, toast: `貝殻+${total}` });
     },
   };
 });

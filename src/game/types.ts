@@ -273,6 +273,7 @@ export interface PlayerProfile {
   seenRlyeh: boolean;
   grimoireRead: string[];
   equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>;
+  shells: number;
 }
 
 export interface MapNode {

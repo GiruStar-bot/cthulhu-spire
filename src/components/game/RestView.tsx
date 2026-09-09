@@ -22,7 +22,7 @@ export function RestView() {
 }
 
 function Shells() {
-  const n = useGame((s) => s.shells);
+  const n = useGame((s) => s.profile.shells);
   return (
     <span className="inline-flex items-center gap-1.5 font-pixel text-xs tabular-nums text-white">
       <img src={asset("art/shell.jpg")} alt="" className="size-5 rounded-none border-2 border-border object-cover" />
@@ -136,7 +136,7 @@ function InnRoom() {
   const visit = useGame((s) => s.visitVillage);
   const buyBeer = useGame((s) => s.buyBeer);
   const village = useGame((s) => s.village);
-  const shells = useGame((s) => s.shells);
+  const shells = useGame((s) => s.profile.shells);
   const beerSold = !!village?.beerSold;
   return (
     <section className="relative h-dvh overflow-hidden bg-ink font-pixel">
@@ -206,7 +206,7 @@ function SmithRoom() {
   const buy = useGame((s) => s.buyGood);
   const buyEquipmentGood = useGame((s) => s.buyEquipmentGood);
   const visit = useGame((s) => s.visitVillage);
-  const shells = useGame((s) => s.shells);
+  const shells = useGame((s) => s.profile.shells);
   const shop = village?.smith;
   if (!shop) return null;
   return (
