@@ -130,6 +130,26 @@
     border-image-repeat: round;
   }
 
+  .frame-card-common {
+    clip-path: none;
+    border-style: solid;
+    border-width: 10px;
+    border-image-source: url("./assets/ui/frame_card_common.png");
+    border-image-slice: 66;
+    border-image-width: 1;
+    border-image-repeat: round;
+  }
+
+  .frame-card-uncommon {
+    clip-path: none;
+    border-style: solid;
+    border-width: 12px;
+    border-image-source: url("./assets/ui/frame_card_uncommon.png");
+    border-image-slice: 130;
+    border-image-width: 1;
+    border-image-repeat: round;
+  }
+
   .frame-panel {
     clip-path: none;
     box-shadow: none;

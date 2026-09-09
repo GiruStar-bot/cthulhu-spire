@@ -20,6 +20,14 @@ export function CardView({
   const cost = cardCost(card);
   const costLabel = d.xCost ? "X" : d.unplayable ? "—" : String(cost);
   const Tag = onClick ? "button" : "div";
+  const frameClass =
+    d.rarity === "rare"
+      ? "frame-card"
+      : d.rarity === "uncommon"
+        ? "frame-card-uncommon"
+        : d.rarity === "common"
+          ? "frame-card-common"
+          : "";
   const headerTone =
     d.aiTag === "attack"
       ? "border-red-600 bg-red-950/85"
@@ -28,15 +36,28 @@ export function CardView({
         : d.aiTag === "effect"
           ? "border-purple-500 bg-purple-950/85"
           : "border-border bg-ink-2";
+  const outlineColor =
+    frameClass
+      ? ""
+      : d.aiTag === "attack"
+        ? "border-red-600"
+        : d.aiTag === "defense"
+          ? "border-blue-500"
+          : d.aiTag === "effect"
+            ? "border-purple-500"
+            : "border-white";
 
   return (
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={cn(
-        "frame-card relative flex shrink-0 flex-col bg-ink-2 text-left font-pixel",
+        frameClass,
+        "relative flex shrink-0 flex-col bg-ink-2 text-left font-pixel",
         "transition-[transform,box-shadow,filter] duration-100",
-        compact ? "h-48 w-32 border-[8px]" : "h-64 w-40 border-[12px] sm:h-72 sm:w-48",
+        compact ? "h-48 w-32" : "h-64 w-40 sm:h-72 sm:w-48",
+        frameClass ? (compact ? "border-[8px]" : "") : "border-2",
+        outlineColor,
         selected ? "-translate-y-2" : "",
         playable && onClick ? "hover:-translate-y-1.5" : "",
         onClick ? "active:translate-y-[1px] active:brightness-90" : "",
