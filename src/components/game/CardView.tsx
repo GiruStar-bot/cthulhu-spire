@@ -1,7 +1,14 @@
 import { ARCHETYPE_LABELS, cardCost, cardText, getCard } from "@/game/cards";
 import { PixelSprite } from "@/components/ui/PixelSprite";
-import type { CardInst } from "@/game/types";
+import type { Archetype, CardInst } from "@/game/types";
 import { cn } from "@/lib/utils";
+
+const MYTHOS_ARCHETYPES = ["greatold", "elder", "outer"] as const;
+type MythosArchetype = (typeof MYTHOS_ARCHETYPES)[number];
+
+function isMythosArchetype(archetype: Archetype | undefined): archetype is MythosArchetype {
+  return archetype === "greatold" || archetype === "elder" || archetype === "outer";
+}
 
 export function CardView({
   card,
@@ -20,8 +27,9 @@ export function CardView({
   const cost = cardCost(card);
   const costLabel = d.xCost ? "X" : d.unplayable ? "—" : String(cost);
   const Tag = onClick ? "button" : "div";
-  const frameClass =
-    d.rarity === "rare"
+  const frameClass = isMythosArchetype(d.archetype)
+    ? `frame-card-${d.archetype}`
+    : d.rarity === "rare"
       ? "frame-card"
       : d.rarity === "uncommon"
         ? "frame-card-uncommon"
