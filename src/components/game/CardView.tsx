@@ -1,5 +1,4 @@
 import { ARCHETYPE_LABELS, cardCost, cardText, getCard } from "@/game/cards";
-import { PanelCorners } from "@/components/ui/PanelCorners";
 import { PixelSprite } from "@/components/ui/PixelSprite";
 import type { CardInst } from "@/game/types";
 import { cn } from "@/lib/utils";
@@ -21,24 +20,23 @@ export function CardView({
   const cost = cardCost(card);
   const costLabel = d.xCost ? "X" : d.unplayable ? "—" : String(cost);
   const Tag = onClick ? "button" : "div";
-  const borderColor =
+  const headerTone =
     d.aiTag === "attack"
-      ? "border-red-600"
+      ? "border-red-600 bg-red-950/85"
       : d.aiTag === "defense"
-        ? "border-blue-500"
+        ? "border-blue-500 bg-blue-950/85"
         : d.aiTag === "effect"
-          ? "border-purple-500"
-          : "border-white";
+          ? "border-purple-500 bg-purple-950/85"
+          : "border-border bg-ink-2";
 
   return (
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={cn(
-        "relative flex shrink-0 flex-col overflow-hidden border-2 bg-ink-2 text-left font-pixel",
-        borderColor,
+        "frame-card relative flex shrink-0 flex-col bg-ink-2 text-left font-pixel",
         "transition-[transform,box-shadow,filter] duration-100",
-        compact ? "h-48 w-32" : "h-64 w-40 sm:h-72 sm:w-48",
+        compact ? "h-48 w-32 border-[8px]" : "h-64 w-40 border-[12px] sm:h-72 sm:w-48",
         selected ? "-translate-y-2" : "",
         playable && onClick ? "hover:-translate-y-1.5" : "",
         onClick ? "active:translate-y-[1px] active:brightness-90" : "",
@@ -46,8 +44,13 @@ export function CardView({
         d.type === "status" ? "grayscale" : "",
       )}
     >
-      <PanelCorners className={compact ? "size-4" : "size-5"} />
-      <div className="flex shrink-0 items-center justify-between gap-1 border-b-2 border-border bg-ink-2 px-1 py-0.5">
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-between gap-1 border-b-2",
+          headerTone,
+          compact ? "px-1 py-0.5" : "px-1.5 py-1",
+        )}
+      >
         <p className={cn("min-w-0 truncate text-white", compact ? "text-xs" : "text-sm")}>
           {d.name}
           {card.upgraded ? "+" : ""}
@@ -59,19 +62,19 @@ export function CardView({
         ) : null}
       </div>
 
-      <div className="relative min-h-16 flex-1 overflow-hidden">
+      <div
+        className={cn(
+          "relative min-h-0 flex-1 overflow-hidden border border-black/70 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
+          compact ? "mx-0.5 mt-0.5" : "mx-1 mt-1",
+        )}
+      >
         <PixelSprite src={d.art} className="size-full object-cover" />
-        <span className="panel absolute top-1 left-1 z-10 grid size-8 place-items-center text-sm text-white">
+        <span className="panel absolute top-1 left-1 z-10 grid size-7 place-items-center text-xs text-white sm:size-8 sm:text-sm">
           {costLabel}
         </span>
       </div>
 
-      <div className="relative h-1 shrink-0 bg-ink-2">
-        <div className="absolute inset-x-0 top-0 h-px bg-border" />
-        <div className="absolute inset-x-0 bottom-0 h-px bg-border" />
-      </div>
-
-      <div className="shrink-0 bg-ink-2 px-1 py-1 text-left">
+      <div className={cn("shrink-0 bg-ink-2 text-left", compact ? "px-1 py-0.5" : "px-1.5 py-1")}>
         <p className={cn("text-left text-white/80", compact ? "text-[9px] leading-snug" : "text-[10px] leading-snug")}>
           {cardText(card)}
         </p>
