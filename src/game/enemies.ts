@@ -300,7 +300,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "throne",
     maxHp: 96,
     trait: "split",
-    archetype: "elder",
+    archetype: "greatold",
     signatureCardId: "protosurge",
     cardsPerTurn: 2,
     deck: ["protosurge", "all-geo", "all-glass", "ironwill", "all-zero"],

@@ -14,6 +14,7 @@ export const ARCHETYPE_LABELS: Partial<Record<Archetype, string>> = {
   deep: "深き者",
   offering: "供物",
   shadow: "影",
+  greatold: "旧支配者",
 };
 
 export const CARDS: Record<string, CardDef> = {

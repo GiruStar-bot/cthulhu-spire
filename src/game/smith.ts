@@ -69,12 +69,12 @@ export const SHOP_CARDS: Record<string, CardDef> = {
   star_sword: atk("star_sword", "忌まわしき星の剣", 2, "16ダメージ。デッキに負傷を加える。", shopArt("star_sword"), [
     { t: "damage", n: 16 },
     { t: "addCurse", id: "wound" },
-  ], { archetype: "elder" }),
+  ], { archetype: "greatold" }),
   spawn_blade: atk("spawn_blade", "星の落とし子の触手刃", 3, "24ダメージ。拘束。幻覚が混入する。", shopArt("spawn_blade"), [
     { t: "damage", n: 24 },
     { t: "bind" },
     { t: "addCurse", id: "hallucination" },
-  ], { archetype: "elder" }),
+  ], { archetype: "greatold" }),
   cthugha_blade: atk("cthugha_blade", "クトゥグアの炎剣", 2, "20ダメージ。手札をすべて廃棄。", shopArt("cthugha_blade"), [
     { t: "damage", n: 20 },
     { t: "exhaustHand" },
@@ -108,7 +108,7 @@ export const SHOP_CARDS: Record<string, CardDef> = {
   hastur_bow: atk("hastur_bow", "ハスターの風弓", 2, "敵全体に18ダメージ。弱体1。", shopArt("hastur_bow"), [
     { t: "damageAll", n: 18 },
     { t: "weak", n: 1 },
-  ], { target: "all", archetype: "elder" }),
+  ], { target: "all", archetype: "greatold" }),
   blackwood_bow: atk("blackwood_bow", "黒き森の弓", 1, "6ダメージを3回。狂気を加える。", shopArt("blackwood_bow"), [
     { t: "damage", n: 6 },
     { t: "damage", n: 6 },
@@ -150,11 +150,11 @@ export const SHOP_CARDS: Record<string, CardDef> = {
   cthulhu_mail: skl("cthulhu_mail", "クトゥルフの夢装甲", 3, "ブロック30。睡眠が混入する。", shopArt("cthulhu_mail"), [
     { t: "block", n: 30 },
     { t: "addCurse", id: "sleep" },
-  ], { archetype: "elder" }),
+  ], { archetype: "greatold" }),
   tsathoggua_shield: skl("tsathoggua_shield", "ツァトゥグァの怠惰盾", 2, "ブロック22。次のドロー-1。", shopArt("tsathoggua_shield"), [
     { t: "block", n: 22 },
     { t: "skipDraw", n: 1 },
-  ], { archetype: "elder" }),
+  ], { archetype: "greatold" }),
   yog_gate: skl("yog_gate", "ヨグ＝ソトースの門", 3, "ブロック45。廃棄。次ターンエネルギー-2。", shopArt("yog_gate"), [
     { t: "block", n: 45 },
     { t: "energyNext", n: -2 },

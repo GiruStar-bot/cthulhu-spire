@@ -253,6 +253,9 @@ export function startCombat(
     if (archetype === "fanatic") {
       c.strength += tier;
     }
+    if (archetype === "greatold") {
+      c.strength += tier;
+    }
     if (archetype === "poison") {
       for (const e of c.enemies) e.poison += tier;
     }

@@ -207,6 +207,7 @@ export type Archetype =
   | "deep"
   | "offering"
   | "shadow"
+  | "greatold"
   | "generic";
 
 export type DeckSynergy = { archetype: Archetype; tier: 1 | 2 | 3 } | null;
