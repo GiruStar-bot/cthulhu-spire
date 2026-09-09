@@ -1,5 +1,6 @@
 import { PrepareView } from "@/components/game/PrepareView";
-import { CollectionCard } from "@/components/loadout/CollectionCard";
+import { SellScreen } from "@/components/game/SellScreen";
+import { ShopPanel } from "@/components/game/ShopPanel";
 import { DeckBuilderScreen } from "@/components/loadout/DeckBuilderScreen";
 import { EquipmentScreen } from "@/components/loadout/EquipmentScreen";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -10,16 +11,17 @@ import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
 import { loadoutError } from "@/game/cardEvaluator";
-import { useCollectionStore, type CardInstance } from "@/store/useCollectionStore";
+import { useCollectionStore } from "@/store/useCollectionStore";
 import { useState } from "react";
 
-type HubTab = "descend" | "deck" | "equipment" | "stash";
+type HubTab = "descend" | "deck" | "equipment" | "sell" | "shop";
 
 const NAV: { id: HubTab; label: string }[] = [
   { id: "descend", label: "探索開始" },
   { id: "deck", label: "デッキ編成" },
   { id: "equipment", label: "装備" },
-  { id: "stash", label: "戦利品" },
+  { id: "sell", label: "売却" },
+  { id: "shop", label: "ショップ" },
 ];
 
 export function HubScreen() {
@@ -88,7 +90,8 @@ export function HubScreen() {
           {tab === "descend" ? checkpoint ? <CheckpointPanel /> : <PrepareView embedded /> : null}
           {tab === "deck" ? <DeckBuilderScreen embedded /> : null}
           {tab === "equipment" ? <EquipmentScreen /> : null}
-          {tab === "stash" ? <StashPanel /> : null}
+          {tab === "sell" ? <SellScreen onClose={() => setTab("descend")} /> : null}
+          {tab === "shop" ? <ShopPanel /> : null}
         </div>
       </div>
     </section>
@@ -127,47 +130,6 @@ function CheckpointPanel() {
         {deckErr ? <p className="mt-3 text-xs text-blood">{deckErr}</p> : null}
         {toast ? <p className="mt-3 text-xs text-muted">{toast}</p> : null}
       </PixelWindow>
-    </div>
-  );
-}
-
-function groupLoot(cards: CardInstance[]): { baseCardId: string; representative: CardInstance; count: number }[] {
-  const map = new Map<string, { baseCardId: string; representative: CardInstance; count: number }>();
-  for (const card of cards) {
-    if ((card.origin ?? "starter") !== "loot") continue;
-    const existing = map.get(card.baseCardId);
-    if (existing) existing.count += 1;
-    else map.set(card.baseCardId, { baseCardId: card.baseCardId, representative: card, count: 1 });
-  }
-  return [...map.values()];
-}
-
-function StashPanel() {
-  const inventory = useCollectionStore((s) => s.inventory);
-  const lootGroups = groupLoot(inventory.cards);
-
-  return (
-    <div className="flex h-full min-h-0 flex-col overflow-y-auto p-3">
-      <PixelWindow className="mb-3 rounded-none">
-        <p className="text-xs tracking-widest text-muted">STASH</p>
-        <h2 className="mt-1 text-xl text-white">戦利品</h2>
-        <p className="mt-1 text-xs text-muted">これまでの潜航で得たカード。</p>
-      </PixelWindow>
-
-      <p className="mb-2 text-xs tracking-widest text-muted">カード {lootGroups.length}</p>
-      {lootGroups.length === 0 ? (
-        <p className="mb-4 text-xs text-muted">まだ戦利品として手に入れたカードはない。</p>
-      ) : (
-        <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
-          {lootGroups.map((g) => (
-            <CollectionCard
-              key={g.baseCardId}
-              instance={g.representative}
-              stackCount={g.count > 1 ? g.count : undefined}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

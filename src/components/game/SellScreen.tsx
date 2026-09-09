@@ -90,7 +90,7 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <section className="flex h-dvh flex-col overflow-hidden bg-ink font-pixel text-parchment">
+    <section className="flex h-full min-h-0 flex-col overflow-hidden bg-ink font-pixel text-parchment">
       <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-border bg-ink-2 px-3">
         <h1 className="text-sm tracking-widest text-white">売却</h1>
         <PixelButton onClick={onClose} className="min-h-9 px-3 py-1 text-xs">
