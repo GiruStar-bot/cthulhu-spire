@@ -339,7 +339,7 @@ function CombatHud({
 }) {
   const playerName = useGame((s) => s.playerName);
   const floor = useGame((s) => s.floor);
-  const shells = useGame((s) => s.shells);
+  const shells = useGame((s) => s.profile.shells);
 
   return (
     <PixelWindow className="min-w-56 px-3 py-2">

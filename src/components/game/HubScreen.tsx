@@ -27,7 +27,7 @@ const NAV: { id: HubTab; label: string }[] = [
 export function HubScreen() {
   const profile = useGame((s) => s.profile);
   const playerName = useGame((s) => s.playerName);
-  const shells = useGame((s) => s.shells);
+  const shells = useGame((s) => s.profile.shells);
   const toTitle = useGame((s) => s.toTitle);
   const extractToHub = useGame((s) => s.extractToHub);
   const floor = useGame((s) => s.floor);
@@ -104,7 +104,7 @@ function CheckpointPanel() {
   const maxHp = useGame((s) => s.maxHp);
   const sanity = useGame((s) => s.sanity);
   const maxSanity = useGame((s) => s.maxSanity);
-  const shells = useGame((s) => s.shells);
+  const shells = useGame((s) => s.profile.shells);
   const toast = useGame((s) => s.toast);
   const resume = useGame((s) => s.resumeDescent);
   const extract = useGame((s) => s.extractToHub);

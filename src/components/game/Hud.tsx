@@ -15,7 +15,7 @@ export function Vitals() {
   const floor = useGame((s) => s.floor);
   const madness = useGame((s) => s.profile.madness);
   const playerName = useGame((s) => s.playerName);
-  const shells = useGame((s) => s.shells);
+  const shells = useGame((s) => s.profile.shells);
   const worn = Object.values(equipped).filter(Boolean);
 
   return (
