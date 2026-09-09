@@ -134,10 +134,12 @@ export function CombatView() {
             </div>
           </div>
 
-          <div className="combat-hand pointer-events-auto relative z-20 flex shrink-0 items-end gap-2 px-3 pb-3 sm:px-5">
-            <div className="flex max-h-[26dvh] flex-1 gap-2 overflow-x-auto overflow-y-hidden pt-2">
-              {combat.hand.map((card) => {
+          <div className="combat-hand pointer-events-auto relative z-20 flex shrink-0 items-end gap-2 px-2 pb-2 sm:px-4">
+            <div className="combat-hand-fan flex min-w-0 flex-1 items-end justify-center pt-20">
+              {combat.hand.map((card, i) => {
                 const playable = canPlay(combat, card) && combat.phase === "player";
+                const n = combat.hand.length;
+                const pose = fanPose(n, i);
                 return (
                   <div
                     key={card.uid}
@@ -149,12 +151,25 @@ export function CombatView() {
                       setDragValid(false);
                     }}
                     className={cn(
-                      "touch-none select-none",
+                      "combat-fan-card touch-none select-none",
                       playable ? "cursor-grab" : "opacity-55",
                       drag?.uid === card.uid && "opacity-0",
                     )}
+                    style={
+                      {
+                        marginLeft: i === 0 ? 0 : pose.overlap,
+                        zIndex: i + 1,
+                        "--fan-rot": `${pose.rotate}deg`,
+                        "--fan-y": `${pose.y}px`,
+                      } as CSSProperties
+                    }
                   >
-                    <CardView card={card} playable={playable} compact />
+                    <div
+                      className="combat-fan-draw"
+                      style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
+                    >
+                      <CardView card={card} playable={playable} compact />
+                    </div>
                   </div>
                 );
               })}
@@ -495,6 +510,17 @@ function useCorpseGone(dead: boolean) {
     return () => window.clearTimeout(t);
   }, [dead]);
   return gone;
+}
+
+function fanPose(n: number, i: number) {
+  const offset = i - (n - 1) / 2;
+  const step = n <= 1 ? 0 : Math.min(5, 24 / Math.max(1, n - 1));
+  const overlap = n <= 1 ? 0 : n <= 4 ? -10 : n <= 6 ? -36 : n <= 8 ? -60 : n <= 10 ? -84 : -102;
+  return {
+    rotate: offset * step,
+    y: Math.abs(offset) * (n >= 9 ? 5 : 7),
+    overlap,
+  };
 }
 
 function isAboveHand(clientY: number): boolean {
