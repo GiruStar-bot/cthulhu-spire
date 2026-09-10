@@ -679,12 +679,6 @@ export function computeEquipmentStats(
 
 export const MIN_CHIP_DAMAGE = 1;
 
-export function applyPctReduction(damage: number, defensePct: number): number {
-  if (damage <= 0) return damage;
-  const reduced = damage * (1 - Math.min(defensePct, 100) / 100);
-  return Math.max(0, round(reduced));
-}
-
 export function applyFlatDefense(damage: number, defense: number): number {
   if (damage <= 0) return damage;
   const reduced = damage - defense;

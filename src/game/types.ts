@@ -122,7 +122,6 @@ export interface EnemyDef {
   idleFrames?: string[];
   idleFps?: number;
   maxHp: number;
-  pattern?: Intent[];
   trait?: EnemyTrait;
   biome: BiomeId;
   tier?: "mob" | "elite";

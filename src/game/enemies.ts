@@ -14,11 +14,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "shrine",
     maxHp: 32,
     archetype: "fanatic",
-    pattern: [
-      { kind: "attack", damage: 7 },
-      { kind: "attack", damage: 11 },
-      { kind: "defend", block: 8 },
-    ],
   },
   fanatic: {
     id: "fanatic",
@@ -28,11 +23,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 42,
     tier: "elite",
     archetype: "fanatic",
-    pattern: [
-      { kind: "attack", damage: 9 },
-      { kind: "debuff", weak: 2 },
-      { kind: "attack", damage: 12 },
-    ],
   },
   drowned: {
     id: "drowned",
@@ -41,11 +31,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "reef",
     maxHp: 44,
     archetype: "poison",
-    pattern: [
-      { kind: "attack", damage: 9 },
-      { kind: "defend", block: 10 },
-      { kind: "attack", damage: 6, hits: 2 },
-    ],
   },
   byakhee: {
     id: "byakhee",
@@ -55,11 +40,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 38,
     tier: "elite",
     archetype: "outer",
-    pattern: [
-      { kind: "debuff", weak: 2 },
-      { kind: "attack", damage: 13 },
-      { kind: "attack", damage: 8 },
-    ],
   },
   coral: {
     id: "coral",
@@ -69,11 +49,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 48,
     tier: "elite",
     archetype: "knight",
-    pattern: [
-      { kind: "defend", block: 10 },
-      { kind: "attack", damage: 10 },
-      { kind: "attack", damage: 6, hits: 2 },
-    ],
   },
   starveling: {
     id: "starveling",
@@ -83,12 +58,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 86,
     tier: "elite",
     archetype: "deep",
-    pattern: [
-      { kind: "buff", strength: 2 },
-      { kind: "attack", damage: 16 },
-      { kind: "attack", damage: 8, hits: 2 },
-      { kind: "defend", block: 14 },
-    ],
   },
   serpent: {
     id: "serpent",
@@ -97,12 +66,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "mu",
     maxHp: 54,
     archetype: "deep",
-    pattern: [
-      { kind: "debuff", weak: 2 },
-      { kind: "attack", damage: 12 },
-      { kind: "defend", block: 9 },
-      { kind: "attack", damage: 7, hits: 2 },
-    ],
   },
   spawn: {
     id: "spawn",
@@ -111,12 +74,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "mu",
     maxHp: 62,
     archetype: "outer",
-    pattern: [
-      { kind: "debuff", dread: 1 },
-      { kind: "attack", damage: 11 },
-      { kind: "buff", strength: 2 },
-      { kind: "attack", damage: 15 },
-    ],
   },
   migo: {
     id: "migo",
@@ -125,11 +82,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "void",
     maxHp: 40,
     archetype: "outer",
-    pattern: [
-      { kind: "attack", damage: 8 },
-      { kind: "debuff", dread: 1 },
-      { kind: "attack", damage: 5, hits: 2 },
-    ],
   },
   colour: {
     id: "colour",
@@ -138,12 +90,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "colour",
     maxHp: 48,
     archetype: "outer",
-    pattern: [
-      { kind: "debuff", weak: 2 },
-      { kind: "attack", damage: 10 },
-      { kind: "debuff", dread: 1 },
-      { kind: "attack", damage: 13 },
-    ],
   },
   starvamp: {
     id: "starvamp",
@@ -153,11 +99,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     maxHp: 56,
     tier: "elite",
     archetype: "outer",
-    pattern: [
-      { kind: "attack", damage: 14 },
-      { kind: "attack", damage: 7, hits: 2 },
-      { kind: "defend", block: 8 },
-    ],
   },
   shan: {
     id: "shan",
@@ -166,11 +107,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     biome: "void",
     maxHp: 36,
     archetype: "outer",
-    pattern: [
-      { kind: "debuff", dread: 1 },
-      { kind: "attack", damage: 9 },
-      { kind: "attack", damage: 6, hits: 2 },
-    ],
   },
   priest: {
     id: "priest",
@@ -182,13 +118,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "revelation",
     cardsPerTurn: 2,
     deck: ["revelation", "lash", "bash", "ward", "chant"],
-    pattern: [
-      { kind: "debuff", dread: 1 },
-      { kind: "attack", damage: 18 },
-      { kind: "attack", damage: 9, hits: 2 },
-      { kind: "buff", strength: 3 },
-      { kind: "attack", damage: 22 },
-    ],
   },
   choir: {
     id: "choir",
@@ -201,12 +130,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "chorusunity",
     cardsPerTurn: 2,
     deck: ["chorusunity", "strike", "sigil", "rite"],
-    pattern: [
-      { kind: "attack", damage: 8 },
-      { kind: "debuff", dread: 1 },
-      { kind: "attack", damage: 6, hits: 2 },
-      { kind: "defend", block: 8 },
-    ],
   },
   nurse: {
     id: "nurse",
@@ -219,13 +142,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "embrace",
     cardsPerTurn: 2,
     deck: ["embrace", "dressing", "bash", "all-vacuum"],
-    pattern: [
-      { kind: "defend", block: 16 },
-      { kind: "attack", damage: 12 },
-      { kind: "defend", block: 20 },
-      { kind: "attack", damage: 9, hits: 2 },
-      { kind: "buff", strength: 2 },
-    ],
   },
   flock: {
     id: "flock",
@@ -237,12 +153,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "flockrush",
     cardsPerTurn: 2,
     deck: ["flockrush", "lash", "all-glass", "ward"],
-    pattern: [
-      { kind: "attack", damage: 5, hits: 3 },
-      { kind: "debuff", weak: 2 },
-      { kind: "attack", damage: 11 },
-      { kind: "attack", damage: 4, hits: 3 },
-    ],
   },
   warden: {
     id: "warden",
@@ -255,13 +165,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "noneuclid",
     cardsPerTurn: 2,
     deck: ["noneuclid", "eldersign", "all-phase", "bash", "all-geo"],
-    pattern: [
-      { kind: "attack", damage: 16 },
-      { kind: "defend", block: 14 },
-      { kind: "debuff", weak: 2 },
-      { kind: "attack", damage: 8, hits: 2 },
-      { kind: "buff", strength: 2 },
-    ],
   },
   bell: {
     id: "bell",
@@ -274,13 +177,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "tollbell",
     cardsPerTurn: 2,
     deck: ["tollbell", "all-necrosis", "all-zero", "ironwill"],
-    pattern: [
-      { kind: "attack", damage: 15 },
-      { kind: "debuff", dread: 1 },
-      { kind: "attack", damage: 7, hits: 2 },
-      { kind: "buff", strength: 2 },
-      { kind: "attack", damage: 20 },
-    ],
   },
   nyar: {
     id: "nyar",
@@ -304,13 +200,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "protosurge",
     cardsPerTurn: 2,
     deck: ["protosurge", "all-geo", "all-glass", "ironwill", "all-zero"],
-    pattern: [
-      { kind: "attack", damage: 14 },
-      { kind: "defend", block: 10 },
-      { kind: "attack", damage: 8, hits: 2 },
-      { kind: "debuff", dread: 1 },
-      { kind: "buff", strength: 2 },
-    ],
   },
   herald: {
     id: "herald",
@@ -322,13 +211,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "heraldscall",
     cardsPerTurn: 2,
     deck: ["heraldscall", "thecall", "all-zero", "ironwill", "eldersign"],
-    pattern: [
-      { kind: "debuff", dread: 1, weak: 2 },
-      { kind: "attack", damage: 16, hits: 2 },
-      { kind: "buff", strength: 3 },
-      { kind: "attack", damage: 24 },
-      { kind: "defend", block: 18 },
-    ],
   },
   mouth: {
     id: "mouth",
@@ -340,13 +222,6 @@ export const ENEMIES: Record<string, EnemyDef> = {
     signatureCardId: "devourmaw",
     cardsPerTurn: 2,
     deck: ["devourmaw", "thecall", "all-zero", "all-necrosis", "ironwill", "eldersign"],
-    pattern: [
-      { kind: "debuff", dread: 2 },
-      { kind: "attack", damage: 12, hits: 3 },
-      { kind: "buff", strength: 4 },
-      { kind: "attack", damage: 28 },
-      { kind: "attack", damage: 18, hits: 2 },
-    ],
   },
   treasure_wanderer: {
     id: "treasure_wanderer",
