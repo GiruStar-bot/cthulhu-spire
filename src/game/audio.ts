@@ -17,7 +17,7 @@ let musicVolume = 0.9;
 export type BgmId = "title" | "combat" | "rest" | "event" | "boss" | "reward" | "none";
 export type SfxCue = "attack" | "skill" | "block" | "hurt" | "step";
 
-type SampleId = "attack" | "block" | "hurt" | "step" | "lose";
+type SampleId = "attack" | "block" | "hurt" | "step" | "lose" | "select";
 
 type BgmHandle = {
   id: BgmId;
@@ -30,6 +30,7 @@ const SAMPLE: Record<SampleId, string> = {
   hurt: "sfx/hurt.wav",
   step: "sfx/step.mp3",
   lose: "sfx/lose.mp3",
+  select: "sfx/select.mp3",
 };
 
 const buffers = new Map<SampleId, AudioBuffer>();
@@ -258,6 +259,7 @@ const synth: Record<SampleId, () => void> = {
   },
   step: () => blip(180, 0.08, "triangle", 0.025, 0.7),
   lose: () => blip(48, 0.45, "sine", 0.06, 0.6),
+  select: () => blip(520, 0.06, "sine", 0.03),
 };
 
 function playSample(id: SampleId, gain = 0.7, vary = true) {
@@ -286,7 +288,7 @@ export const sfx = {
   block: () => playSample("block", 0.72),
   hurt: () => playSample("hurt", 0.82),
   step: () => playSample("step", 0.9, true),
-  select: () => blip(520, 0.06, "sine", 0.03),
+  select: () => playSample("select", 0.8, false),
   play: () => {
     blip(240, 0.08, "triangle", 0.035);
     blip(360, 0.06, "sine", 0.02);
@@ -304,7 +306,7 @@ export const sfx = {
     blip(392, 0.1, "triangle", 0.03);
     setTimeout(() => blip(523, 0.12, "triangle", 0.03), 90);
   },
-  ui: () => blip(420, 0.05, "sine", 0.02),
+  ui: () => playSample("select", 0.6, false),
 };
 
 export function playCues(cues: SfxCue[]) {

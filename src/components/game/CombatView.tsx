@@ -515,7 +515,7 @@ function useCorpseGone(dead: boolean) {
 function fanPose(n: number, i: number) {
   const offset = i - (n - 1) / 2;
   const step = n <= 1 ? 0 : Math.min(5, 24 / Math.max(1, n - 1));
-  const overlap = n <= 1 ? 0 : n <= 4 ? -10 : n <= 6 ? -36 : n <= 8 ? -60 : n <= 10 ? -84 : -102;
+  const overlap = n <= 1 ? 0 : n <= 4 ? -8 : n <= 6 ? -24 : n <= 8 ? -40 : n <= 10 ? -56 : -68;
   return {
     rotate: offset * step,
     y: Math.abs(offset) * (n >= 9 ? 5 : 7),
