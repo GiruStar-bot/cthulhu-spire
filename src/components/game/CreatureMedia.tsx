@@ -1,4 +1,4 @@
-import { isVideoSrc, videoStem } from "@/lib/media";
+import { isVideoSrc, videoUrl } from "@/lib/media";
 import { useEffect, useRef } from "react";
 
 export function CreatureMedia({
@@ -34,7 +34,6 @@ function CreatureVideo({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stem = videoStem(src);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -79,8 +78,8 @@ function CreatureVideo({
         poster={poster}
         crossOrigin="anonymous"
       >
-        <source src={`${stem}.mp4`} type="video/mp4" />
-        <source src={`${stem}.webm`} type="video/webm" />
+        <source src={videoUrl(src, "mp4")} type="video/mp4" />
+        <source src={videoUrl(src, "webm")} type="video/webm" />
       </video>
       <canvas ref={canvasRef} className={className ?? "creature-video-canvas"} aria-hidden />
     </>
