@@ -634,8 +634,6 @@
   filter: contrast(1.1) saturate(0.95) brightness(1.14) drop-shadow(0 22px 18px color-mix(in oklab, var(--color-ink) 88%, transparent));
   mask-image: none;
   -webkit-mask-image: none;
-  transform: scale(1.05);
-  transform-origin: 50% 100%;
 }
 
 .enemy-figure video,
