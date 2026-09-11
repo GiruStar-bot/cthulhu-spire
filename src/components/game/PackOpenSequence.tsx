@@ -27,7 +27,6 @@ export function PackOpenSequence({
 }) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [revealCount, setRevealCount] = useState(0);
-  const [flash, setFlash] = useState(false);
   const [rarePop, setRarePop] = useState<number | null>(null);
 
   useEffect(() => {
@@ -36,13 +35,8 @@ export function PackOpenSequence({
       return () => window.clearTimeout(t);
     }
     if (phase === "bursting") {
-      setFlash(true);
-      const flashOff = window.setTimeout(() => setFlash(false), 400);
       const t = window.setTimeout(() => setPhase("revealing"), 450);
-      return () => {
-        window.clearTimeout(t);
-        window.clearTimeout(flashOff);
-      };
+      return () => window.clearTimeout(t);
     }
   }, [phase]);
 
@@ -57,8 +51,6 @@ export function PackOpenSequence({
       setRevealCount((c) => c + 1);
       if (isSpecialReveal(cardIds[nextIndex]!)) {
         setRarePop(nextIndex);
-        setFlash(true);
-        window.setTimeout(() => setFlash(false), 350);
         window.setTimeout(() => setRarePop((p) => (p === nextIndex ? null : p)), 500);
       }
     }, REVEAL_INTERVAL_MS);
@@ -68,14 +60,11 @@ export function PackOpenSequence({
   const skip = () => {
     setPhase("done");
     setRevealCount(cardIds.length);
-    setFlash(false);
     setRarePop(null);
   };
 
   return (
     <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 p-3">
-      {flash ? <div className="pack-flash-overlay" /> : null}
-
       {phase === "idle" || phase === "shaking" || phase === "bursting" ? (
         <button
           type="button"
