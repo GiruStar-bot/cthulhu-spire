@@ -23,6 +23,7 @@ export function emptyProfile(): PlayerProfile {
     grimoireRead: [],
     equipped: {},
     shells: 0,
+    equipmentPresets: {},
   };
 }
 
@@ -132,6 +133,7 @@ export function loadProfile(): PlayerProfile {
       grimoireRead: Array.isArray(p.grimoireRead) ? p.grimoireRead.filter((id) => typeof id === "string") : [],
       equipped: p.equipped ?? {},
       shells: typeof p.shells === "number" ? Math.max(0, p.shells | 0) : 0,
+      equipmentPresets: p.equipmentPresets ?? {},
     };
   } catch {
     return emptyProfile();

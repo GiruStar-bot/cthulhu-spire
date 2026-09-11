@@ -224,11 +224,18 @@ function InventoryTile({
   );
 }
 
+type PresetEditMode = { type: "create" } | { type: "rename"; name: string };
+
 export function EquipmentScreen() {
   const inventory = useCollectionStore((s) => s.inventory);
   const equipped = useGame((s) => s.profile.equipped);
+  const equipmentPresets = useGame((s) => s.profile.equipmentPresets);
   const equipItem = useGame((s) => s.equipItem);
   const unequipSlot = useGame((s) => s.unequipSlot);
+  const saveEquipmentPreset = useGame((s) => s.saveEquipmentPreset);
+  const applyEquipmentPreset = useGame((s) => s.applyEquipmentPreset);
+  const deleteEquipmentPreset = useGame((s) => s.deleteEquipmentPreset);
+  const renameEquipmentPreset = useGame((s) => s.renameEquipmentPreset);
   const socketRuneToEquipment = useCollectionStore((s) => s.socketRuneToEquipment);
   const unsocketRuneFromEquipment = useCollectionStore((s) => s.unsocketRuneFromEquipment);
   const [activeUid, setActiveUid] = useState<string | null>(null);
@@ -237,6 +244,23 @@ export function EquipmentScreen() {
   const [sortAsc, setSortAsc] = useState(false);
   const [runeQuery, setRuneQuery] = useState("");
   const [runeCategory, setRuneCategory] = useState<RuneCategory | null>(null);
+  const [presetMode, setPresetMode] = useState<PresetEditMode | null>(null);
+  const [presetDraftName, setPresetDraftName] = useState("");
+
+  const presetNames = Object.keys(equipmentPresets);
+
+  const commitPresetEdit = () => {
+    if (!presetMode) return;
+    if (presetMode.type === "create") {
+      const trimmed = presetDraftName.trim();
+      if (!trimmed) return;
+      saveEquipmentPreset(trimmed);
+      setPresetMode(null);
+    } else {
+      const ok = renameEquipmentPreset(presetMode.name, presetDraftName);
+      if (ok) setPresetMode(null);
+    }
+  };
 
   const equippedUids = new Set(
     EQUIPMENT_SLOTS.map((slot) => equipped[slot]?.uid).filter((id): id is string => !!id),
@@ -329,6 +353,71 @@ export function EquipmentScreen() {
               </p>
             )}
           </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-2">
+          <span className="mr-1 text-[10px] text-muted">プリセット</span>
+          {presetNames.map((name) => (
+            <span key={name} className="panel flex items-center gap-1 px-1.5 py-0.5">
+              <button
+                type="button"
+                onClick={() => applyEquipmentPreset(name)}
+                className="text-[10px] text-white"
+              >
+                {name}
+              </button>
+              <button
+                type="button"
+                title="改名"
+                onClick={() => {
+                  setPresetMode({ type: "rename", name });
+                  setPresetDraftName(name);
+                }}
+                className="text-[10px] text-muted hover:text-white"
+              >
+                ✎
+              </button>
+              <button
+                type="button"
+                title="削除"
+                onClick={() => deleteEquipmentPreset(name)}
+                className="text-[10px] text-muted hover:text-blood"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+          <PixelButton
+            className="min-h-0 px-1.5 py-0.5 text-[10px]"
+            onClick={() => {
+              setPresetMode({ type: "create" });
+              setPresetDraftName("");
+            }}
+          >
+            ＋新規保存
+          </PixelButton>
+          {presetMode ? (
+            <>
+              <input
+                autoFocus
+                value={presetDraftName}
+                onChange={(e) => setPresetDraftName(e.target.value)}
+                maxLength={12}
+                placeholder="プリセット名"
+                className="panel px-2 py-1 font-pixel text-[10px] text-white outline-none placeholder:text-muted"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitPresetEdit();
+                  if (e.key === "Escape") setPresetMode(null);
+                }}
+              />
+              <PixelButton className="min-h-0 px-1.5 py-0.5 text-[10px]" onClick={commitPresetEdit}>
+                決定
+              </PixelButton>
+              <PixelButton className="min-h-0 px-1.5 py-0.5 text-[10px]" onClick={() => setPresetMode(null)}>
+                取消
+              </PixelButton>
+            </>
+          ) : null}
         </div>
       </div>
 
