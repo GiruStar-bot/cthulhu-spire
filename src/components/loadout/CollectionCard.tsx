@@ -28,19 +28,17 @@ export function CollectionCard({
   return (
     <div
       className={cn(
-        "relative box-border rounded-none",
-        size === "sm" && "w-32",
-        size === "md" && "w-36",
-        size === "lg" && "w-44 sm:w-48",
+        "relative box-border w-full rounded-none",
         dim && "opacity-40",
         selected && "outline-2 outline-offset-2 outline-white",
       )}
     >
       <div
         className={cn(
-          size === "sm" && "[&>*]:!h-48 [&>*]:!w-32",
-          size === "md" && "[&>*]:!h-48 [&>*]:!w-36",
-          size === "lg" && "[&>*]:!h-64 [&>*]:!w-44 sm:[&>*]:!h-72 sm:[&>*]:!w-48",
+          "[&>*]:!box-border [&>*]:!w-full",
+          size === "sm" && "[&>*]:!h-48",
+          size === "md" && "[&>*]:!h-48",
+          size === "lg" && "[&>*]:!h-64 sm:[&>*]:!h-72",
         )}
       >
         <CardView card={card} compact={size !== "lg"} selected={selected} playable={!dim} onClick={onClick} />

@@ -668,7 +668,7 @@ export function DeckBuilderScreen({
               <p className="text-[11px] tracking-widest text-accent">
                 {previewDef.archetype ? (ARCHETYPE_LABELS[previewDef.archetype] ?? "無属性") : "無属性"}
               </p>
-              <div ref={previewCardRef} className="mt-2">
+              <div ref={previewCardRef} className="mt-2 w-44 sm:w-48">
                 <CollectionCard instance={previewInstance} size="lg" copies={previewCopies} copiesMax={previewOwned} />
               </div>
               <h2 className="mt-3 text-lg text-white">{previewDef.name}</h2>
@@ -738,7 +738,7 @@ export function DeckBuilderScreen({
 
       {flight && flying ? (
         <div
-          className="pointer-events-none fixed z-50 transition-[left,top] duration-200 ease-linear"
+          className="pointer-events-none fixed z-50 w-32 transition-[left,top] duration-200 ease-linear"
           style={{ left: flight.x, top: flight.y, transform: "translate(-50%, -50%)" }}
         >
           <CollectionCard instance={flying} size="sm" />
