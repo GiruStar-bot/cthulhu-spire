@@ -1,10 +1,11 @@
-import { CardView } from "@/components/game/CardView";
-import { PixelButton } from "@/components/ui/PixelButton";
+import { PackOpenSequence } from "@/components/game/PackOpenSequence";
 import { PixelWindow } from "@/components/ui/PixelWindow";
-import { ARCHETYPE_LABELS, makeCard } from "@/game/cards";
+import { ARCHETYPE_LABELS } from "@/game/cards";
 import { ARCHETYPE_PACK_PRICE, useGame } from "@/game/store";
 import type { Archetype } from "@/game/types";
 import { asset } from "@/lib/asset";
+import { PixelButton } from "@/components/ui/PixelButton";
+import { useState } from "react";
 
 const PACK_ARCHETYPES: Archetype[] = [
   "fanatic",
@@ -23,24 +24,27 @@ export function PackShopScreen() {
   const lastPackResult = useGame((s) => s.lastPackResult);
   const buyArchetypePack = useGame((s) => s.buyArchetypePack);
   const clearPackResult = useGame((s) => s.clearPackResult);
+  const [purchasedArchetype, setPurchasedArchetype] = useState<Archetype | null>(null);
 
   if (lastPackResult) {
     return (
       <div className="flex h-full min-h-0 flex-col overflow-y-auto p-3">
-        <PixelWindow className="mb-3">
+        <PixelWindow className="mb-3 shrink-0">
           <p className="text-xs tracking-widest text-muted">CARD PACKS</p>
-          <h2 className="mt-1 text-xl text-white">パックを開封した</h2>
+          <h2 className="mt-1 text-xl text-white">
+            {purchasedArchetype ? `${ARCHETYPE_LABELS[purchasedArchetype] ?? purchasedArchetype}パック` : "パック"}
+          </h2>
         </PixelWindow>
-        <div className="flex flex-wrap justify-center gap-3 p-2">
-          {lastPackResult.map((baseCardId, i) => (
-            <div key={i} className="[&>*]:!h-64 [&>*]:!w-44 sm:[&>*]:!h-72 sm:[&>*]:!w-48">
-              <CardView card={makeCard(baseCardId)} />
-            </div>
-          ))}
+        <div className="min-h-0 flex-1">
+          <PackOpenSequence
+            cardIds={lastPackResult}
+            packArt={purchasedArchetype ? asset(`art/pixel/packs/pack_${purchasedArchetype}.png`) : undefined}
+            onClose={() => {
+              clearPackResult();
+              setPurchasedArchetype(null);
+            }}
+          />
         </div>
-        <PixelButton onClick={clearPackResult} className="mx-auto mt-3 min-h-9 px-4 py-1 text-xs">
-          閉じる
-        </PixelButton>
       </div>
     );
   }
@@ -67,7 +71,10 @@ export function PackShopScreen() {
               <p className="text-[10px] text-muted">4枚中2枚が{label}確定</p>
               <PixelButton
                 disabled={shells < ARCHETYPE_PACK_PRICE}
-                onClick={() => buyArchetypePack(archetype)}
+                onClick={() => {
+                  setPurchasedArchetype(archetype);
+                  buyArchetypePack(archetype);
+                }}
                 className="mt-1 min-h-9 w-full px-2 py-1 text-xs"
               >
                 購入 · 貝殻{ARCHETYPE_PACK_PRICE}

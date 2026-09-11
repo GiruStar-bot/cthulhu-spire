@@ -1,7 +1,6 @@
-import { CardView } from "@/components/game/CardView";
+import { PackOpenSequence } from "@/components/game/PackOpenSequence";
 import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
-import { makeCard } from "@/game/cards";
 import { CARD_PACK_PRICE, useGame } from "@/game/store";
 
 export function ShopPanel() {
@@ -13,20 +12,13 @@ export function ShopPanel() {
   if (lastPackResult) {
     return (
       <div className="flex h-full min-h-0 flex-col overflow-y-auto p-3">
-        <PixelWindow className="mb-3">
+        <PixelWindow className="mb-3 shrink-0">
           <p className="text-xs tracking-widest text-muted">SHOP</p>
-          <h2 className="mt-1 text-xl text-white">通常パックを開封した</h2>
+          <h2 className="mt-1 text-xl text-white">通常パック</h2>
         </PixelWindow>
-        <div className="flex flex-wrap justify-center gap-3 p-2">
-          {lastPackResult.map((baseCardId, i) => (
-            <div key={i} className="[&>*]:!h-64 [&>*]:!w-44 sm:[&>*]:!h-72 sm:[&>*]:!w-48">
-              <CardView card={makeCard(baseCardId)} />
-            </div>
-          ))}
+        <div className="min-h-0 flex-1">
+          <PackOpenSequence cardIds={lastPackResult} onClose={clearPackResult} />
         </div>
-        <PixelButton onClick={clearPackResult} className="mx-auto mt-3 min-h-9 px-4 py-1 text-xs">
-          閉じる
-        </PixelButton>
       </div>
     );
   }
