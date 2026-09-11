@@ -112,7 +112,7 @@ export interface CardInst {
   forge?: number;
 }
 
-export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour" | "shrine";
+export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour" | "shrine" | "beyond";
 
 export interface EnemyDef {
   id: string;

@@ -1,7 +1,7 @@
 import { asset } from "@/lib/asset";
 import { getEnemy } from "./enemies";
 
-export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour" | "shrine";
+export type BiomeId = "reef" | "street" | "mu" | "fold" | "throne" | "void" | "colour" | "shrine" | "beyond";
 
 export interface BiomeDef {
   id: BiomeId;
@@ -18,6 +18,7 @@ export const BIOMES: Record<BiomeId, BiomeDef> = {
   void: { id: "void", name: "外宇宙", art: asset("art/pixel/bg/void.jpg") },
   colour: { id: "colour", name: "色の井戸", art: asset("art/pixel/bg/colour.jpg") },
   shrine: { id: "shrine", name: "教団の間", art: asset("art/pixel/bg/shrine.jpg") },
+  beyond: { id: "beyond", name: "時空の狭間", art: asset("art/pixel/bg/beyond.jpg") },
 };
 
 const DEPTH: BiomeId[] = ["reef", "street", "mu", "fold", "throne"];
@@ -41,6 +42,7 @@ export function biomeForEncounter(enemyIds: string[], floor: number): BiomeId {
   if (ids.includes("colour")) return "colour";
   if (ids.includes("void")) return "void";
   if (ids.includes("shrine")) return "shrine";
+  if (ids.includes("beyond")) return "beyond";
   let best: BiomeId | null = null;
   let bestD = -1;
   for (const b of ids) {
