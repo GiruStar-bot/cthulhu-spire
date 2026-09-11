@@ -15,7 +15,7 @@ type DustParticle = {
 };
 
 function makeDustParticles(): DustParticle[] {
-  const count = 15 + Math.floor(Math.random() * 11);
+  const count = 23 + Math.floor(Math.random() * 16);
   return Array.from({ length: count }, (_, i) => ({
     id: i,
     left: 40 + Math.random() * 20,
