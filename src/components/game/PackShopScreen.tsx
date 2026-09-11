@@ -19,17 +19,24 @@ const PACK_ARCHETYPES: Archetype[] = [
   "greatold",
 ];
 
-export function PackShopScreen() {
+export function PackShopScreen({ onBack }: { onBack: () => void }) {
   const shells = useGame((s) => s.profile.shells);
   const lastPackResult = useGame((s) => s.lastPackResult);
   const buyArchetypePack = useGame((s) => s.buyArchetypePack);
   const clearPackResult = useGame((s) => s.clearPackResult);
   const [purchasedArchetype, setPurchasedArchetype] = useState<Archetype | null>(null);
 
+  const backButton = (
+    <PixelButton onClick={onBack} className="fixed top-3 left-3 z-30 min-h-9 px-3 py-1 text-xs">
+      ← 戻る
+    </PixelButton>
+  );
+
   if (lastPackResult) {
     return (
-      <div className="flex h-full min-h-0 flex-col overflow-y-auto p-3">
-        <PixelWindow className="mb-3 shrink-0">
+      <div className="relative flex h-full min-h-0 flex-col overflow-y-auto p-3">
+        {backButton}
+        <PixelWindow className="mt-10 mb-3 shrink-0">
           <p className="text-xs tracking-widest text-muted">CARD PACKS</p>
           <h2 className="mt-1 text-xl text-white">
             {purchasedArchetype ? `${ARCHETYPE_LABELS[purchasedArchetype] ?? purchasedArchetype}パック` : "パック"}
@@ -50,8 +57,9 @@ export function PackShopScreen() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-y-auto p-3">
-      <PixelWindow className="mb-3">
+    <div className="relative flex h-full min-h-0 flex-col overflow-y-auto p-3">
+      {backButton}
+      <PixelWindow className="mt-10 mb-3">
         <p className="text-xs tracking-widest text-muted">CARD PACKS</p>
         <h2 className="mt-1 text-xl text-white">カードパック</h2>
         <p className="mt-1 text-xs text-muted">貝殻 {shells}</p>

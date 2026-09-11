@@ -925,27 +925,6 @@
   animation: pack-burst 0.45s ease-out forwards;
 }
 
-.pack-flash-overlay {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: white;
-  animation: pack-flash 0.4s ease-out forwards;
-}
-
-@keyframes pack-flash {
-  0% {
-    opacity: 0;
-  }
-  25% {
-    opacity: 0.9;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
 .card-flip-container {
   perspective: 1200px;
 }

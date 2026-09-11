@@ -41,6 +41,23 @@ export function HubScreen() {
   const vitals = derivedVitals(profile.stats, profile.madness);
   const checkpoint = floor > 0;
 
+  if (tab === "packs") {
+    return (
+      <section className="relative flex h-dvh w-full flex-col overflow-hidden bg-ink font-pixel text-parchment">
+        <img
+          src={asset("art/pixel/bg/loadout.jpg")}
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          crossOrigin="anonymous"
+        />
+        <div className="absolute inset-0 bg-ink/60" />
+        <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+          <PackShopScreen onBack={() => setTab("descend")} />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative flex h-dvh w-full flex-col overflow-hidden bg-ink font-pixel text-parchment">
       <img
@@ -94,7 +111,6 @@ export function HubScreen() {
           {tab === "equipment" ? <EquipmentScreen /> : null}
           {tab === "sell" ? <SellScreen onClose={() => setTab("descend")} /> : null}
           {tab === "shop" ? <ShopPanel /> : null}
-          {tab === "packs" ? <PackShopScreen /> : null}
         </div>
       </div>
     </section>
