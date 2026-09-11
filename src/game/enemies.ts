@@ -217,7 +217,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     name: "全なる者",
     ...still("yog_sothoth"),
     biome: "beyond",
-    archetype: "outer",
+    maxHp: 9999,
     signatureCardId: "thecall",
     cardsPerTurn: 3,
     deck: ["eldersign", "star_sword", "yog_gun", "blood_toll", "tower_shield", "cthulhu_mail", "self_offering", "perfect_stealth", "deep_ones_blessing", "thecall"],
