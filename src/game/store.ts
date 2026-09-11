@@ -123,6 +123,7 @@ export interface GameStore {
   toast: string | null;
   village: VillageState | null;
   inspectDeck: boolean;
+  lastPackResult: string[] | null;
 
   begin: () => void;
   toTitle: () => void;
@@ -162,7 +163,11 @@ export interface GameStore {
   applyEquipmentPreset: (name: string) => void;
   deleteEquipmentPreset: (name: string) => void;
   renameEquipmentPreset: (oldName: string, newName: string) => boolean;
+  buyCardPack: () => void;
+  clearPackResult: () => void;
 }
+
+export const CARD_PACK_PRICE = 150;
 
 function weightedCard(owner: CharacterId, rand: () => number, archetype?: Archetype): CardInst {
   const pool = rewardPool(owner);
@@ -467,6 +472,7 @@ export const useGame = create<GameStore>((set, get) => {
     toast: null,
     village: null,
     inspectDeck: false,
+    lastPackResult: null,
 
     begin: () => {
       unlockAudio();
@@ -1104,6 +1110,25 @@ export const useGame = create<GameStore>((set, get) => {
       set({ profile });
       return true;
     },
+
+    buyCardPack: () => {
+      const s = get();
+      if (s.profile.shells < CARD_PACK_PRICE) {
+        set({ toast: "貝殻が足りない。" });
+        return;
+      }
+      const owner = s.character ?? starterPath(s.profile.stats);
+      const cards = Array.from({ length: 4 }, () => weightedCard(owner, s.rand));
+      for (const c of cards) {
+        useCollectionStore.getState().addLootCard(c.defId);
+      }
+      const profile = { ...s.profile, shells: s.profile.shells - CARD_PACK_PRICE };
+      persist(profile);
+      sfx.reward();
+      set({ profile, lastPackResult: cards.map((c) => c.defId), toast: "通常パックを開封した。" });
+    },
+
+    clearPackResult: () => set({ lastPackResult: null }),
 
     sellItems: ({ cardIds, equipmentUids, runeIds }) => {
       const s = get();
