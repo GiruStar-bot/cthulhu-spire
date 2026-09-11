@@ -49,7 +49,7 @@ function groupInventory(cards: CardInstance[]): CardGroup[] {
   return [...groups.values()];
 }
 
-function nextDeckName(decks: Record<string, unknown>): string {
+export function nextDeckName(decks: Record<string, unknown>): string {
   let n = Object.keys(decks).length + 1;
   while (decks[`デッキ${n}`]) n += 1;
   return `デッキ${n}`;
@@ -223,7 +223,7 @@ function PoolThumb({
       onClick={onClick}
       title={def.name}
       className={cn(
-        "relative aspect-[5/7] overflow-hidden border-2 bg-ink-2 transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
+        "relative box-border aspect-[5/7] overflow-hidden border-2 bg-ink-2 transition-transform duration-(--motion-fast) ease-(--ease-smooth-out)",
         borderColor,
         selected ? "-translate-y-1 border-accent" : "hover:-translate-y-0.5",
         blocked ? "opacity-45" : "",
@@ -303,7 +303,16 @@ function DeckRow({
   );
 }
 
-export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean }) {
+export function DeckBuilderScreen({
+  onClose,
+  embedded = false,
+  onBack,
+}: {
+  onClose?: () => void;
+  embedded?: boolean;
+  onBack?: () => void;
+}) {
+  const hubMode = !!onBack;
   const inventory = useCollectionStore((s) => s.inventory);
   const decks = useCollectionStore((s) => s.decks);
   const activeDeck = useCollectionStore((s) => s.activeDeck);
@@ -451,7 +460,20 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
 
   return (
     <section className={cn("flex w-full flex-col font-pixel text-parchment", embedded ? "h-full bg-transparent" : "h-dvh bg-ink")}>
-      {embedded ? null : (
+      {hubMode ? (
+        <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b-2 border-border bg-ink-2 px-3">
+          <PixelButton onClick={onBack} className="min-h-9 shrink-0 px-3 py-1 text-xs">
+            ← 戻る
+          </PixelButton>
+          <h1 className="min-w-0 flex-1 truncate text-center text-sm tracking-widest">{activeDeck}</h1>
+          <span className={cn("shrink-0 text-sm tabular-nums", total >= DECK_LIMIT ? "text-blood" : "text-accent")}>
+            {total}/{DECK_LIMIT}
+          </span>
+          <PixelButton onClick={onBack} className="min-h-9 shrink-0 px-3 py-1 text-xs">
+            デッキ保存
+          </PixelButton>
+        </header>
+      ) : embedded ? null : (
         <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-border bg-ink-2 px-3">
           <h1 className="text-sm tracking-widest">デッキ編成</h1>
           <span className={cn("text-sm tabular-nums", total >= DECK_LIMIT ? "text-blood" : "text-accent")}>
@@ -467,38 +489,40 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
         </header>
       )}
 
-      <div className="flex shrink-0 flex-wrap items-center gap-1 border-b-2 border-border bg-ink-2 px-3 py-2">
-        {names.map((name) => (
-          <button
-            key={name}
-            type="button"
+      {hubMode ? null : (
+        <div className="flex shrink-0 flex-wrap items-center gap-1 border-b-2 border-border bg-ink-2 px-3 py-2">
+          {names.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => {
+                setRenaming(false);
+                setActiveDeck(name);
+              }}
+              className={cn(
+                "border-2 px-2 py-1 text-xs",
+                name === activeDeck ? "border-white bg-white text-ink" : "border-border text-muted",
+              )}
+            >
+              {name}
+            </button>
+          ))}
+          <PixelButton
+            className="min-h-8 px-2 py-1 text-[10px]"
             onClick={() => {
               setRenaming(false);
-              setActiveDeck(name);
+              createDeck(nextDeckName(decks));
             }}
-            className={cn(
-              "border-2 px-2 py-1 text-xs",
-              name === activeDeck ? "border-white bg-white text-ink" : "border-border text-muted",
-            )}
           >
-            {name}
-          </button>
-        ))}
-        <PixelButton
-          className="min-h-8 px-2 py-1 text-[10px]"
-          onClick={() => {
-            setRenaming(false);
-            createDeck(nextDeckName(decks));
-          }}
-        >
-          ＋新規デッキ
-        </PixelButton>
-        {embedded ? (
-          <span className={cn("ml-auto text-xs tabular-nums", total >= DECK_LIMIT ? "text-blood" : "text-accent")}>
-            {total}/{DECK_LIMIT}
-          </span>
-        ) : null}
-      </div>
+            ＋新規デッキ
+          </PixelButton>
+          {embedded ? (
+            <span className={cn("ml-auto text-xs tabular-nums", total >= DECK_LIMIT ? "text-blood" : "text-accent")}>
+              {total}/{DECK_LIMIT}
+            </span>
+          ) : null}
+        </div>
+      )}
 
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-border px-3 py-2">
         {renaming ? (
@@ -601,7 +625,7 @@ export function DeckBuilderScreen({ onClose, embedded = false }: { onClose?: () 
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[1fr_20rem_20rem]">
-        <div className="grid min-h-0 grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] content-start gap-2 overflow-y-auto p-3">
+        <div className="grid min-h-0 grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] content-start gap-2 overflow-y-auto p-3">
           {sortedGroups.length === 0 ? (
             <p className="col-span-full py-10 text-center text-xs text-muted">条件に合うカードがない。</p>
           ) : (

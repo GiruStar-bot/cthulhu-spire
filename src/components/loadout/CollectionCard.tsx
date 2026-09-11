@@ -28,7 +28,7 @@ export function CollectionCard({
   return (
     <div
       className={cn(
-        "relative rounded-none",
+        "relative box-border rounded-none",
         size === "sm" && "w-32",
         size === "md" && "w-36",
         size === "lg" && "w-44 sm:w-48",
