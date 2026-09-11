@@ -1,3 +1,4 @@
+import { PackShopScreen } from "@/components/game/PackShopScreen";
 import { PrepareView } from "@/components/game/PrepareView";
 import { SellScreen } from "@/components/game/SellScreen";
 import { ShopPanel } from "@/components/game/ShopPanel";
@@ -14,7 +15,7 @@ import { loadoutError } from "@/game/cardEvaluator";
 import { useCollectionStore } from "@/store/useCollectionStore";
 import { useState } from "react";
 
-type HubTab = "descend" | "deck" | "equipment" | "sell" | "shop";
+type HubTab = "descend" | "deck" | "equipment" | "sell" | "shop" | "packs";
 
 const NAV: { id: HubTab; label: string }[] = [
   { id: "descend", label: "探索開始" },
@@ -22,6 +23,7 @@ const NAV: { id: HubTab; label: string }[] = [
   { id: "equipment", label: "装備" },
   { id: "sell", label: "売却" },
   { id: "shop", label: "ショップ" },
+  { id: "packs", label: "カードパック" },
 ];
 
 export function HubScreen() {
@@ -92,6 +94,7 @@ export function HubScreen() {
           {tab === "equipment" ? <EquipmentScreen /> : null}
           {tab === "sell" ? <SellScreen onClose={() => setTab("descend")} /> : null}
           {tab === "shop" ? <ShopPanel /> : null}
+          {tab === "packs" ? <PackShopScreen /> : null}
         </div>
       </div>
     </section>
