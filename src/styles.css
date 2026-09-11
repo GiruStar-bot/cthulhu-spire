@@ -739,8 +739,16 @@
   animation: enemy-strike 420ms var(--ease-smooth-out);
 }
 
-.enemy-die {
-  animation: enemy-die 880ms ease-in forwards;
+.enemy-dissolve {
+  -webkit-mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent -16%, black 0%);
+  -webkit-mask-size: 48px 48px, 100% 100%;
+  -webkit-mask-repeat: repeat, no-repeat;
+  -webkit-mask-composite: source-in;
+  mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent -16%, black 0%);
+  mask-size: 48px 48px, 100% 100%;
+  mask-repeat: repeat, no-repeat;
+  mask-composite: intersect;
+  animation: enemy-dissolve 900ms ease-in forwards;
 }
 
 @keyframes enemy-enter {
@@ -804,20 +812,54 @@
   }
 }
 
-@keyframes enemy-die {
+@keyframes enemy-dissolve {
   0% {
+    -webkit-mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent -16%, black 0%);
+    mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent -16%, black 0%);
+    filter: brightness(1.4) saturate(1.15);
     opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: grayscale(0) brightness(1);
   }
-  28% {
-    transform: scale(1.08, 0.92) translateY(4px);
-    filter: brightness(1.6);
+  22% {
+    -webkit-mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent 6%, black 22%);
+    mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent 6%, black 22%);
+    filter: brightness(1.1) saturate(0.9);
+  }
+  46% {
+    -webkit-mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent 30%, black 46%);
+    mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent 30%, black 46%);
+    filter: brightness(0.9) saturate(0.7);
+  }
+  70% {
+    -webkit-mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent 54%, black 70%);
+    mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent 54%, black 70%);
+    filter: brightness(0.7) saturate(0.5);
+  }
+  100% {
+    -webkit-mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent 84%, black 100%);
+    mask-image: url("/art/pixel/ui/dissolve_noise.png"), linear-gradient(to top, transparent 84%, black 100%);
+    filter: brightness(0.5) saturate(0.3);
+    opacity: 0;
+  }
+}
+
+.dust-particle {
+  position: absolute;
+  border-radius: 1px;
+  background: color-mix(in oklab, var(--color-ink-2) 40%, #8a7f6b);
+  pointer-events: none;
+  animation: dust-fly 0.9s ease-out forwards;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes dust-fly {
+  0% {
+    opacity: 0.9;
+    transform: rotate(var(--angle, 0deg)) translateY(0);
   }
   100% {
     opacity: 0;
-    transform: scale(1.04, 0.28) translateY(36px);
-    filter: grayscale(1) brightness(0.4);
+    transform: rotate(var(--angle, 0deg)) translateY(calc(-1 * var(--distance, 60px)));
   }
 }
 
@@ -875,7 +917,8 @@
   .enemy-idle,
   .enemy-hit,
   .enemy-strike,
-  .enemy-die,
+  .enemy-dissolve,
+  .dust-particle,
   .fx-vertigo.is-on,
   .title-float,
   .title-float-a,
@@ -888,9 +931,15 @@
     display: none;
   }
 
-  .enemy-die {
+  .enemy-dissolve {
     opacity: 0.3;
     filter: grayscale(1);
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .dust-particle {
+    display: none;
   }
 
   .fx-blood {
