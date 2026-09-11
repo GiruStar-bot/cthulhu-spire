@@ -14,7 +14,7 @@ import type {
   Scene,
   VillageState,
 } from "./types";
-import { cardText, getCard, makeCard, rewardPool } from "./cards";
+import { ARCHETYPE_LABELS, CARDS, cardText, getCard, makeCard, rewardPool } from "./cards";
 import { EVENTS } from "./events";
 import { DEMO_MAX_FLOOR, generateRunTable, layerLabel } from "./floors";
 import {
@@ -164,10 +164,12 @@ export interface GameStore {
   deleteEquipmentPreset: (name: string) => void;
   renameEquipmentPreset: (oldName: string, newName: string) => boolean;
   buyCardPack: () => void;
+  buyArchetypePack: (archetype: Archetype) => void;
   clearPackResult: () => void;
 }
 
 export const CARD_PACK_PRICE = 150;
+export const ARCHETYPE_PACK_PRICE = 180;
 
 function weightedCard(owner: CharacterId, rand: () => number, archetype?: Archetype): CardInst {
   const pool = rewardPool(owner);
@@ -179,6 +181,36 @@ function weightedCard(owner: CharacterId, rand: () => number, archetype?: Archet
     const archetypeSliced = candidates.filter((c) => c.archetype === archetype);
     if (archetypeSliced.length > 0 && rand() < 0.5) candidates = archetypeSliced;
   }
+  const owned = useCollectionStore.getState().inventory.cards;
+  const def = weightedPickBy(
+    candidates,
+    (c) => 1 / (1 + owned.filter((o) => o.baseCardId === c.id).length),
+    rand,
+  );
+  return makeCard(def.id, false);
+}
+
+function archetypeCardPool(owner: CharacterId, archetype: Archetype) {
+  return Object.values(CARDS).filter(
+    (c) =>
+      c.archetype === archetype &&
+      c.rarity !== "starter" &&
+      c.rarity !== "status" &&
+      !c.grimoire &&
+      !c.enemyOnly &&
+      (c.owner === "shared" || c.owner === owner),
+  );
+}
+
+function weightedArchetypeCard(owner: CharacterId, archetype: Archetype, rand: () => number): CardInst {
+  // include shop-flagged cards here (unlike rewardPool) since some archetypes (e.g. greatold)
+  // only exist as smith-shop weapons, and a pack must still be able to guarantee its archetype.
+  const pool = archetypeCardPool(owner, archetype);
+  const basePool = pool.length ? pool : rewardPool(owner);
+  const roll = rand();
+  const rarity = roll < 0.62 ? "common" : roll < 0.9 ? "uncommon" : "rare";
+  const raritySliced = basePool.filter((c) => c.rarity === rarity);
+  const candidates = raritySliced.length ? raritySliced : basePool;
   const owned = useCollectionStore.getState().inventory.cards;
   const def = weightedPickBy(
     candidates,
@@ -1126,6 +1158,26 @@ export const useGame = create<GameStore>((set, get) => {
       persist(profile);
       sfx.reward();
       set({ profile, lastPackResult: cards.map((c) => c.defId), toast: "通常パックを開封した。" });
+    },
+
+    buyArchetypePack: (archetype) => {
+      const s = get();
+      if (s.profile.shells < ARCHETYPE_PACK_PRICE) {
+        set({ toast: "貝殻が足りない。" });
+        return;
+      }
+      const owner = s.character ?? starterPath(s.profile.stats);
+      const forced = Array.from({ length: 2 }, () => weightedArchetypeCard(owner, archetype, s.rand));
+      const free = Array.from({ length: 2 }, () => weightedCard(owner, s.rand));
+      const cards = [...forced, ...free];
+      for (const c of cards) {
+        useCollectionStore.getState().addLootCard(c.defId);
+      }
+      const profile = { ...s.profile, shells: s.profile.shells - ARCHETYPE_PACK_PRICE };
+      persist(profile);
+      sfx.reward();
+      const label = ARCHETYPE_LABELS[archetype] ?? archetype;
+      set({ profile, lastPackResult: cards.map((c) => c.defId), toast: `${label}パックを開封した。` });
     },
 
     clearPackResult: () => set({ lastPackResult: null }),
