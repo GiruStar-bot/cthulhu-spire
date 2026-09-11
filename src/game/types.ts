@@ -273,6 +273,7 @@ export interface PlayerProfile {
   grimoireRead: string[];
   equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>;
   shells: number;
+  equipmentPresets: Record<string, Partial<Record<EquipmentSlot, string>>>;
 }
 
 export interface MapNode {

@@ -19,6 +19,7 @@ import { EVENTS } from "./events";
 import { DEMO_MAX_FLOOR, generateRunTable, layerLabel } from "./floors";
 import {
   EQUIPMENT,
+  EQUIPMENT_SLOTS,
   equipmentLabel,
   getEquipment,
   hasFullSet,
@@ -157,6 +158,10 @@ export interface GameStore {
   equipItem: (equipmentUid: string) => void;
   unequipSlot: (slot: EquipmentSlot) => void;
   sellItems: (payload: { cardIds: string[]; equipmentUids: string[]; runeIds: string[] }) => void;
+  saveEquipmentPreset: (name: string) => void;
+  applyEquipmentPreset: (name: string) => void;
+  deleteEquipmentPreset: (name: string) => void;
+  renameEquipmentPreset: (oldName: string, newName: string) => boolean;
 }
 
 function weightedCard(owner: CharacterId, rand: () => number, archetype?: Archetype): CardInst {
@@ -1036,6 +1041,68 @@ export const useGame = create<GameStore>((set, get) => {
       persist(profile);
       set({ profile });
       sfx.select();
+    },
+
+    saveEquipmentPreset: (name) => {
+      const s = get();
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      const preset: Partial<Record<EquipmentSlot, string>> = {};
+      for (const slot of EQUIPMENT_SLOTS) {
+        const inst = s.profile.equipped[slot];
+        if (inst) preset[slot] = inst.uid;
+      }
+      const profile = {
+        ...s.profile,
+        equipmentPresets: { ...s.profile.equipmentPresets, [trimmed]: preset },
+      };
+      persist(profile);
+      set({ profile });
+      sfx.select();
+    },
+
+    applyEquipmentPreset: (name) => {
+      const s = get();
+      const preset = s.profile.equipmentPresets[name];
+      if (!preset) return;
+      const inventory = useCollectionStore.getState().inventory.equipment;
+      const equipped = { ...s.profile.equipped };
+      let missing = false;
+      for (const slot of EQUIPMENT_SLOTS) {
+        const uidRef = preset[slot];
+        if (!uidRef) continue;
+        const inst = inventory.find((e) => e.uid === uidRef);
+        if (inst) equipped[slot] = inst;
+        else missing = true;
+      }
+      const profile = { ...s.profile, equipped };
+      persist(profile);
+      set({ profile, toast: missing ? "一部の装備が見つかりませんでした。" : s.toast });
+      sfx.select();
+    },
+
+    deleteEquipmentPreset: (name) => {
+      const s = get();
+      if (!s.profile.equipmentPresets[name]) return;
+      const equipmentPresets = { ...s.profile.equipmentPresets };
+      delete equipmentPresets[name];
+      const profile = { ...s.profile, equipmentPresets };
+      persist(profile);
+      set({ profile });
+      sfx.select();
+    },
+
+    renameEquipmentPreset: (oldName, newName) => {
+      const s = get();
+      const trimmed = newName.trim();
+      if (!trimmed || s.profile.equipmentPresets[trimmed] || !s.profile.equipmentPresets[oldName]) return false;
+      const equipmentPresets = { ...s.profile.equipmentPresets };
+      equipmentPresets[trimmed] = equipmentPresets[oldName]!;
+      delete equipmentPresets[oldName];
+      const profile = { ...s.profile, equipmentPresets };
+      persist(profile);
+      set({ profile });
+      return true;
     },
 
     sellItems: ({ cardIds, equipmentUids, runeIds }) => {
