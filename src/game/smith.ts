@@ -3,8 +3,8 @@ import { asset } from "@/lib/asset";
 import { EQUIPMENT, rollEquipmentAtTier } from "./equipment";
 import { pick, uid } from "./rng";
 
-const study = asset("art/card-study.jpg");
-const ward = asset("art/card-ward.jpg");
+const study = asset("art/pixel/cards/study.jpg");
+const ward = asset("art/pixel/cards/ward.jpg");
 
 function shopArt(id: string) {
   return asset(`art/pixel/cards/${id}.jpg`);
