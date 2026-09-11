@@ -20,7 +20,7 @@ export function layerLabel(floor: number): string {
 
 export function floorKindLabel(type: FloorKind, floor: number): string {
   if (type === "boss") {
-    if (floor >= 100) return "口そのもの";
+    if (floor >= 100) return "全なる者";
     if (floor % 50 === 0) return "大ボス";
     return "中ボス";
   }

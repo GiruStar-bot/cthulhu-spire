@@ -892,7 +892,7 @@ export function encounterIds(
   rand: () => number,
 ): string[] {
   if (kind === "boss") {
-    if (floor >= 100) return ["mouth"];
+    if (floor >= 100) return ["yog_sothoth"];
     if (floor >= 90) return ["iha"];
     if (floor >= 80) return ["nyar"];
     if (floor >= 70) return ["bell"];
