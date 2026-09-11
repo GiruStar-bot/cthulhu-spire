@@ -4,6 +4,7 @@ import { PixelWindow } from "@/components/ui/PixelWindow";
 import { ARCHETYPE_LABELS, makeCard } from "@/game/cards";
 import { ARCHETYPE_PACK_PRICE, useGame } from "@/game/store";
 import type { Archetype } from "@/game/types";
+import { asset } from "@/lib/asset";
 
 const PACK_ARCHETYPES: Archetype[] = [
   "fanatic",
@@ -56,10 +57,12 @@ export function PackShopScreen() {
         {PACK_ARCHETYPES.map((archetype) => {
           const label = ARCHETYPE_LABELS[archetype] ?? archetype;
           return (
-            <div key={archetype} className="panel flex flex-col items-center gap-2 p-3 text-center">
-              <div className="flex size-16 items-center justify-center border-2 border-border bg-ink-2 text-2xl text-muted">
-                ?
-              </div>
+            <div key={archetype} className="panel flex flex-col items-center gap-2 p-2 text-center">
+              <img
+                src={asset(`art/pixel/packs/pack_${archetype}.png`)}
+                alt=""
+                className="w-full object-contain"
+              />
               <p className="text-sm text-white">{label}パック</p>
               <p className="text-[10px] text-muted">4枚中2枚が{label}確定</p>
               <PixelButton
