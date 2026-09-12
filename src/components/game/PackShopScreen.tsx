@@ -26,12 +26,6 @@ export function PackShopScreen({ onBack }: { onBack: () => void }) {
     return (
       <div className="relative flex h-full min-h-0 flex-col overflow-y-auto p-3">
         {backButton}
-        <PixelWindow className="mt-10 mb-3 shrink-0">
-          <p className="text-xs tracking-widest text-muted">CARD PACKS</p>
-          <h2 className="mt-1 text-xl text-white">
-            {purchasedArchetype ? `${ARCHETYPE_LABELS[purchasedArchetype] ?? purchasedArchetype}パック` : "パック"}
-          </h2>
-        </PixelWindow>
         <div className="min-h-0 flex-1">
           <PackOpenSequence
             cardIds={lastPackResult}
