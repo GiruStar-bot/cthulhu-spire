@@ -72,7 +72,8 @@ export type Effect =
   | { t: "loseMaxHpHalf" }
   | { t: "curePoison" }
   | { t: "hpCostHalf" }
-  | { t: "seal"; value: "attack" | "skill" };
+  | { t: "seal"; value: "attack" | "skill" }
+  | { t: "sealEnemy"; value: "attack" | "skill" };
 
 export type PowerId = "resolve" | "echo" | "bloodOath";
 
@@ -166,6 +167,7 @@ export interface CombatEnemy {
   hadAttackThisTurn?: boolean;
   splitDone?: boolean;
   bound?: number;
+  sealed?: "attack" | "skill" | null;
 }
 
 export interface CharacterDef {
