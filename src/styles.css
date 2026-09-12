@@ -96,12 +96,25 @@
 }
 
 @layer components {
-  .panel {
+  /*
+   * Default surface for compact UI. Keep this selector as the single source
+   * of truth: legacy screens already use .panel, so visual changes propagate
+   * without duplicating styles in every component.
+   */
+  .panel,
+  .stone-panel {
     position: relative;
-    background: var(--color-ink-2);
-    border: 2px solid var(--color-border);
-    box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.6);
-    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    border: 2px solid #49453d;
+    border-radius: 0;
+    background-color: #151513;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 15px, rgba(230, 220, 200, 0.025) 15px 16px),
+      repeating-linear-gradient(90deg, transparent 0 23px, rgba(0, 0, 0, 0.12) 23px 24px);
+    box-shadow:
+      inset 3px 3px 0 #24231f,
+      inset -3px -3px 0 #090a0b,
+      3px 3px 0 #050506;
+    clip-path: polygon(5px 0, calc(100% - 3px) 0, 100% 3px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 3px 100%, 0 calc(100% - 3px), 0 5px);
   }
 
   .panel::before {
@@ -234,21 +247,6 @@
     border-color: #51483b;
     background: #171512;
     color: var(--color-parchment);
-  }
-
-  .stone-panel {
-    position: relative;
-    border: 2px solid #49453d;
-    border-radius: 0;
-    background-color: #151513;
-    background-image:
-      repeating-linear-gradient(0deg, transparent 0 15px, rgba(230, 220, 200, 0.025) 15px 16px),
-      repeating-linear-gradient(90deg, transparent 0 23px, rgba(0, 0, 0, 0.12) 23px 24px);
-    box-shadow:
-      inset 3px 3px 0 #24231f,
-      inset -3px -3px 0 #090a0b,
-      3px 3px 0 #050506;
-    clip-path: polygon(5px 0, calc(100% - 3px) 0, 100% 3px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 3px 100%, 0 calc(100% - 3px), 0 5px);
   }
 
   .tome-tile {
@@ -1474,4 +1472,3 @@ ruby rt {
     transform: skewX(-4deg);
   }
 }
-
