@@ -1,6 +1,13 @@
+# Abyss of R'lyeh（アビスオブルルイエ）更新版 README 案
+
+以下の内容で `README.md` を全面更新することを提案します。**古い記述（魔改造/CardForgeScreen/戦利品タブ/マゼンタクロマキー/chibi方針）は全て今回のセッションで置き換え・廃止済みのため削除**しています。
+
+---
+
+```markdown
 # Abyss of R'lyeh（アビスオブルルイエ）
 
-『Slay the Spire』のローグライク・デッキビルドと、『Escape from Tarkov』の永続ハクスラ（拠点＝ハブ）を融合した、クトゥルフ神話の 2D 潜航。
+『Slay the Spire』のローグライク・デッキビルドと、『Escape from Tarkov』の永続ハクスラ（拠点＝ハブ）を融合した、クトゥルフ神話の2D潜航。
 
 | | |
 |---|---|
@@ -9,91 +16,86 @@
 | スタック | React 19 · Vite · Tailwind CSS v4 · Zustand 5 · TypeScript |
 | 配布 | 静的サイト。`main` への push で GitHub Pages（`.github/workflows/pages.yml`） |
 
-**現行の実装コードを正（Source of Truth）とする。**  
-`docs/` 配下の旧稿（無限沈降・ハブなし案）は参考のみ。実装と食い違う記述は無視する。作業は新規構築ではなく、既存ファイルの拡張・修正。
+**現行の実装コードを正（Source of Truth）とする。** `docs/` 配下の旧稿は参考のみ。
 
 ---
 
-## プレイサイクル（実装済み）
+## プレイサイクル
 
 ```
-title → hub（探索開始 / デッキ編成 / 魔改造 / 戦利品）
+title → hub（探索開始 / デッキ編成 / 装備 / 売却 / ショップ / カードパック）
      → prepare（潜航前点検）
      → map / combat / event / rest …
      → end（死亡・帰還）
      → hub
 ```
 
-| 画面 | 役割 | ファイル |
-|---|---|---|
-| タイトル | プレイ / 設定 / クレジットのみ | `src/components/game/TitleScreen.tsx` |
-| ハブ | 拠点。4タブの中継 | `src/components/game/HubScreen.tsx` |
-| 潜航前 | 名前・ステ振り・遺物持込・潜航開始 | `src/components/game/PrepareView.tsx` |
-| シーン | `title` \| `hub` \| `prepare` \| 戦闘系 \| 終了系 | `src/game/store.ts` |
+ハブのタブ（`HubTab`、`src/components/game/HubScreen.tsx`）:
 
-ハブのタブ:
+1. **探索開始**（`descend`） — ステ振りと潜航（`PrepareView.tsx`）
+2. **デッキ編成**（`deck`） — **2段階の没入型UI**。一覧画面（保存済みデッキがタイル表示、「＋新規デッキ」）→ 選択/新規作成で編集画面（左上「戻る」、右上「デッキ保存」。デッキ切り替えタブは廃止済み）
+3. **装備**（`equipment`） — 5部位管理、ルーンソケット、**装備プリセット**（`profile.equipmentPresets`、UID参照で保存し常に最新の装備状態を反映）
+4. **売却**（`sell`） — ダンジョン外からも売却可能。同名カードは重ね表示、デッキ使用分は保護、`COPY_LIMIT`超過分の一括選択あり
+5. **ショップ**（`shop`） — 基本カードパック（お試し実装）
+6. **カードパック**（`packs`） — **没入型フルスクリーン**（サイドバー・ヘッダー非表示、左上「戻る」のみ）。アーキタイプ別パック9種＋開封演出（`PackShopScreen.tsx`, `PackOpenSequence.tsx`）
 
-1. **探索開始** — ステ振りと潜航
-2. **デッキ編成** — 所持カードから最大 20 枚。同名は 4 枚まで（`COPY_LIMIT`）
-3. **魔改造** — ルーンをソケットへ着脱。カードの `sockets` は 1〜3。`socketRune` / `unsocketRune`
-4. **戦利品** — 魂に刻んだ遺物・所持カード・ルーン
+旧「戦利品」タブは、デッキ編成画面の所持カード一覧と機能重複のため廃止済み。旧「魔改造」画面（`CardForgeScreen.tsx`）は装備画面のルーンソケットに統合済み。
 
 ---
 
-## システム（現行）
+## アーキタイプ（10種）
 
-- **デッキ:** 上限 20、同名 4 枚。`src/store/useCollectionStore.ts`
-- **魔改造:** DnD ソケット。ゴーストは透過 PNG 単体（`dataTransfer.setDragImage`）。枠・発光・テキストは追従しない。`src/components/loadout/CardForgeScreen.tsx`
-- **遺物:** 永久コレクション + ラン持込 6 枠（`MAX_LOADOUT`）。点検画面の `profile.loadoutIds` が持込の正。撃破時に tier + ロールでインスタンス生成。`src/game/relics.ts`、`PlayerProfile.collection`
-- **プロファイル:** 名前・ステ・刻んだ遺物は `localStorage`（`src/game/profile.ts`）
-- **戦闘一時データ:** 現在 HP、階層、`CombatState` はラン限り。ハブ帰還で捨てる
-- **進行:** 直線沈降。10 層ごと中ボス、50 層ごと大ボス。デモは第 100 層で一旦閉じる
+`src/game/types.ts`の`Archetype`型：`generic` / `fanatic`（狂信） / `knight`（騎士） / `poison`（毒） / `outer`（外宇宙） / `elder`（旧神） / `deep`（深き者） / `offering`（供物） / `shadow`（影） / `greatold`（旧支配者）
 
-### データ境界（未完成）
-
-| 層 | 内容 | 永続 |
-|---|---|---|
-| `profile` | 名前、ステ、刻んだ遺物 | する（`profile.ts`） |
-| `useCollectionStore` | 所持カード、デッキ、ルーン | **しない** |
-| `CombatState` / ラン | HP、階層、手札 | しない |
+- 各アーキタイプにデッキシナジー（8/12/16枚で段階バフ）、装備全身セット効果、専用カードパックがある。
+- `elder`（旧神）と`greatold`（旧支配者）は当初同じ括りだったが、神話上の区別（Elder Gods / Great Old Ones）に合わせて分離済み。
+- 「全なる者」（元ヨグ・ソトース、`yog_sothoth`）関連の**新アーキタイプ「全」は未実装**（構想段階。全スキル/バフを内包する専用カード＋シークレットパックとして計画中）。
 
 ---
 
-## UI ルール
+## ラスボス「全なる者」（第100層）
 
-ピクセル／レトロ（SFC〜PS1 インディー）を拘束する。
+- `src/game/enemies.ts`の`yog_sothoth`。HP 9999（意図的に理不尽な数値、バランス調整は今後）。
+- 専用背景`beyond`biome（`src/game/biomes.ts`）。翼蛇×無数の発光する球体で構成された非人型デザイン。
+- 専用デッキは複数アーキタイプの代表カードを混成（`eldersign`, `star_sword`, `yog_gun`等）。将来的に「全」専用カードに置き換え予定。
 
-禁止: `rounded-lg`、グラスモーフィズム、`backdrop-blur`、グラデ影。  
-必須: `rounded-none`、`border-2` / `border-4`、ソリッド影（例 `shadow-[3px_3px_0_0_#000]`）。  
-基盤: `src/components/ui/PixelButton.tsx`、`PixelWindow.tsx`。
+---
 
-違反として残っている箇所（修正対象）:
+## UIシステム（今回のセッションで大幅刷新）
 
-- `src/components/game/Hud.tsx`（HP バー）
-- `src/components/game/CardView.tsx`（バッジ）
-- `src/components/game/RestView.tsx`
+- **`.panel`ベースの共通スタイル**：`src/styles.css`。旧`border-2 border-white`の生スタイルは全画面で置き換え済み。
+- **`border-image`による本物の額縁**：カードはレア度別（スターター/コモン/アンコモン/レア）＋神話ジャンル専用（`greatold`/`elder`/`outer`は発光アニメーション付き、レア度に優先）のフレーム画像を使用。9-slice方式で可変サイズに対応。
+- **戦闘中の手札**：扇状（ファン）配置＋ドロー時のアニメーション（`CombatView.tsx`の`fanPose`関数）。
+- **敵の死亡演出**：塵化ディゾルブ（`mask-image`合成＋パーティクル）。旧来の縮小演出は廃止。
+- **エネミー立ち絵**：**マゼンタクロマキー方針は廃止**。Gemini/Grokで**黒背景＋透過PNGをそのまま使用**（追加の背景除去処理は不要、むしろ有害と判明したため行わない）。キャラクターデザイン方針も「不気味可愛いchibi」から**「NOT chibi、ドット絵の塊感を強く残す」**へ変更。背景とのコントラスト（明度）を意識した配色指示が必須。
+- **キャッシュ対策**：`src/lib/asset.ts`の`asset()`が`VITE_COMMIT_SHA`をクエリパラメータに付与。`public/`直下の画像・音声を差し替えても、ビルドごとに確実に最新版が読み込まれる。
 
-`rounded-full` は洗い出して角形または八角形へ。
+---
 
-### アセット
+## 音響
 
-- ルーン・カード・遺物アイコンは透過 PNG。`public/art/pixel/runes/*.png`
-- 新規 DnD も「画像単体が動く」方式を踏襲する
-- 立ち絵・待機動画はマゼンタ `#FF00FF` クロマキー。`src/lib/imageUtils.ts` の `chromaKeyImageData`（tolerance / feather）を再利用
-- キャラ絵の方針: 不気味可愛い（Eerie Chibi）、完全正面・全身・武器なし
-- 生成済み画像は `incoming/` に id 名で置き、パス書き換えまで一括する:
+- BGM：`title`/`combat`/`boss`/`rest`/`event`が実装済み（`reward`は意図的に無音）。DOVA-SYNDROME由来、クレジット表記不要。
+- 効果音：`attack`/`block`/`hurt`/`step`/`lose`/`select`は実音源。`ui`/`hover`/`draw`/`win`/`reward`等は依然オシレーターの仮ビープ音（本実装は今後）。
 
+---
+
+## アセットパイプライン
+
+```bash
+npm run apply-art -- --kind cards|enemies|equipment
+# incoming/ の画像を public/art/pixel/ へ反映しコードを書き換え
+
+python3 scripts/pixelate.py 入力画像 [出力画像] [--block N] [--colors N]
+# Gemini/Grok生成画像が滑らかすぎる場合のドット絵化後処理(必要な場合のみ。基本は生成プロンプト側でピクセルアート感を強制する運用)
 ```
-npm run apply-art -- --kind cards
-# incoming/cards/ の画像を public/art/pixel/cards/ へ反映し cards.ts を書き換え
 
-npm run apply-art -- --kind enemies
-# incoming/enemies/ の画像を public/art/pixel/ へ反映し enemies.ts を書き換え
-```
-
-`incoming/` は受け皿のため git 管理外。
-
-不足リスト: [`artifacts/ASSET_REQUEST.md`](artifacts/ASSET_REQUEST.md)
+キャラクター/敵イラスト生成の標準プロンプト方針（Gemini/Grok共通）:
+- 黒背景RGB(0,0,0)、生成後は追加の透過処理をしない（既に正しく透過済みのため）
+- 「Simple, low-detail character design」等、単純化の指示を必ず入れる（装飾を描写に含めすぎると単純化指示が効かなくなるため、装飾要素は最小限に絞って記述する）
+- 背景の明度とキャラクターの明度が十分コントラストを持つよう明記する
+- 「Do not draw any light beam/glow/outline around the silhouette」を必ず入れる（光源表現がキャラの輪郭にオレンジ発光やハローとして出力される事故を防ぐ）
+- 正面向き・左右対称を強めに指示する（"perfectly mirror-symmetric, shoulders squared, not angled"）
+- 腕を広げる等のポーズでは「全身が必ずフレームに収まる」ことを明記する
 
 ---
 
@@ -108,21 +110,18 @@ npm run typecheck
 Pages のベースパスは `VITE_BASE=/cthulhu-spire/`。
 
 コミット方針（`AGENTS.project.md`）:
-
 - 機能・アセット・ロジックを更新したら `main` へ push する
 - ゲームで使う `public/art/` はリポジトリに含めてよい
 - `node_modules/`、`.env`、シークレットは禁止
 
 ---
 
-## 既知の負債（優先）
+## 既知の負債
 
-1. **`CardInst` と `CardInstance` の分裂**  
-   戦闘実体（`src/game/types.ts`、`socketedRunes?` / `runeMods?`）とハブ所持（`useCollectionStore`、`sockets` / `socketedRunes: string[]`）が別型。開始時スナップショットはあるが未統合。単一型にするか、変換を確定させる。
-2. **`useCollectionStore` が persist していない**  
-   リロードでデッキ・ルーン・装備が消える。`zustand/middleware` の `persist` を `profile.ts` と同様に当てる。
-3. **`rounded-full` 残存**（上記 UI ルール）。
-4. **`docs/GAME_VISION.md` 等がハブなし構想のまま。** 実装（ハブあり）と矛盾。docs の書き換えは未判断。
+1. **`CardInst` と `CardInstance` の分裂**（要再確認。前回READMEから未解決の可能性あり）
+2. **「全」アーキタイプ・専用カードが未実装**（構想のみ）
+3. **効果音の一部が仮のオシレーター音のまま**（`ui`/`hover`/`draw`/`win`/`reward`）
+4. **カードパックがショップ画面（基本版）とカードパック画面（属性別・演出込み）で二重実装**：将来的に基本版を廃止するか統合するか要判断
 
 ---
 
@@ -130,7 +129,11 @@ Pages のベースパスは `VITE_BASE=/cthulhu-spire/`。
 
 | ファイル | 扱い |
 |---|---|
-| この README | 現行実装の入口 |
+| この README | 現行実装の入口。**大きな機能追加のたびに更新すること** |
 | `src/game/store.ts` ほか実装 | Source of Truth |
-| `docs/GAME_VISION.md` など | 旧構想。ハブなし記述は無視 |
-| `AGENTS.project.md` | GitHub push の運用 |
+| `AGENTS.project.md` | GitHub push の運用（変更なし） |
+```
+
+---
+
+上記を`README.md`にそのまま上書きしてください。「既知の負債1」（CardInst分裂）は私の方で今回裏取りできていないので、実装側で現状を確認の上、解消済みなら削除してください。
