@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { CardView } from "@/components/game/CardView";
 import { PixelButton } from "@/components/ui/PixelButton";
+import { PixelPanel } from "@/components/ui/PixelPanel";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelRune } from "@/components/loadout/PixelRune";
 import { PixelSprite } from "@/components/ui/PixelSprite";
@@ -238,14 +239,14 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
 
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden bg-ink font-pixel text-parchment">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-border bg-ink-2 px-3">
+      <PixelPanel as="header" className="flex h-12 shrink-0 items-center justify-between px-3">
         <h1 className="text-sm tracking-widest text-white">売却</h1>
         <PixelButton onClick={onClose} className="min-h-9 px-3 py-1 text-xs">
           戻る
         </PixelButton>
-      </header>
+      </PixelPanel>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-1 border-b-2 border-border bg-ink-2 px-3 py-2">
+      <PixelPanel className="ritual-strip flex shrink-0 flex-wrap items-center gap-1 px-3 py-2">
         {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
           <button
             key={t}
@@ -282,10 +283,10 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
         >
           全解除
         </button>
-      </div>
+      </PixelPanel>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[1fr_20rem]">
-        <div className="min-h-0 overflow-y-auto border-b-2 border-border p-3 lg:border-r-2 lg:border-b-0">
+        <PixelPanel className="min-h-0 overflow-y-auto p-3">
           {tab === "card" ? (
             cardRows.length === 0 ? (
               <p className="text-xs text-muted">売れるカードがない。</p>
@@ -395,9 +396,9 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
               </div>
             )
           ) : null}
-        </div>
+        </PixelPanel>
 
-        <aside className="flex min-h-0 flex-col overflow-hidden">
+        <PixelPanel as="aside" className="flex min-h-0 flex-col overflow-hidden">
           <p className="mx-2 mt-2 mb-1 text-xs tracking-widest text-muted">選択中 {totalSelected}点</p>
           <div className="min-h-0 flex-1 overflow-y-auto">
             {selectionRows.length === 0 ? (
@@ -415,17 +416,17 @@ export function SellScreen({ onClose }: { onClose: () => void }) {
               ))
             )}
           </div>
-        </aside>
+        </PixelPanel>
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t-2 border-border bg-ink-2 px-3 py-3">
+      <PixelPanel as="footer" className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-3 py-3">
         <span className="text-xs tabular-nums text-white">
           選択中 {totalSelected}点 · 獲得予定 貝殻{totalValue}
         </span>
         <PixelButton onClick={handleSell} disabled={totalSelected === 0}>
           選択したものを売却
         </PixelButton>
-      </div>
+      </PixelPanel>
     </section>
   );
 }
