@@ -5,6 +5,7 @@ import { ShopPanel } from "@/components/game/ShopPanel";
 import { DeckHubScreen } from "@/components/loadout/DeckHubScreen";
 import { EquipmentScreen } from "@/components/loadout/EquipmentScreen";
 import { PixelButton } from "@/components/ui/PixelButton";
+import { PixelPanel } from "@/components/ui/PixelPanel";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { layerLabel } from "@/game/floors";
 import { derivedVitals } from "@/game/profile";
@@ -72,7 +73,7 @@ export function HubScreen() {
       />
       <div className="absolute inset-0 bg-ink/60" />
 
-      <header className="relative z-10 flex h-12 shrink-0 items-center gap-3 border-b-2 border-border bg-ink-2 px-3">
+      <PixelPanel as="header" className="relative z-10 flex h-12 shrink-0 items-center gap-3 px-3">
         <span className="truncate text-sm tracking-widest">{playerName.trim() || profile.playerName || "無名"}</span>
         {tab === "descend" ? (
           <span className="hidden text-xs tabular-nums text-muted sm:inline">
@@ -91,10 +92,10 @@ export function HubScreen() {
             タイトル
           </PixelButton>
         )}
-      </header>
+      </PixelPanel>
 
       <div className="relative z-10 flex min-h-0 flex-1">
-        <nav className="flex w-24 shrink-0 flex-col gap-1 border-r-2 border-border bg-ink-2 p-1 sm:w-28 sm:p-2">
+        <PixelPanel as="nav" className="flex w-24 shrink-0 flex-col gap-1 p-1 sm:w-28 sm:p-2">
           {NAV.map((item) => (
             <PixelButton
               key={item.id}
@@ -107,7 +108,7 @@ export function HubScreen() {
               {item.id === "descend" && checkpoint ? "中継" : item.label}
             </PixelButton>
           ))}
-        </nav>
+        </PixelPanel>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {tab === "descend" ? checkpoint ? <CheckpointPanel /> : <PrepareView embedded /> : null}
