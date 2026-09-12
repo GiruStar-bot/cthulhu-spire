@@ -1095,6 +1095,25 @@ export function getCard(id: string): CardDef {
   return c;
 }
 
+const MYTHOS_FRAME_ARCHETYPES = new Set<Archetype>(["greatold", "elder", "outer"]);
+
+export const CARD_FRAME_CLASSES = [
+  "frame-card-common",
+  "frame-card-uncommon",
+  "frame-card",
+  "frame-card-greatold",
+  "frame-card-elder",
+  "frame-card-outer",
+] as const;
+
+export function frameClassForCard(d: CardDef): string {
+  if (d.archetype && MYTHOS_FRAME_ARCHETYPES.has(d.archetype)) return `frame-card-${d.archetype}`;
+  if (d.rarity === "rare") return "frame-card";
+  if (d.rarity === "uncommon") return "frame-card-uncommon";
+  if (d.rarity === "common") return "frame-card-common";
+  return "";
+}
+
 const AI_TRANSLATABLE = new Set([
   "damage",
   "damageAll",

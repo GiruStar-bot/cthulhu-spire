@@ -1,6 +1,6 @@
 import { CardView } from "@/components/game/CardView";
 import { PixelButton } from "@/components/ui/PixelButton";
-import { getCard, makeCard } from "@/game/cards";
+import { CARD_FRAME_CLASSES, frameClassForCard, getCard, makeCard } from "@/game/cards";
 import { asset } from "@/lib/asset";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -14,7 +14,24 @@ function isSpecialReveal(baseCardId: string): boolean {
   return d.rarity === "rare" || (!!d.archetype && MYTHOS_ARCHETYPES.has(d.archetype));
 }
 
-const REVEAL_INTERVAL_MS = 400;
+const SPIN_STAGGER_MS = 150;
+const SPIN_SETTLE_MS = 260;
+
+function spinIntervals(totalDuration = 1400): number[] {
+  const intervals: number[] = [];
+  let t = 0;
+  let step = 80; // 開始間隔(ms)
+  while (t < totalDuration) {
+    intervals.push(step);
+    t += step;
+    step *= 1.18; // 徐々に間隔を伸ばして減速させる
+  }
+  return intervals;
+}
+
+function randomFrameClass(): string {
+  return CARD_FRAME_CLASSES[Math.floor(Math.random() * CARD_FRAME_CLASSES.length)]!;
+}
 
 export function PackOpenSequence({
   cardIds,
@@ -26,7 +43,8 @@ export function PackOpenSequence({
   onClose: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>("idle");
-  const [revealCount, setRevealCount] = useState(0);
+  const [revealed, setRevealed] = useState<boolean[]>(() => cardIds.map(() => false));
+  const [spinFrame, setSpinFrame] = useState<(string | null)[]>(() => cardIds.map(() => null));
   const [rarePop, setRarePop] = useState<number | null>(null);
 
   useEffect(() => {
@@ -42,25 +60,72 @@ export function PackOpenSequence({
 
   useEffect(() => {
     if (phase !== "revealing") return;
-    if (revealCount >= cardIds.length) {
-      setPhase("done");
-      return;
+    let cancelled = false;
+    const timeouts: number[] = [];
+
+    function runSpin(i: number) {
+      const intervals = spinIntervals();
+      let idx = 0;
+      const tick = () => {
+        if (cancelled) return;
+        if (idx >= intervals.length) {
+          // 減速しきったら、実際に排出されたカードのレア度フレームで停止させる。
+          setSpinFrame((s) => {
+            const next = s.slice();
+            next[i] = frameClassForCard(getCard(cardIds[i]!));
+            return next;
+          });
+          const settleTimeout = window.setTimeout(() => {
+            if (cancelled) return;
+            setRevealed((r) => {
+              const next = r.slice();
+              next[i] = true;
+              return next;
+            });
+            if (isSpecialReveal(cardIds[i]!)) {
+              setRarePop(i);
+              const popTimeout = window.setTimeout(() => setRarePop((p) => (p === i ? null : p)), 500);
+              timeouts.push(popTimeout);
+            }
+          }, SPIN_SETTLE_MS);
+          timeouts.push(settleTimeout);
+          return;
+        }
+        setSpinFrame((s) => {
+          const next = s.slice();
+          next[i] = randomFrameClass();
+          return next;
+        });
+        const t = window.setTimeout(() => {
+          idx += 1;
+          tick();
+        }, intervals[idx]);
+        timeouts.push(t);
+      };
+      tick();
     }
-    const t = window.setTimeout(() => {
-      const nextIndex = revealCount;
-      setRevealCount((c) => c + 1);
-      if (isSpecialReveal(cardIds[nextIndex]!)) {
-        setRarePop(nextIndex);
-        window.setTimeout(() => setRarePop((p) => (p === nextIndex ? null : p)), 500);
-      }
-    }, REVEAL_INTERVAL_MS);
-    return () => window.clearTimeout(t);
-  }, [phase, revealCount, cardIds]);
+
+    cardIds.forEach((_, i) => {
+      const t = window.setTimeout(() => runSpin(i), i * SPIN_STAGGER_MS);
+      timeouts.push(t);
+    });
+
+    return () => {
+      cancelled = true;
+      timeouts.forEach((t) => window.clearTimeout(t));
+    };
+  }, [phase, cardIds]);
+
+  useEffect(() => {
+    if (phase !== "revealing") return;
+    if (revealed.length > 0 && revealed.every(Boolean)) setPhase("done");
+  }, [phase, revealed]);
 
   const skip = () => {
-    setPhase("done");
-    setRevealCount(cardIds.length);
+    setSpinFrame(cardIds.map(() => null));
+    setRevealed(cardIds.map(() => true));
     setRarePop(null);
+    setPhase("done");
   };
 
   return (
@@ -91,7 +156,7 @@ export function PackOpenSequence({
         <>
           <div className="flex flex-wrap justify-center gap-3" onClick={phase === "revealing" ? skip : undefined}>
             {cardIds.map((baseCardId, i) => {
-              const flipped = i < revealCount;
+              const flipped = revealed[i];
               return (
                 <div
                   key={i}
@@ -102,11 +167,18 @@ export function PackOpenSequence({
                 >
                   <div className={cn("card-flip-inner", flipped && "is-flipped")}>
                     <div className="card-flip-face card-flip-front">
-                      <img
-                        src={asset("art/pixel/ui/card_back.png")}
-                        alt=""
-                        className="size-full object-contain"
-                      />
+                      <div
+                        className={cn(
+                          "flex size-full items-center justify-center overflow-hidden bg-ink-2",
+                          spinFrame[i],
+                        )}
+                      >
+                        <img
+                          src={asset("art/pixel/ui/card_back.png")}
+                          alt=""
+                          className="size-full object-contain"
+                        />
+                      </div>
                     </div>
                     <div className="card-flip-face card-flip-back">
                       <CardView card={makeCard(baseCardId)} />
