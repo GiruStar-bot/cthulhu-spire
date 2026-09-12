@@ -41,7 +41,7 @@ function applyHealBonus(n: number, healBonusPct: number): number {
 }
 
 function scaleHp(base: number, floor: number) {
-  return Math.round(base * (1 + Math.max(0, floor - 1) * 0.03));
+  return Math.round(base * (1 + Math.max(0, floor - 1) * 0.045));
 }
 
 function blockPosition(floor: number): number {
@@ -50,10 +50,10 @@ function blockPosition(floor: number): number {
 
 function blockStrengthBonus(floor: number): number {
   const pos = blockPosition(floor);
-  if (pos <= 3) return 0;
-  if (pos <= 6) return 1;
-  if (pos <= 9) return 2;
-  return 3;
+  if (pos <= 3) return 1;
+  if (pos <= 6) return 2;
+  if (pos <= 9) return 3;
+  return 5;
 }
 
 export function makeEnemy(defId: string, floor: number, rand: () => number): CombatEnemy {
@@ -66,7 +66,7 @@ export function makeEnemy(defId: string, floor: number, rand: () => number): Com
     hp: maxHp,
     maxHp,
     block: 0,
-    strength: isBoss ? 0 : blockStrengthBonus(floor),
+    strength: isBoss ? Math.ceil(blockStrengthBonus(floor) / 2) : blockStrengthBonus(floor),
     weak: 0,
     vulnerable: 0,
     poison: 0,
