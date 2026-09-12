@@ -274,6 +274,7 @@ export interface PlayerProfile {
   equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>;
   shells: number;
   equipmentPresets: Record<string, Partial<Record<EquipmentSlot, string>>>;
+  starterChosen: boolean;
 }
 
 export interface MapNode {

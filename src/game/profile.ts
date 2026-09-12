@@ -24,6 +24,7 @@ export function emptyProfile(): PlayerProfile {
     equipped: {},
     shells: 0,
     equipmentPresets: {},
+    starterChosen: false,
   };
 }
 
@@ -134,6 +135,7 @@ export function loadProfile(): PlayerProfile {
       equipped: p.equipped ?? {},
       shells: typeof p.shells === "number" ? Math.max(0, p.shells | 0) : 0,
       equipmentPresets: p.equipmentPresets ?? {},
+      starterChosen: typeof p.starterChosen === "boolean" ? p.starterChosen : true,
     };
   } catch {
     return emptyProfile();
