@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { PixelRelic } from "@/components/loadout/PixelRelic";
 import { PixelRune } from "@/components/loadout/PixelRune";
 import { ARCHETYPE_LABELS } from "@/game/cards";
@@ -99,7 +99,7 @@ function RuneDot({ effect, size = "sm" }: { effect: string; size?: "sm" | "md" }
   return (
     <span
       title={effect}
-      className={cn("block shrink-0 rounded-full border border-ink", size === "sm" ? "size-1.5" : "size-2.5")}
+      className={cn("rune-notch block shrink-0 border border-ink", size === "sm" ? "size-1.5" : "size-2.5")}
       style={{ background: RUNE_DOT_COLOR[effect] ?? "#6b7280" }}
     />
   );
@@ -116,20 +116,23 @@ function FullSetDots({
 }) {
   const color = ARCHETYPE_GLOW_COLOR[archetype] ?? "#5eead4";
   return (
-    <div className="flex gap-1.5">
+    <div className="set-sigil-track">
       {EQUIPMENT_SLOTS.map((slot) => {
         const inst = equipped[slot];
         const filled = !!inst && EQUIPMENT[inst.defId]?.archetype === archetype;
         return (
           <span
             key={slot}
+            title={`${SLOT_LABEL[slot]}：${filled ? "同系統" : "未達成"}`}
             className={cn(
-              "block rounded-full border",
-              size === "sm" ? "size-2" : "size-2.5",
-              filled ? "border-transparent" : "border-muted/50 bg-transparent",
+              "set-sigil",
+              size === "sm" ? "size-5 text-[9px]" : "size-6 text-[10px]",
+              filled ? "is-awake" : "text-muted",
             )}
-            style={filled ? { background: color, boxShadow: `0 0 5px 1px ${color}` } : undefined}
-          />
+            style={filled ? { "--sigil-color": color } as CSSProperties : undefined}
+          >
+            {SLOT_LABEL[slot]}
+          </span>
         );
       })}
     </div>
@@ -159,7 +162,7 @@ function HeroSlot({
       title={def?.name}
       style={glowColor ? { boxShadow: `0 0 0 2px ${glowColor}, 0 0 10px 2px ${glowColor}` } : undefined}
       className={cn(
-        "panel relative flex size-16 shrink-0 flex-col justify-end overflow-hidden sm:size-[5.5rem]",
+        "relic-slot relative flex size-16 shrink-0 flex-col justify-end overflow-hidden sm:size-[5.5rem]",
         inst ? "border-accent" : "opacity-50",
         selected ? "panel-active" : "hover:border-white/60",
         "transition-[transform,filter] duration-100 active:translate-y-[1px] active:brightness-90",
@@ -307,7 +310,7 @@ export function EquipmentScreen() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="shrink-0 border-b-2 border-accent bg-ink-2 p-3">
+      <div className="armory-header shrink-0 p-3">
         <p className="mb-2 text-xs tracking-widest text-muted">装着中</p>
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex gap-2">
@@ -358,7 +361,7 @@ export function EquipmentScreen() {
         <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-2">
           <span className="mr-1 text-[10px] text-muted">プリセット</span>
           {presetNames.map((name) => (
-            <span key={name} className="panel flex items-center gap-1 px-1.5 py-0.5">
+            <span key={name} className="iron-tag flex items-center gap-1 px-1.5 py-0.5">
               <button
                 type="button"
                 onClick={() => applyEquipmentPreset(name)}
