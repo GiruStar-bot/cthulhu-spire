@@ -5,6 +5,7 @@ import { PixelButton } from "@/components/ui/PixelButton";
 import { PixelWindow } from "@/components/ui/PixelWindow";
 import { DEMO_MAX_FLOOR, floorKindLabel, layerLabel } from "@/game/floors";
 import { equipmentLabel } from "@/game/equipment";
+import { PACK_TICKET_LABELS, packTicketArt } from "@/game/packTickets";
 import type { RewardOffer } from "@/game/types";
 import { useGame } from "@/game/store";
 import { asset } from "@/lib/asset";
@@ -65,6 +66,23 @@ export function RewardView() {
 function RewardItem({ offer }: { offer: RewardOffer }) {
   if (offer.kind === "card") {
     return <CardView card={offer.card} playable={false} />;
+  }
+
+  if (offer.kind === "ticket") {
+    return (
+      <div className="panel flex w-64 items-center gap-3 px-4 py-3">
+        <img
+          src={asset(packTicketArt(offer.ticket))}
+          alt=""
+          className="size-14 shrink-0 object-contain [image-rendering:pixelated]"
+        />
+        <div>
+          <p className="text-[11px] tracking-widest text-accent">パックチケット</p>
+          <p className="mt-1 text-xl text-white">{PACK_TICKET_LABELS[offer.ticket]}</p>
+          <p className="mt-1 text-[10px] text-muted">帰還後も保管される</p>
+        </div>
+      </div>
+    );
   }
 
   if (offer.kind === "equipment") {

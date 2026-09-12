@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { CARDS, DECK_LIMIT } from "@/game/cards";
 import { RUNE_CATALOG } from "@/game/runes";
 import { uid } from "@/game/rng";
-import type { EquipmentInstance, Rune } from "@/game/types";
+import type { EquipmentInstance, PackTicketType, Rune } from "@/game/types";
 
 export type { Rune } from "@/game/types";
 
@@ -29,6 +29,7 @@ type CollectionState = {
   decks: Record<string, DeckCounts>;
   activeDeck: string;
   runeRegistry: Record<string, Rune>;
+  packTickets: Partial<Record<PackTicketType, number>>;
   createDeck: (name: string) => boolean;
   deleteDeck: (name: string) => void;
   renameDeck: (oldName: string, newName: string) => boolean;
@@ -38,6 +39,8 @@ type CollectionState = {
   addLootCard: (baseCardId: string) => void;
   addLootRune: (rune: Rune) => void;
   addLootEquipment: (equipment: EquipmentInstance) => void;
+  addPackTicket: (ticket: PackTicketType, amount?: number) => void;
+  consumePackTicket: (ticket: PackTicketType) => boolean;
   socketRuneToEquipment: (equipmentUid: string, runeId: string, socketIndex: number) => boolean;
   unsocketRuneFromEquipment: (equipmentUid: string, socketIndex: number) => boolean;
   removeCards: (instanceIds: string[]) => void;
@@ -165,6 +168,7 @@ export const useCollectionStore = create<CollectionState>()(
       decks: { [DEFAULT_DECK]: {} },
       activeDeck: DEFAULT_DECK,
       runeRegistry: seeded.runeRegistry,
+      packTickets: {},
 
       createDeck: (name) => {
         const s = get();
@@ -246,6 +250,24 @@ export const useCollectionStore = create<CollectionState>()(
           if (s.inventory.equipment.some((e) => e.uid === equipment.uid)) return s;
           return { inventory: { ...s.inventory, equipment: [...s.inventory.equipment, equipment] } };
         });
+      },
+
+      addPackTicket: (ticket, amount = 1) => {
+        if (amount <= 0) return;
+        set((s) => ({
+          packTickets: {
+            ...(s.packTickets ?? {}),
+            [ticket]: ((s.packTickets ?? {})[ticket] ?? 0) + amount,
+          },
+        }));
+      },
+
+      consumePackTicket: (ticket) => {
+        const s = get();
+        const current = (s.packTickets ?? {})[ticket] ?? 0;
+        if (current <= 0) return false;
+        set({ packTickets: { ...(s.packTickets ?? {}), [ticket]: current - 1 } });
+        return true;
       },
 
       socketRuneToEquipment: (equipmentUid, runeId, socketIndex) => {
@@ -353,7 +375,7 @@ export const useCollectionStore = create<CollectionState>()(
     }),
     {
       name: "cthulhu-spire-collection-v1",
-      version: 4,
+      version: 5,
       migrate: (persisted) => {
         const s = persisted as {
           inventory?: {
@@ -365,6 +387,7 @@ export const useCollectionStore = create<CollectionState>()(
           decks?: Record<string, DeckCounts>;
           activeDeck?: string;
           runeRegistry?: Record<string, Rune>;
+          packTickets?: Partial<Record<PackTicketType, number>>;
         };
         const cards = (s.inventory?.cards ?? []).map((c) => ({
           instanceId: c.instanceId,
@@ -384,6 +407,7 @@ export const useCollectionStore = create<CollectionState>()(
           },
           decks,
           activeDeck,
+          packTickets: s.packTickets ?? {},
         };
       },
       storage: createJSONStorage(() =>
@@ -400,6 +424,7 @@ export const useCollectionStore = create<CollectionState>()(
         decks: s.decks,
         activeDeck: s.activeDeck,
         runeRegistry: s.runeRegistry,
+        packTickets: s.packTickets ?? {},
       }),
     },
   ),

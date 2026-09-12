@@ -209,6 +209,9 @@ export type Archetype =
   | "greatold"
   | "generic";
 
+export type PackTicketArchetype = Exclude<Archetype, "generic">;
+export type PackTicketType = PackTicketArchetype | "all";
+
 export type DeckSynergy = { archetype: Archetype; tier: 1 | 2 | 3 } | null;
 
 export interface EquipmentDef {
@@ -335,6 +338,7 @@ export interface Floater {
 export type RewardOffer =
   | { kind: "none" }
   | { kind: "card"; card: CardInst }
+  | { kind: "ticket"; ticket: PackTicketArchetype }
   | { kind: "equipment"; equipment: EquipmentInstance }
   | { kind: "rune"; rune: Rune };
 
