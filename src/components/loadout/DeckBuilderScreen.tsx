@@ -148,19 +148,19 @@ function FilterPopover<T extends string>({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "panel flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-muted",
+          "ritual-control flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-muted",
           selected.size > 0 && "border-accent text-accent",
         )}
       >
         {label}
         {selected.size > 0 ? (
-          <span className="grid min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-bold text-ink">
+          <span className="grid min-w-4 place-items-center border border-ink bg-parchment px-1 text-[9px] font-bold text-ink shadow-[1px_1px_0_#000]">
             {selected.size}
           </span>
         ) : null}
       </button>
       {open ? (
-        <div className="panel absolute left-0 top-[calc(100%+4px)] z-20 flex w-72 max-w-[80vw] flex-col gap-2 p-2">
+        <div className="stone-panel absolute left-0 top-[calc(100%+4px)] z-20 flex w-72 max-w-[80vw] flex-col gap-2 p-2">
           <div className="flex flex-wrap gap-1">
             {options.map((opt) => (
               <button
@@ -244,15 +244,33 @@ function PoolThumb({
 }
 
 function DeckGauge({ total, limit }: { total: number; limit: number }) {
-  const pct = Math.min(100, Math.round((total / Math.max(1, limit)) * 100));
   return (
-    <div
-      className="grid size-12 shrink-0 place-items-center rounded-full"
-      style={{ background: `conic-gradient(var(--color-accent) ${pct}%, var(--color-surface) 0)` }}
-    >
-      <div className="grid size-9 place-items-center rounded-full bg-ink text-[10px] font-bold tabular-nums text-white">
-        {total}/{limit}
+    <div className="deck-tally shrink-0" aria-label={`デッキ枚数 ${total}/${limit}`}>
+      <div className="deck-tally-marks">
+        {Array.from({ length: limit }, (_, index) => (
+          <span key={index} className={cn("deck-tally-mark", index < total && "is-filled")} />
+        ))}
       </div>
+      <span className="deck-tally-count">{total}/{limit}</span>
+    </div>
+  );
+}
+
+function SynergySeals({ count, label }: { count: number; label: string | null }) {
+  return (
+    <div className="synergy-rite" aria-label={`${label ?? "系統"} ${count}枚`}>
+      <div className="flex items-center gap-1.5">
+        {SYNERGY_THRESHOLDS.map((threshold, index) => {
+          const active = count >= threshold;
+          return (
+            <div key={threshold} className={cn("synergy-seal", active && "is-awake")}>
+              <span className="synergy-seal-glyph" aria-hidden="true">{["Ⅰ", "Ⅱ", "Ⅲ"][index]}</span>
+              <span className="text-[8px] tabular-nums">{threshold}</span>
+            </div>
+          );
+        })}
+      </div>
+      <span className="mt-1 block truncate text-[9px] tracking-wider text-muted">{label ?? "印なし"}</span>
     </div>
   );
 }
@@ -457,24 +475,22 @@ export function DeckBuilderScreen({
   const previewOwned = previewCardId ? ownedCountOf(inventory.cards, previewCardId) : 0;
   const previewBlocked =
     !previewCardId || total >= DECK_LIMIT || previewCopies >= COPY_LIMIT || previewCopies >= previewOwned;
+  const topArchetypeLabel = topArchetype
+    ? (ARCHETYPE_LABELS[topArchetype.archetype] ?? topArchetype.archetype)
+    : null;
 
   return (
-    <section className={cn("flex w-full flex-col font-pixel text-parchment", embedded ? "h-full bg-transparent" : "h-dvh bg-ink")}>
+    <section className={cn("relative flex w-full flex-col font-pixel text-parchment", embedded ? "h-full bg-transparent" : "h-dvh bg-ink")}>
       {hubMode ? (
-        <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b-2 border-border bg-ink-2 px-3">
-          <PixelButton onClick={onBack} className="min-h-9 shrink-0 px-3 py-1 text-xs">
-            ← 戻る
-          </PixelButton>
+        <header className="ritual-bar flex h-12 shrink-0 items-center justify-between gap-3 px-3">
+          <span className="text-[9px] tracking-[0.24em] text-muted">禁書編纂</span>
           <h1 className="min-w-0 flex-1 truncate text-center text-sm tracking-widest">{activeDeck}</h1>
           <span className={cn("shrink-0 text-sm tabular-nums", total >= DECK_LIMIT ? "text-blood" : "text-accent")}>
             {total}/{DECK_LIMIT}
           </span>
-          <PixelButton onClick={onBack} className="min-h-9 shrink-0 px-3 py-1 text-xs">
-            デッキ保存
-          </PixelButton>
         </header>
       ) : embedded ? null : (
-        <header className="flex h-12 shrink-0 items-center justify-between border-b-2 border-border bg-ink-2 px-3">
+        <header className="ritual-bar flex h-12 shrink-0 items-center justify-between px-3">
           <h1 className="text-sm tracking-widest">デッキ編成</h1>
           <span className={cn("text-sm tabular-nums", total >= DECK_LIMIT ? "text-blood" : "text-accent")}>
             {total}/{DECK_LIMIT}
@@ -490,7 +506,7 @@ export function DeckBuilderScreen({
       )}
 
       {hubMode ? null : (
-        <div className="flex shrink-0 flex-wrap items-center gap-1 border-b-2 border-border bg-ink-2 px-3 py-2">
+        <div className="ritual-strip flex shrink-0 flex-wrap items-center gap-1 px-3 py-2">
           {names.map((name) => (
             <button
               key={name}
@@ -531,7 +547,7 @@ export function DeckBuilderScreen({
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
               maxLength={12}
-              className="panel px-2 py-1 font-pixel text-xs text-white outline-none"
+              className="ritual-control px-2 py-1 font-pixel text-xs text-white outline-none"
               onKeyDown={(e) => {
                 if (e.key === "Enter") commitRename();
                 if (e.key === "Escape") setRenaming(false);
@@ -566,12 +582,12 @@ export function DeckBuilderScreen({
         )}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-border px-3 py-2">
+      <div className="ritual-strip flex shrink-0 flex-wrap items-center gap-2 px-3 py-2">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="カード名で検索..."
-          className="panel min-w-0 max-w-56 flex-1 px-2 py-1.5 font-pixel text-xs text-white outline-none placeholder:text-muted"
+          className="ritual-control min-w-0 max-w-56 flex-1 px-2 py-1.5 font-pixel text-xs text-white outline-none placeholder:text-muted"
         />
         <FilterPopover
           label="ジャンル"
@@ -600,7 +616,7 @@ export function DeckBuilderScreen({
         <select
           value={sortMode}
           onChange={(e) => setSortMode(e.target.value as SortMode)}
-          className="panel ml-auto px-2 py-1.5 font-pixel text-[11px] text-white outline-none"
+          className="ritual-control ml-auto px-2 py-1.5 font-pixel text-[11px] text-white outline-none"
         >
           {(Object.keys(SORT_LABELS) as SortMode[]).map((mode) => (
             <option key={mode} value={mode}>
@@ -706,19 +722,19 @@ export function DeckBuilderScreen({
         </div>
 
         <div ref={deckPanelRef} className="flex min-h-0 flex-col border-t-2 border-border lg:border-t-0">
-          <div className="shrink-0 border-b-2 border-border p-3">
+          <div className="stone-panel shrink-0 p-3">
             <p className="mb-2 text-xs tracking-widest text-muted">編成中 · {activeDeck}</p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <DeckGauge total={total} limit={DECK_LIMIT} />
-              <div className="min-w-0">
-                <p className="text-[11px] text-muted">デッキ枚数</p>
+              <div className="min-w-0 flex-1">
+                <SynergySeals count={topArchetype?.count ?? 0} label={topArchetypeLabel} />
                 <p className={cn("text-[10px]", synergyHint ? "text-accent" : "text-muted")}>
                   {synergyHint ?? "ジャンルの偏りなし"}
                 </p>
               </div>
             </div>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className={cn("min-h-0 flex-1 overflow-y-auto", hubMode && "pb-16")}>
             {deckEntries.length === 0 ? (
               <p className="py-10 text-center text-xs text-muted">カードをクリックして編成</p>
             ) : (
@@ -743,6 +759,11 @@ export function DeckBuilderScreen({
         >
           <CollectionCard instance={flying} size="sm" />
         </div>
+      ) : null}
+      {hubMode ? (
+        <PixelButton onClick={onBack} className="absolute right-4 bottom-4 z-30 min-h-9 px-4 py-1 text-xs">
+          記録して戻る
+        </PixelButton>
       ) : null}
     </section>
   );
