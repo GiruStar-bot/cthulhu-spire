@@ -157,6 +157,74 @@
     clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
   }
 
+  .ritual-button {
+    position: relative;
+    border: 2px solid #5c5447;
+    border-radius: 0;
+    background-color: #171512;
+    background-image:
+      linear-gradient(180deg, rgba(230, 220, 200, 0.07), transparent 38%),
+      repeating-linear-gradient(90deg, transparent 0 15px, rgba(230, 220, 200, 0.025) 15px 16px);
+    box-shadow:
+      inset 2px 2px 0 #2a2721,
+      inset -2px -2px 0 #080807,
+      3px 3px 0 rgba(0, 0, 0, 0.72);
+    clip-path: polygon(4px 0, calc(100% - 2px) 0, 100% 2px, 100% calc(100% - 5px), calc(100% - 5px) 100%, 2px 100%, 0 calc(100% - 2px), 0 4px);
+  }
+
+  .ritual-button:hover,
+  .ritual-button:focus-visible {
+    border-color: #a99a77;
+    background-color: #211d17;
+    color: #fff;
+    filter: brightness(1.08);
+    outline: none;
+  }
+
+  .tome-choice {
+    position: relative;
+    border: 2px solid #50483b;
+    background: linear-gradient(90deg, #211b14 0 7px, #121210 7px 100%);
+    box-shadow: inset -2px -2px 0 #070707, 2px 2px 0 #050506;
+    clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 3px);
+    color: var(--color-parchment);
+  }
+
+  .tome-choice:hover,
+  .tome-choice:focus-visible {
+    border-color: #887a61;
+    outline: none;
+  }
+
+  .tome-choice.is-selected {
+    border-color: #c0ad83;
+    background: linear-gradient(90deg, #75603c 0 7px, #2a241a 7px 100%);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px #3f3526, 2px 2px 0 #050506;
+  }
+
+  .pack-tome {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 3px double #655b4b;
+    background-color: #15130f;
+    background-image:
+      linear-gradient(90deg, rgba(127, 103, 67, 0.24) 0 8px, transparent 8px),
+      repeating-linear-gradient(0deg, transparent 0 18px, rgba(230, 220, 200, 0.025) 18px 19px);
+    box-shadow: inset -3px -3px 0 #080807, 3px 3px 0 rgba(0, 0, 0, 0.72);
+    clip-path: polygon(0 5px, 5px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%);
+  }
+
+  .pack-tome::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    z-index: -1;
+    border: 1px solid rgba(230, 220, 200, 0.09);
+    pointer-events: none;
+  }
+
   .ritual-control:focus,
   .ritual-control:focus-within {
     border-color: color-mix(in oklab, var(--color-parchment) 62%, transparent);
@@ -1406,5 +1474,4 @@ ruby rt {
     transform: skewX(-4deg);
   }
 }
-
 
