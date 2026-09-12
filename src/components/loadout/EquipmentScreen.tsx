@@ -114,7 +114,7 @@ function FullSetDots({
   equipped: Partial<Record<EquipmentSlot, EquipmentInstance>>;
   size?: "sm" | "md";
 }) {
-  const color = ARCHETYPE_GLOW_COLOR[archetype] ?? "#5eead4";
+  const color = ARCHETYPE_GLOW_COLOR[archetype] ?? "var(--color-accent)";
   return (
     <div className="set-sigil-track">
       {EQUIPMENT_SLOTS.map((slot) => {
@@ -318,7 +318,7 @@ export function EquipmentScreen() {
               const inst = equipped[slot];
               const glow =
                 topArchetypeFull && topArchetype && inst && EQUIPMENT[inst.defId]?.archetype === topArchetype.archetype
-                  ? (ARCHETYPE_GLOW_COLOR[topArchetype.archetype] ?? "#5eead4")
+                  ? (ARCHETYPE_GLOW_COLOR[topArchetype.archetype] ?? "var(--color-accent)")
                   : undefined;
               return (
                 <HeroSlot

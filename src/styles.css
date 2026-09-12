@@ -6,7 +6,8 @@
   --color-surface: #1b1f27;
   --color-parchment: #e6dcc8;
   --color-muted: #9a9386;
-  --color-accent: #5eead4;
+  /* Aged brass: shared interactive accent for the ritual/stone UI. */
+  --color-accent: #b79a62;
   --color-scrollbar-hover: #3a3a3a;
   --color-blood: #b4544a;
   --color-border: color-mix(in oklab, #e6dcc8 14%, transparent);
