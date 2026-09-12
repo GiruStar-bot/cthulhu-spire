@@ -71,7 +71,7 @@ export function PrepareView({ embedded = false }: { embedded?: boolean }) {
               onChange={(e) => setPlayerName(e.target.value)}
               maxLength={16}
               placeholder="名を記す"
-              className="panel mt-1 w-full px-2 py-2 font-pixel text-lg text-white outline-none placeholder:text-muted"
+              className="ritual-control mt-1 w-full px-2 py-2 font-pixel text-lg text-white outline-none placeholder:text-muted"
             />
           </label>
 
@@ -139,9 +139,8 @@ function DeckSelectPanel() {
               type="button"
               onClick={() => setActiveDeck(name)}
               className={cn(
-                "panel flex items-center justify-between px-3 py-2 text-left font-pixel text-xs hover:border-white/60",
-                "transition-[transform,box-shadow,filter] duration-100 active:translate-y-[2px] active:shadow-none active:brightness-90",
-                name === activeDeck && "border-white bg-white text-ink hover:border-white",
+                "tome-choice flex items-center justify-between px-3 py-2 text-left font-pixel text-xs",
+                name === activeDeck && "is-selected",
               )}
             >
               <span>{name}</span>

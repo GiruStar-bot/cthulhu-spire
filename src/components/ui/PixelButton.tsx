@@ -13,10 +13,8 @@ export function PixelButton({
       type={type}
       disabled={disabled}
       className={cn(
-        "panel min-h-11 px-4 py-2 font-pixel text-white",
-        "hover:border-white/60",
+        "ritual-button min-h-11 px-4 py-2 font-pixel text-white",
         "active:translate-y-[2px] active:shadow-none active:brightness-90",
-        "transition-[transform,box-shadow,filter] duration-100",
         "disabled:pointer-events-none disabled:opacity-40",
         className,
       )}

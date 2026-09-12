@@ -96,12 +96,25 @@
 }
 
 @layer components {
-  .panel {
+  /*
+   * Default surface for compact UI. Keep this selector as the single source
+   * of truth: legacy screens already use .panel, so visual changes propagate
+   * without duplicating styles in every component.
+   */
+  .panel,
+  .stone-panel {
     position: relative;
-    background: var(--color-ink-2);
-    border: 2px solid var(--color-border);
-    box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.6);
-    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    border: 2px solid #49453d;
+    border-radius: 0;
+    background-color: #151513;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 15px, rgba(230, 220, 200, 0.025) 15px 16px),
+      repeating-linear-gradient(90deg, transparent 0 23px, rgba(0, 0, 0, 0.12) 23px 24px);
+    box-shadow:
+      inset 3px 3px 0 #24231f,
+      inset -3px -3px 0 #090a0b,
+      3px 3px 0 #050506;
+    clip-path: polygon(5px 0, calc(100% - 3px) 0, 100% 3px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 3px 100%, 0 calc(100% - 3px), 0 5px);
   }
 
   .panel::before {
@@ -157,6 +170,74 @@
     clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
   }
 
+  .ritual-button {
+    position: relative;
+    border: 2px solid #5c5447;
+    border-radius: 0;
+    background-color: #171512;
+    background-image:
+      linear-gradient(180deg, rgba(230, 220, 200, 0.07), transparent 38%),
+      repeating-linear-gradient(90deg, transparent 0 15px, rgba(230, 220, 200, 0.025) 15px 16px);
+    box-shadow:
+      inset 2px 2px 0 #2a2721,
+      inset -2px -2px 0 #080807,
+      3px 3px 0 rgba(0, 0, 0, 0.72);
+    clip-path: polygon(4px 0, calc(100% - 2px) 0, 100% 2px, 100% calc(100% - 5px), calc(100% - 5px) 100%, 2px 100%, 0 calc(100% - 2px), 0 4px);
+  }
+
+  .ritual-button:hover,
+  .ritual-button:focus-visible {
+    border-color: #a99a77;
+    background-color: #211d17;
+    color: #fff;
+    filter: brightness(1.08);
+    outline: none;
+  }
+
+  .tome-choice {
+    position: relative;
+    border: 2px solid #50483b;
+    background: linear-gradient(90deg, #211b14 0 7px, #121210 7px 100%);
+    box-shadow: inset -2px -2px 0 #070707, 2px 2px 0 #050506;
+    clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 3px);
+    color: var(--color-parchment);
+  }
+
+  .tome-choice:hover,
+  .tome-choice:focus-visible {
+    border-color: #887a61;
+    outline: none;
+  }
+
+  .tome-choice.is-selected {
+    border-color: #c0ad83;
+    background: linear-gradient(90deg, #75603c 0 7px, #2a241a 7px 100%);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px #3f3526, 2px 2px 0 #050506;
+  }
+
+  .pack-tome {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 3px double #655b4b;
+    background-color: #15130f;
+    background-image:
+      linear-gradient(90deg, rgba(127, 103, 67, 0.24) 0 8px, transparent 8px),
+      repeating-linear-gradient(0deg, transparent 0 18px, rgba(230, 220, 200, 0.025) 18px 19px);
+    box-shadow: inset -3px -3px 0 #080807, 3px 3px 0 rgba(0, 0, 0, 0.72);
+    clip-path: polygon(0 5px, 5px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%);
+  }
+
+  .pack-tome::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    z-index: -1;
+    border: 1px solid rgba(230, 220, 200, 0.09);
+    pointer-events: none;
+  }
+
   .ritual-control:focus,
   .ritual-control:focus-within {
     border-color: color-mix(in oklab, var(--color-parchment) 62%, transparent);
@@ -166,21 +247,6 @@
     border-color: #51483b;
     background: #171512;
     color: var(--color-parchment);
-  }
-
-  .stone-panel {
-    position: relative;
-    border: 2px solid #49453d;
-    border-radius: 0;
-    background-color: #151513;
-    background-image:
-      repeating-linear-gradient(0deg, transparent 0 15px, rgba(230, 220, 200, 0.025) 15px 16px),
-      repeating-linear-gradient(90deg, transparent 0 23px, rgba(0, 0, 0, 0.12) 23px 24px);
-    box-shadow:
-      inset 3px 3px 0 #24231f,
-      inset -3px -3px 0 #090a0b,
-      3px 3px 0 #050506;
-    clip-path: polygon(5px 0, calc(100% - 3px) 0, 100% 3px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 3px 100%, 0 calc(100% - 3px), 0 5px);
   }
 
   .tome-tile {
@@ -1406,5 +1472,3 @@ ruby rt {
     transform: skewX(-4deg);
   }
 }
-
-
