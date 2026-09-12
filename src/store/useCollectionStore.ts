@@ -43,6 +43,51 @@ type CollectionState = {
   removeCards: (instanceIds: string[]) => void;
   removeEquipment: (uids: string[]) => void;
   removeRunes: (ids: string[]) => void;
+  chooseStarterDeck: (archetype: StarterArchetype) => void;
+};
+
+export type StarterArchetype = "fanatic" | "knight" | "poison" | "deep";
+
+export const STARTER_DECKS: Record<StarterArchetype, { id: string; count: number }[]> = {
+  fanatic: [
+    { id: "strike", count: 4 },
+    { id: "ward", count: 2 },
+    { id: "study", count: 2 },
+    { id: "whisper", count: 2 },
+    { id: "precise", count: 2 },
+    { id: "offering", count: 4 },
+    { id: "rite", count: 2 },
+    { id: "tome", count: 1 },
+    { id: "thecall", count: 1 },
+  ],
+  knight: [
+    { id: "ward", count: 4 },
+    { id: "sigil", count: 4 },
+    { id: "chant", count: 4 },
+    { id: "ironwill", count: 4 },
+    { id: "bash", count: 2 },
+    { id: "laststand", count: 2 },
+  ],
+  poison: [
+    { id: "strike", count: 4 },
+    { id: "ward", count: 2 },
+    { id: "study", count: 2 },
+    { id: "whisper", count: 2 },
+    { id: "precise", count: 2 },
+    { id: "lash", count: 2 },
+    { id: "corrosive_strike", count: 4 },
+    { id: "pus_mist", count: 2 },
+  ],
+  deep: [
+    { id: "strike", count: 4 },
+    { id: "ward", count: 2 },
+    { id: "study", count: 2 },
+    { id: "whisper", count: 2 },
+    { id: "sweep", count: 4 },
+    { id: "adapted_scales", count: 4 },
+    { id: "deep_breath", count: 1 },
+    { id: "deep_ones_blessing", count: 1 },
+  ],
 };
 
 const STARTER_CARDS: { id: string; count: number }[] = [
@@ -286,6 +331,23 @@ export const useCollectionStore = create<CollectionState>()(
             ...s.inventory,
             runes: s.inventory.runes.filter((r) => !removeSet.has(r.id)),
           },
+        }));
+      },
+
+      chooseStarterDeck: (archetype) => {
+        const list = STARTER_DECKS[archetype];
+        const cards: CardInstance[] = [];
+        const counts: DeckCounts = {};
+        for (const { id, count } of list) {
+          if (!CARDS[id]) throw new Error(`unknown starter card: ${id}`);
+          counts[id] = count;
+          for (let n = 0; n < count; n++) {
+            cards.push({ instanceId: uid("ci"), baseCardId: id, origin: "starter" });
+          }
+        }
+        set((s) => ({
+          inventory: { ...s.inventory, cards },
+          decks: { ...s.decks, [DEFAULT_DECK]: counts },
         }));
       },
     }),

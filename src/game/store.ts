@@ -166,6 +166,7 @@ export interface GameStore {
   buyCardPack: () => void;
   buyArchetypePack: (archetype: Archetype) => void;
   clearPackResult: () => void;
+  markStarterChosen: () => void;
 }
 
 export const CARD_PACK_PRICE = 150;
@@ -1181,6 +1182,12 @@ export const useGame = create<GameStore>((set, get) => {
     },
 
     clearPackResult: () => set({ lastPackResult: null }),
+
+    markStarterChosen: () => {
+      const profile = { ...get().profile, starterChosen: true };
+      persist(profile);
+      set({ profile });
+    },
 
     sellItems: ({ cardIds, equipmentUids, runeIds }) => {
       const s = get();
