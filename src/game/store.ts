@@ -10,6 +10,7 @@ import type {
   GameEvent,
   PlayerProfile,
   PlayerStats,
+  PackTicketArchetype,
   RewardOffer,
   Scene,
   VillageState,
@@ -56,6 +57,7 @@ import { loadoutDeck, loadoutError } from "./cardEvaluator";
 import { useCollectionStore } from "@/store/useCollectionStore";
 import { nextUnread } from "./grimoire";
 import { cardSellPrice, equipmentSellPrice, forgeCard, makeSmith, runeSellPrice, SHOP_PRICE } from "./smith";
+import { PACK_TICKET_ARCHETYPES, PACK_TICKET_LABELS } from "./packTickets";
 
 function hookFrom(s: GameStore): PlayerHook {
   const vitals = derivedVitals(s.profile.stats, s.profile.madness);
@@ -164,13 +166,12 @@ export interface GameStore {
   deleteEquipmentPreset: (name: string) => void;
   renameEquipmentPreset: (oldName: string, newName: string) => boolean;
   buyCardPack: () => void;
-  buyArchetypePack: (archetype: Archetype) => void;
+  openArchetypePack: (archetype: PackTicketArchetype) => void;
   clearPackResult: () => void;
   markStarterChosen: () => void;
 }
 
 export const CARD_PACK_PRICE = 150;
-export const ARCHETYPE_PACK_PRICE = 180;
 
 function weightedCard(owner: CharacterId, rand: () => number, archetype?: Archetype): CardInst {
   const pool = rewardPool(owner);
@@ -705,6 +706,9 @@ export const useGame = create<GameStore>((set, get) => {
         if (reward.kind === "card") {
           useCollectionStore.getState().addLootCard(reward.card.defId);
           labels.push(getCard(reward.card.defId).name);
+        } else if (reward.kind === "ticket") {
+          useCollectionStore.getState().addPackTicket(reward.ticket);
+          labels.push(`${PACK_TICKET_LABELS[reward.ticket]}のパックチケット`);
         } else if (reward.kind === "equipment") {
           const inst = reward.equipment;
           useCollectionStore.getState().addLootEquipment(inst);
@@ -1161,10 +1165,11 @@ export const useGame = create<GameStore>((set, get) => {
       set({ profile, lastPackResult: cards.map((c) => c.defId), toast: "通常パックを開封した。" });
     },
 
-    buyArchetypePack: (archetype) => {
+    openArchetypePack: (archetype) => {
       const s = get();
-      if (s.profile.shells < ARCHETYPE_PACK_PRICE) {
-        set({ toast: "貝殻が足りない。" });
+      const collection = useCollectionStore.getState();
+      if (!collection.consumePackTicket(archetype)) {
+        set({ toast: `${PACK_TICKET_LABELS[archetype]}のパックチケットがない。` });
         return;
       }
       const owner = s.character ?? starterPath(s.profile.stats);
@@ -1174,11 +1179,9 @@ export const useGame = create<GameStore>((set, get) => {
       for (const c of cards) {
         useCollectionStore.getState().addLootCard(c.defId);
       }
-      const profile = { ...s.profile, shells: s.profile.shells - ARCHETYPE_PACK_PRICE };
-      persist(profile);
       sfx.reward();
       const label = ARCHETYPE_LABELS[archetype] ?? archetype;
-      set({ profile, lastPackResult: cards.map((c) => c.defId), toast: `${label}パックを開封した。` });
+      set({ lastPackResult: cards.map((c) => c.defId), toast: `${label}パックを開封した。` });
     },
 
     clearPackResult: () => set({ lastPackResult: null }),
@@ -1246,11 +1249,10 @@ function makeRewards(s: GameStore): RewardOffer[] {
   const enemies = s.combat?.enemies ?? [];
   if (hadTreasureWanderer(enemies)) {
     const archetype = encounterArchetype(enemies, s.rand);
-    const owner = s.character ?? "investigator";
     const runeEffect = pick(RUNE_CATALOG, s.rand).effect;
     const equipmentDefId = pickEquipmentDefId(archetype, s.rand);
     return [
-      { kind: "card", card: weightedCard(owner, s.rand, archetype) },
+      { kind: "ticket", ticket: rewardTicketArchetype(enemies, s.rand) },
       { kind: "equipment", equipment: rollEquipment(equipmentDefId, s.floor, s.rand, "drop") },
       { kind: "rune", rune: rollRune(runeEffect, s.floor, s.rand) },
     ];
@@ -1269,8 +1271,7 @@ function makeRewards(s: GameStore): RewardOffer[] {
   for (let i = 0; i < count; i++) {
     const category = weightedPick(table.weights, s.rand);
     if (category === "card") {
-      const owner = s.character ?? "investigator";
-      rewards.push({ kind: "card", card: weightedCard(owner, s.rand, archetype) });
+      rewards.push({ kind: "ticket", ticket: rewardTicketArchetype(enemies, s.rand) });
     } else if (category === "rune") {
       const effect = pick(RUNE_CATALOG, s.rand).effect;
       rewards.push({ kind: "rune", rune: rollRune(effect, floorForRoll, s.rand) });
@@ -1280,6 +1281,12 @@ function makeRewards(s: GameStore): RewardOffer[] {
     }
   }
   return rewards;
+}
+
+function rewardTicketArchetype(enemies: CombatEnemy[], rand: () => number): PackTicketArchetype {
+  const archetype = encounterArchetype(enemies, rand);
+  if (archetype && archetype !== "generic") return archetype;
+  return pick(PACK_TICKET_ARCHETYPES, rand);
 }
 
 export { cardText, canPlay };
