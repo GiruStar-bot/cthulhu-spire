@@ -69,7 +69,7 @@ export function PackShopScreen({ onBack }: { onBack: () => void }) {
         {PACK_ARCHETYPES.map((archetype) => {
           const label = ARCHETYPE_LABELS[archetype] ?? archetype;
           return (
-            <div key={archetype} className="panel flex flex-col items-center gap-2 p-2 text-center">
+            <div key={archetype} className="pack-tome flex flex-col items-center gap-2 p-2 text-center">
               <img
                 src={asset(`art/pixel/packs/pack_${archetype}.png`)}
                 alt=""
