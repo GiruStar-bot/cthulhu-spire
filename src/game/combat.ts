@@ -73,6 +73,7 @@ export function makeEnemy(defId: string, floor: number, rand: () => number): Com
     patternIndex: 0,
     intent: { kind: "unknown" },
     actionCardIds: [],
+    sealed: null,
   };
   rollNextAction(e, rand);
   return e;
@@ -558,6 +559,14 @@ function runEffects(
         c.sealed = e.value;
         c.log.push(`${e.value === "attack" ? "攻撃" : "技能"}が封じられた。`);
         break;
+      case "sealEnemy": {
+        const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
+        if (tgt) {
+          tgt.sealed = e.value;
+          c.log.push(`${getEnemy(tgt.defId).name}の${e.value === "attack" ? "攻撃" : "技能"}を封じた。`);
+        }
+        break;
+      }
     }
   }
 }
@@ -741,12 +750,20 @@ function enemyAct(e: CombatEnemy, c: CombatState, player: PlayerHook, rand: () =
   e.block = 0;
   e.hadAttackThisTurn = false;
   if (e.actionCardIds.length === 0) {
-    applyEnemyIntent(e.intent, e, c, player, rand, sfx);
+    if (!e.sealed || e.intent.kind !== "attack") applyEnemyIntent(e.intent, e, c, player, rand, sfx);
+    else c.log.push(`${getEnemy(e.defId).name}の行動は封じられている。`);
+    e.sealed = null;
     return;
   }
   for (const id of e.actionCardIds) {
-    applyEnemyIntent(cardToIntent(getCard(id)), e, c, player, rand, sfx);
+    const d = getCard(id);
+    if (e.sealed && d.type === e.sealed) {
+      c.log.push(`${getEnemy(e.defId).name}の${d.name}は封じられて不発に終わった。`);
+      continue;
+    }
+    applyEnemyIntent(cardToIntent(d), e, c, player, rand, sfx);
   }
+  e.sealed = null;
 }
 
 export function endTurn(c: CombatState, player: PlayerHook, rand: () => number): CombatSfx[] {
