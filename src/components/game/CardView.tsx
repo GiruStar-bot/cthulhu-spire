@@ -72,6 +72,7 @@ export function CardView({
         {d.archetype && ARCHETYPE_LABELS[d.archetype] ? (
           <span className="shrink-0 border border-white/60 px-1 text-[8px] leading-tight text-white">
             {ARCHETYPE_LABELS[d.archetype]}
+            {d.tags?.includes("cat") ? "·猫" : ""}
           </span>
         ) : null}
       </div>

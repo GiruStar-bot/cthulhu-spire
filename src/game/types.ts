@@ -73,9 +73,14 @@ export type Effect =
   | { t: "curePoison" }
   | { t: "hpCostHalf" }
   | { t: "seal"; value: "attack" | "skill" }
-  | { t: "sealEnemy"; value: "attack" | "skill" };
+  | { t: "sealEnemy"; value: "attack" | "skill" }
+  | { t: "clearStatus" }
+  | { t: "addToDraw"; id: string; n: number }
+  | { t: "addToHand"; id: string; n: number }
+  | { t: "seekTagged"; tag: string; n: number }
+  | { t: "bastBlessing"; block: number; strength: number };
 
-export type PowerId = "resolve" | "echo" | "bloodOath";
+export type PowerId = "resolve" | "echo" | "bloodOath" | "goddessContract";
 
 export interface CardDef {
   id: string;
@@ -83,6 +88,7 @@ export interface CardDef {
   type: CardType;
   aiTag?: "attack" | "defense" | "effect";
   archetype?: Archetype;
+  tags?: string[];
   cost: number;
   upgradedCost?: number;
   rarity: Rarity;
@@ -98,6 +104,8 @@ export interface CardDef {
   grimoire?: boolean;
   shop?: boolean;
   enemyOnly?: boolean;
+  retired?: boolean;
+  unobtainable?: boolean;
   xCost?: boolean;
   charges?: number;
   onDraw?: Effect[];
@@ -321,6 +329,9 @@ export interface CombatState {
   thornsVulnerable: number;
   xSpent: number;
   forceEnd: boolean;
+  bastBlessing: number;
+  bastBlock: number;
+  bastStr: number;
   turn: number;
   phase: "player" | "enemy" | "over";
   result: "ongoing" | "win" | "lose" | "fled";

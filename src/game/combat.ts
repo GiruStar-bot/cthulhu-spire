@@ -11,7 +11,7 @@ import type {
   Intent,
   PowerId,
 } from "./types";
-import { getCard, makeCard, scaleN } from "./cards";
+import { getCard, hasTag, makeCard, scaleN } from "./cards";
 import { evaluateCardEffect } from "./cardEvaluator";
 import { applyFlatDefense, applyFlatResist, computeEquipmentStats } from "./equipment";
 import { getEnemy } from "./enemies";
@@ -240,6 +240,9 @@ export function startCombat(
     thornsVulnerable: 0,
     xSpent: 0,
     forceEnd: false,
+    bastBlessing: 0,
+    bastBlock: 0,
+    bastStr: 0,
     turn: 1,
     phase: "player",
     result: "ongoing",
@@ -310,7 +313,11 @@ function runEffects(
   rand: () => number,
   card?: CardInst,
 ) {
-  for (const e of effects) {
+  let work = effects;
+  if (card && hasTag(getCard(card.defId), "cat") && c.powers.includes("goddessContract")) {
+    work = doubleEffectNumbers(effects);
+  }
+  for (const e of work) {
     switch (e.t) {
       case "damage": {
         const tgt = living(c).find((x) => x.uid === targetId) ?? living(c)[0];
@@ -567,8 +574,82 @@ function runEffects(
         }
         break;
       }
+      case "clearStatus":
+        c.poison = 0;
+        c.weak = 0;
+        c.vulnerable = 0;
+        c.cold = 0;
+        c.log.push("状態異常が回復した。");
+        break;
+      case "addToDraw":
+        for (let i = 0; i < e.n; i++) insertIntoDraw(c, makeCard(e.id), rand);
+        c.log.push(`${getCard(e.id).name}を${e.n}枚デッキに加えた。`);
+        break;
+      case "addToHand":
+        for (let i = 0; i < e.n; i++) c.hand.push(makeCard(e.id));
+        c.log.push(`${getCard(e.id).name}を${e.n}枚手札に加えた。`);
+        break;
+      case "seekTagged": {
+        const moved = seekTagged(c, e.tag, e.n, rand);
+        c.log.push(`デッキから「${e.tag}」を${moved}枚加えた。`);
+        break;
+      }
+      case "bastBlessing":
+        c.bastBlessing = 1;
+        c.bastBlock = scaleN(e.block, card);
+        c.bastStr = scaleN(e.strength, card);
+        c.log.push(`このターン、猫を使うたびブロック${c.bastBlock}、筋力${c.bastStr}を得る。`);
+        break;
     }
   }
+}
+
+function doubleEffectNumbers(effects: Effect[]): Effect[] {
+  return effects.map((effect) => {
+    const copy = { ...effect } as Effect;
+    if ("n" in copy && typeof (copy as { n?: number }).n === "number") {
+      (copy as { n: number }).n *= 2;
+    }
+    if ("block" in copy && typeof (copy as { block?: number }).block === "number") {
+      (copy as { block: number }).block *= 2;
+    }
+    if ("strength" in copy && typeof (copy as { strength?: number }).strength === "number") {
+      (copy as { strength: number }).strength *= 2;
+    }
+    if ("then" in copy && Array.isArray((copy as { then?: Effect[] }).then)) {
+      (copy as { then: Effect[] }).then = doubleEffectNumbers((copy as { then: Effect[] }).then);
+    }
+    return copy;
+  });
+}
+
+function seekTagged(c: CombatState, tag: string, need: number, rand: () => number): number {
+  let moved = 0;
+  moved += pullTaggedFrom(c, "draw", tag, need - moved, rand);
+  if (moved < need) moved += pullTaggedFrom(c, "discard", tag, need - moved, rand);
+  return moved;
+}
+
+function pullTaggedFrom(
+  c: CombatState,
+  pileKey: "draw" | "discard",
+  tag: string,
+  need: number,
+  rand: () => number,
+): number {
+  if (need <= 0) return 0;
+  const pile = c[pileKey];
+  const hits: CardInst[] = [];
+  const rest: CardInst[] = [];
+  for (const cardInst of pile) {
+    if (hasTag(getCard(cardInst.defId), tag)) hits.push(cardInst);
+    else rest.push(cardInst);
+  }
+  const shuffled = shuffle(hits, rand);
+  const take = Math.min(need, shuffled.length);
+  for (let i = 0; i < take; i++) c.hand.push(shuffled[i]!);
+  c[pileKey] = shuffled.slice(take).concat(rest);
+  return take;
 }
 
 export function changeSanity(player: PlayerHook, c: CombatState, delta: number) {
@@ -643,6 +724,12 @@ export function playCard(
   runEffects(evaled.effects, c, player, targetId, rand, card);
   if (d.type === "attack" && c.powers.includes("resolve")) {
     c.block += 3;
+  }
+  if (c.bastBlessing > 0 && hasTag(d, "cat")) {
+    c.block += c.bastBlock;
+    c.strength += c.bastStr;
+    c.floaters.push(floater(`+${c.bastBlock}`, "block", "player"));
+    c.log.push(`女神の加護: ブロック${c.bastBlock}、筋力${c.bastStr}。`);
   }
   finishPlay(c, card, !!d.exhaust);
   checkOver(c, player);
@@ -770,6 +857,7 @@ export function endTurn(c: CombatState, player: PlayerHook, rand: () => number):
   const sfx: CombatSfx[] = [];
   if (c.phase !== "player" || c.result !== "ongoing") return sfx;
   c.phase = "enemy";
+  c.bastBlessing = 0;
 
   const kept: CardInst[] = [];
   const hand = c.hand.slice();
@@ -962,4 +1050,5 @@ export const POWER_TEXT: Record<PowerId, string> = {
   resolve: "攻撃を出すとブロックを得る",
   echo: "ターン開始時、ランダムな敵にダメージ",
   bloodOath: "正気を失うと筋力を得る",
+  goddessContract: "「猫」の効果の数字が2倍になる",
 };

@@ -200,6 +200,8 @@ function archetypeCardPool(owner: CharacterId, archetype: Archetype) {
       c.rarity !== "status" &&
       !c.grimoire &&
       !c.enemyOnly &&
+      !c.retired &&
+      !c.unobtainable &&
       (c.owner === "shared" || c.owner === owner),
   );
 }
